@@ -5,10 +5,10 @@ cls
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set "dt=%%a"
 set "date=%dt:~0,4%_%dt:~4,2%_%dt:~6,2%"
 
-set "name=Monochrome"
+set "name=monorust"
 
 call ./build.bat
 
-Start remedybg target/debug/%date%/%name%.exe
+Start remedybg target/debug/%date%/debug/%name%.exe
 
 code ./

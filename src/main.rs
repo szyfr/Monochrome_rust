@@ -1,28 +1,33 @@
 
+
+//= Imports
 //use std::collections::HashMap;
 
-//use data;
 use monorust::data;
 use monorust::settings;
+use monorust::raylib;
 
 
+//= Procedures
 fn update() {
 
 }
+
 fn draw() {
-	unsafe {
-		raylib_ffi::draw!({
-			raylib_ffi::ClearBackground(raylib_ffi::colors::WHITE);
-			raylib_ffi::DrawText(
-				raylib_ffi::rl_str!("FUCK!"),
-				0,
-				0,
-				20,
-				raylib_ffi::colors::BLACK,
-			);
-		});
+	raylib::begin_drawing();
+	{
+		raylib::clear_background(raylib_ffi::colors::WHITE);
+		raylib::draw_text(
+			raylib_ffi::rl_str!("FUCK"),
+			0,
+			0,
+			20,
+			raylib_ffi::colors::BLACK,
+		);
 	}
+	raylib::end_drawing();
 }
+
 fn main() {
 	init();
 	unsafe {
