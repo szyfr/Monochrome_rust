@@ -1,0 +1,155 @@
+{
+	"entities":[
+		{
+			"id":"TEST",
+			"location": [ 34,41 ],
+			"sprite":"man",
+			"movement":"random",
+			"direction":"right",
+			"event":[
+				{ "conditions":[],"id":"test" }
+			],
+			"conditional":[],
+		},
+		{
+			"id":"mom_1",
+			"location": [ 22,42 ],
+			"sprite":"mom",
+			"movement":"random",
+			"direction":"left",
+			"event":[
+				{ "conditions":[],"id":"int_mom_normal_1" }
+			],
+			"conditional":[],
+		},
+//		//* Mom
+//		{
+//			"id":"mom_1",
+//			"location": [ 22,42 ],
+//			"sprite":"mom",
+//			"movement":"random",
+//			"direction":"left",
+//			"event":[0,3],
+//			"conditional":[],
+//		},
+//		//* Rival
+//		{
+//			"id":"rival_1",
+//			"location": [ 17,8 ],
+//			"sprite":"rival_1",
+//			"movement":"none",
+//			"direction":"right",
+//			"event":[
+//				
+//			],
+//			"conditional":[
+//				["rival_battle_1",false],
+//			],
+//		},
+//		//* Randos
+//		{
+//			"id":"ent_2",
+//			"location": [ 26,15 ],
+//			"sprite":"man",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[0,1],
+//			"conditional":[],
+//		},
+//		{
+//			"id":"TEST",
+//			"location": [ 34,41 ],
+//			"sprite":"man",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[
+//				{
+//					"conditions":[],
+//					"id":"int_mom_normal",
+//				}
+//			],
+//			"conditional":[],
+//		},
+//		{
+//			"id":"ent_3",
+//			"location": [ 20,14 ],
+//			"sprite":"woman",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[0,2],
+//			"conditional":[],
+//		},
+//		//* Mom
+//		{
+//			"id":"mom_1",
+//			"location": [ 22,42 ],
+//			"sprite":"mom",
+//			"movement":"random",
+//			"direction":"left",
+//			"event":[0,3],
+//			"conditional":[],
+//		},
+//		//* Elm's Lab
+//		{
+//			"id":"elm_1",
+//			"location": [ 7,33 ],
+//			"sprite":"elm",
+//			"movement":"random",
+//			"direction":"up",
+//			"event":[1,0],
+//			"conditional":[],
+//		},
+//		{
+//			"id":"labassist_1",
+//			"location": [ 2,38 ],
+//			"sprite":"lab_assistant",
+//			"movement":"random",
+//			"direction":"up",
+//			"event":[1,1],
+//			"conditional":[],
+//		},
+//		{
+//			"id":"labassist_2",
+//			"location": [ 8,40 ],
+//			"sprite":"lab_assistant",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[1,2],
+//			"conditional":[],
+//		},
+//		{
+//			"id":"ball_grass",
+//			"location": [ 7,34 ],
+//			"sprite":"ball",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[1,3],
+//			"conditional":[
+//				["chose_starter_grass",false],
+//				["rival_starter_grass",false],
+//			],
+//		}, {
+//			"id":"ball_fire",
+//			"location": [ 8,34 ],
+//			"sprite":"ball",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[1,4],
+//			"conditional":[
+//				["chose_starter_fire",false],
+//				["rival_starter_fire",false],
+//			],
+//		}, {
+//			"id":"ball_water",
+//			"location": [ 9,34 ],
+//			"sprite":"ball",
+//			"movement":"random",
+//			"direction":"right",
+//			"event":[1,5],
+//			"conditional":[
+//				["chose_starter_water",false],
+//				["rival_starter_water",false],
+//			],
+//		},
+	],
+}

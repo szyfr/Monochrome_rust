@@ -1,0 +1,149 @@
+{
+
+	"title":"Monochrome",
+
+	"wiki": "Wiki",
+	"monster": "Monsters",
+	"inventory": "Bag",
+	"phone": "Phone",
+	"player": "Player",
+	"save": "Save",
+	"load": "Load",
+	"quickload": "Reload",
+	"options": "Options",
+	"quit": "Quit",
+
+	//= Stats
+	"hp":"Hp:",
+	"st":"St:",
+	"atk":"Atk:",
+	"def":"Def:",
+	"spatk":"SpAtk:",
+	"spdef":"SpDef:",
+	"spd":"Spd:",
+	"exp":"Exp:",
+
+	//* Events
+	//= Responses
+	"yes":"Yes",
+	"no":"No",
+	"good":"Good",
+	"bad":"Bad",
+
+	//= New Bark Town
+	// Mom
+	// Talk
+	"newbarktown_mom_talk1_1":"Hope you have a good\nday, sweetheart.",
+	// Game beginning event
+	"newbarktown_mom_event1_1":"Goodmorning sweetheart.\nYou have a good\nnight sleep?",
+	"newbarktown_mom_event1_good_1":"That's good to hear.",
+	"newbarktown_mom_event1_good_2":"I'd offer you breakfast,\nbut I have something\nimportant to tell you!",
+	"newbarktown_mom_event1_bad_1":"Aww, that's sad to hear.\nBad dreams?",
+	"newbarktown_mom_event1_bad_2":"Well, I have some news\nthat'll make you feel a lot\nbetter!",
+	"newbarktown_mom_event1_2":"Ready?",
+	"newbarktown_mom_event1_3":"The Professor called,\nyou got accepted into\nthe League Program!",
+	"newbarktown_mom_event1_4":"Isn't that exciting!\nYou'll get your own\npartner and everything!",
+	"newbarktown_mom_event1_5":"Oh, I remember when I\nchallenged the league\nmyself.",
+	"newbarktown_mom_event1_6":"But that was a lifetime\nago and I never managed\nto finish it,",
+	"newbarktown_mom_event1_7":"It was certainly\nan adventure.",
+	"newbarktown_mom_event1_8":"That was before the\nRegional Government\nchanged the rules.",
+	"newbarktown_mom_event1_9":"Not much we can do\nabout that, though.",
+	"newbarktown_mom_event1_10":"But enough of your old\nmother's ramblings.",
+	"newbarktown_mom_event1_11":"You should get going,\ndon't want to be late.",
+	// Lab
+	// Prof
+	"newbarktown_elm_1_1":"Good luck out there\nNot like you'll need it.",
+	"newbarktown_elm_1_2":"And thanks again.",
+	// Event
+	"newbarktown_elm_event1_1":"Ah, {PLAYER_NAME}!\nYou're here.",
+	"newbarktown_elm_event1_2":"I'll keep things short and\nsweet since I'm sure you\nwant to get going.",
+	"newbarktown_elm_event1_3":"Today begins your journey\nas a pokemon trainer.",
+	"newbarktown_elm_event1_14":"Along this journey you'll\nbattle many kinds of\npeople and meet many\nmonsters...",
+	"newbarktown_elm_event1_4":"Wait... That's not right...",
+	"newbarktown_elm_event1_5":"Sorry, I'm no Professor\nWilliams, no one can really\nreplace him.",
+	"newbarktown_elm_event1_6":"I haven't really done this\nbefore. The league is so\npicky with who they\nchoose in the region these days.",
+	"newbarktown_elm_event1_7":"Not to mention they only\nreally seem to choose\npeople who seem like\nthey're going to fail...",
+	"newbarktown_elm_event1_8":"Here we have three monsters,\nand it is up to you to\nchoose which one will be\nyour partner.",
+	"newbarktown_elm_event1_9":"starter_grass, the Grass-type.\nthey've got high defenses\nand health, but fall a\nlittle short on offense.",
+	"newbarktown_elm_event1_10":"starter_fire, the Fire-type.\nA real glass cannon, this\none. High special attack\nand speed, but no bulk.",
+	"newbarktown_elm_event1_11":"Last but not least,",
+	"newbarktown_elm_event1_12":"starter_water, the Water-type.\nThey have strong physical\nabilities and defenses\nbut is lacking in speed.",
+	"newbarktown_elm_event1_13":"It's all up to you.",
+	
+	"newbarktown_starter_event_1":"Do you choose\nstarter_grass?",
+	"newbarktown_starter_event_2":"Do you choose\nstarter_fire?",
+	"newbarktown_starter_event_3":"Do you choose\nstarter_water?",
+
+	"newbarktown_elm_event2_1":"Now, i'm not supposed to\ngive you any help aside\nfrom encouraging \nGood luck out there!",
+	"newbarktown_elm_event2_8":"But i want you to do well,\nso here...",
+	"newbarktown_elm_event2_2":"{PLAYER_NAME} received 5 Capture Balls!",
+	"newbarktown_elm_event2_3":"Good luck, kid. I do hope\nyou make us proud.",
+	"newbarktown_elm_event2_4":"???: Out of my way, rat.",
+	"newbarktown_elm_event2_5":"Elm: Now wait a min...",
+	"newbarktown_elm_event2_6":"???: What? You trying to\nbe a hero, kid?",
+	"newbarktown_elm_event2_7":"I'll show you not to\nplay hero.",
+
+	"newbarktown_elm_event2win_1":"You?...",
+	"newbarktown_elm_event2win_2":"Wha?...",
+	"newbarktown_elm_event2lose_1":"That's right.",
+	"newbarktown_elm_event2lose_2":"Now get out of my sight before you get the same as that weak little trash.",
+
+	// Assistants
+	"newbarktown_lab_assistant1_1_1":"Hey kid,\ndo you need something?",
+	"newbarktown_lab_assistant1_1_2":"... ... ...",
+	"newbarktown_lab_assistant1_1_3":"The professor?\nHe's in his office just\npast the bookshelves.",
+	"newbarktown_lab_assistant1_2_1":"What the hell was that?",
+	"newbarktown_lab_assistant1_2_2":"You sure you're\nokay, kid?",
+
+	"newbarktown_lab_assistant2_1_1":"... ... ...",
+	"newbarktown_lab_assistant2_1_2":"...What?",
+	"newbarktown_lab_assistant2_1_3":"I'm totally working,\nwhat are you...",
+	"newbarktown_lab_assistant2_1_4":"I'm so tired...\nPlease don't tell the\nprofessor about this.",
+	"newbarktown_lab_assistant2_2_1":"... ... ...",
+	"newbarktown_lab_assistant2_2_2":"Huh? did something happen?\n",
+	"newbarktown_lab_assistant2_2_3":"WHAT!?",
+
+
+	//* Battle
+	"trainer_battle_win_1":"You've beaten\n\n{ENEMY_TRAINER}!",
+	"trainer_battle_win_2":"{MONSTER_0_NAME} gained\n\n{EXPERIENCE} experience!",
+	"trainer_battle_lose_1":"All of your monsters have fainted.",
+	"trainer_battle_lose_2":"You run home to heal\nyour wounded monster.",
+
+	"wild_battle_win_1":"Wild {ENEMY_MONSTER_0_NAME}\n\nfainted!",
+	"wild_battle_win_2":"{MONSTER_0_NAME} gained\n\n{EXPERIENCE} experience!",
+
+	"level_up":"{MONSTER_0_NAME} has\n\nreached level {MONSTER_0_LEVEL}",
+
+	//* Monster
+	"starter_grass":"Grass Starter",
+	"starter_grass_1":"GS Evolution 1",
+	"starter_grass_2":"GS Evolution 2",
+	"starter_fire":"Fire Starter",
+	"starter_fire_1":"FS Evolution 1",
+	"starter_fire_2":"FS Evolution 2",
+	"starter_water":"Water Starter",
+	"starter_water_1":"WS Evolution 1",
+	"starter_water_2":"WS Evolution 2",
+
+	//* Attacks
+	"tackle_name":"Tackle",
+	"tackle_desc":"The user throws their body into the enemy.",
+	"scratch_name":"Scratch",
+	"scratch_desc":"The user swipes in front of themselves with sharp claws.",
+	"growl_name":"Growl",
+	"growl_desc":"The user lets out a intimidating growl that lowers the enemies Attack.",
+	"leer_name":"Leer",
+	"leer_desc":"The user glares menacingly lowering the enemies Defense.",
+	"leafage_name":"Leafage",
+	"leafage_desc":"The user sends out a gust of leaves, dealing damage to enemies hit and leaving a pile of leaves that deals damage when stepped on.",
+	"ember_name":"Ember",
+	"ember_desc":"The user spits a hot flame that deals damage and can burn.",
+	"watergun_name":"Water Gun",
+	"watergun_desc":"The user lets out a gush of water dealing damage with high knockback.",
+
+	//* Trainers
+	"rival_unnamed":"???",
+	"rival_named":"Rival {RIVAL_NAME}",
+
+}

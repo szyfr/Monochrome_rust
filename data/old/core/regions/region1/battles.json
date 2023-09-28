@@ -1,0 +1,44 @@
+{
+	"battles":[
+		{
+			"id":"rival_battle_starter_grass",
+			"trainer":"rival_unnamed",
+			"arena":"grass",
+			"mon_easy":[
+				["starter_grass",3,"hardy","tackle","growl","leafage","empty"],
+			],
+			"mon_medium":[
+				["starter_grass",5,"hardy","tackle","growl","leafage","empty"],
+			],
+			"mon_hard":[
+				["starter_grass",8,"relaxed","tackle","growl","leafage","empty"],
+			],
+		}, {
+			"id":"rival_battle_starter_fire",
+			"trainer":"rival_unnamed",
+			"arena":"grass",
+			"mon_easy":[
+				["starter_fire",3,"hardy","tackle","leer","ember","empty"],
+			],
+			"mon_medium":[
+				["starter_fire",5,"hardy","tackle","leer","ember","empty"],
+			],
+			"mon_hard":[
+				["starter_fire",8,"modest","tackle","leer","ember","empty"],
+			],
+		}, {
+			"id":"rival_battle_starter_water",
+			"trainer":"rival_unnamed",
+			"arena":"grass",
+			"mon_easy":[
+				["starter_water",3,"hardy","scratch","growl","watergun","empty"],
+			],
+			"mon_medium":[
+				["starter_water",5,"hardy","scratch","growl","watergun","empty"],
+			],
+			"mon_hard":[
+				["starter_water",8,"adamant","scratch","growl","watergun","empty"],
+			],
+		}, 
+	],
+}

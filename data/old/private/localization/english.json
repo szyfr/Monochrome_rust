@@ -1,0 +1,52 @@
+{
+
+	"title":"Monochrome+",
+
+	"wiki": "Pokedex",
+	"monster": "Monsters",
+	"phone": "PokeGear",
+
+	//* Events
+
+	//= New Bark Town
+	// Mom
+	// Game beginning event
+	"newbarktown_mom_event1_3":"Professor Elm called,\nyou got accepted into\nthe League Program!",
+	// Event
+	"newbarktown_elm_event1_3":"Today begins your journey\nas a pokemon trainer.",
+	"newbarktown_elm_event1_14":"Along this journey you'll\nbattle many kinds of\npeople and meet many\npokemon...",
+	"newbarktown_elm_event1_5":"Sorry, I'm no Professor\nOak, no one can really\nreplace him.",
+	"newbarktown_elm_event1_6":"I haven't really done this\nbefore. The league is so\npicky with who they\nchoose in Johto these days.",
+	"newbarktown_elm_event1_8":"Here we have three pokemon,\nand it is up to you to\nchoose which one will be\nyour partner.",
+	"newbarktown_elm_event1_9":"Chikorita, the Grass-type.\nthey've got high defenses\nand health, but fall a\nlittle short on offense.",
+	"newbarktown_elm_event1_10":"Cyndaquil, the Fire-type.\nA real glass cannon, this\none. High special attack\nand speed, but no bulk.",
+	"newbarktown_elm_event1_12":"Totodile, the Water-type.\nThey have strong physical\nabilities and defenses\nbut is lacking in speed.",
+	
+	"newbarktown_starter_event_1":"Do you choose\nChikorita?",
+	"newbarktown_starter_event_2":"Do you choose\nCyndaquil?",
+	"newbarktown_starter_event_3":"Do you choose\nTotodile?",
+
+	"newbarktown_elm_event2_2":"{PLAYER_NAME} received 5 PokeBalls!",
+
+
+	//* Battle
+	"trainer_battle_lose_1":"All of your pokemon have fainted.",
+	"trainer_battle_lose_2":"You run home to heal\nyour wounded pokemon.",
+
+	"wild_battle_win_1":"Wild {ENEMY_MONSTER_0_NAME}\n\nfainted!",
+	"wild_battle_win_2":"{MONSTER_0_NAME} gained\n\n{EXPERIENCE} experience!",
+
+	"level_up":"{MONSTER_0_NAME} has\n\nreached level {MONSTER_0_LEVEL}",
+
+	//* Monster
+	"starter_grass":"Chikorita",
+	"starter_grass_1":"Bayleaf",
+	"starter_grass_2":"Meganium",
+	"starter_fire":"Cyndaquil",
+	"starter_fire_1":"Quilava",
+	"starter_fire_2":"Typhlosian",
+	"starter_water":"Totodile",
+	"starter_water_1":"Croconaw",
+	"starter_water_2":"Feraligatr",
+
+}

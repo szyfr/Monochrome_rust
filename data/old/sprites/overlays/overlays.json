@@ -1,0 +1,12 @@
+
+{
+	"overlays": [
+		["general","tackle",[1,0,0]],
+		["general","scratch",[0,0,0]],
+		["general","growl",[0,0,0]],
+		["general","leer",[2,0,0]],
+		["general","leafage",[2,0,0]],
+		["general","ember",[2,0,0]],
+		["general","watergun",[2,0,0]],
+	]
+}

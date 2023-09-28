@@ -1,0 +1,14 @@
+
+{
+	
+	"idle_down":[15,0],
+	"idle_up":[15,3],
+	"idle_left":[15,6],
+	"idle_right":[15,8],
+
+	"walk_down":[15,1,0,2,0],
+	"walk_up":[15,4,3,5,3],
+	"walk_left":[15,7,6],
+	"walk_right":[15,9,8]
+
+}

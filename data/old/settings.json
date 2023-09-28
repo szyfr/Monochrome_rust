@@ -1,0 +1,26 @@
+{
+	"screenwidth":1920,
+	"screenheight":1080,
+	"textspeed":1,
+	"fpslimit":85,
+	"mastervolume":10,
+	"musicvolume":10,
+	"soundvolume":10,
+	"language":"english",
+
+	"keybindings": [
+		["up",0,87],
+		["down",0,83],
+		["left",0,65],
+		["right",0,68],
+
+		["attack",1,0],
+		["switch_attack_left",0,81],
+		["switch_attack_right",1,1],
+		["show_overlay",0,340]
+
+		["interact",0,32],
+		["cancel",0,256],
+		["pause",0,257],
+	],
+}
