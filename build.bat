@@ -12,7 +12,3 @@ cargo build --target-dir G:\%name%\target\debug\%date%\
 
 xcopy "data\"    "target\debug\%date%\debug\data\" /v /q /s /e /y > nul
 xcopy "src\"     "target\debug\%date%\debug\src\"  /v /q /s /e /y > nul
-
-cls
-
-cargo run --target-dir G:\%name%\target\debug\%date%\

@@ -30,11 +30,9 @@ fn draw() {
 
 fn main() {
 	init();
-	unsafe {
-		while !(raylib_ffi::WindowShouldClose()) {
-			update();
-			draw();
-		}
+	while !raylib::window_should_close() {
+		update();
+		draw();
 	}
 	close();
 }
@@ -46,16 +44,12 @@ fn init() {
 	settings::init();
 
 	//* Raylib *//
-	unsafe {
-		raylib_ffi::SetTraceLogLevel(raylib_ffi::enums::TraceLogLevel::None as i32);
-		raylib_ffi::InitWindow(
-			data::SCREEN_WIDTH,
-			data::SCREEN_HEIGHT,
-			raylib_ffi::rl_str!("Monochrome")
-		);
-		if data::SCREEN_FPS != 0 { raylib_ffi::SetTargetFPS(data::SCREEN_FPS); }
-		raylib_ffi::SetExitKey(raylib_ffi::enums::KeyboardKey::Null as i32);
-	}
+	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
+	raylib::init_window(
+		data::screenWidth,
+		data::screenHeight,
+		&"Monochrome", // TODO
+	);
 	
 	//* Graphics *//
 
@@ -65,7 +59,5 @@ fn init() {
 }
 
 fn close() {
-	unsafe {
-		raylib_ffi::CloseWindow();
-	}
+	raylib::close_window();
 }
