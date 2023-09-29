@@ -45,11 +45,7 @@ fn init() {
 
 	//* Raylib *//
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
-	raylib::init_window(
-		data::screenWidth,
-		data::screenHeight,
-		&"Monochrome", // TODO
-	);
+	raylib::init_window( &"Monochrome" ); // TODO
 	
 	//* Graphics *//
 

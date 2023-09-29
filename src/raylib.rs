@@ -6,6 +6,8 @@
 
 //= Imports
 
+use crate::data;
+
 
 //= Procedures
 pub fn begin_drawing() {
@@ -44,11 +46,11 @@ pub fn set_trace_log_level( logLevel : raylib_ffi::enums::TraceLogLevel ) {
 	}
 }
 
-pub fn init_window( width : i32, height : i32, title : &str ) {
+pub fn init_window( title : &str ) {
 	unsafe {
 		raylib_ffi::InitWindow(
-			width,
-			height,
+			data::screenWidth,
+			data::screenHeight,
 			raylib_ffi::rl_str!(title),
 		);
 	}
