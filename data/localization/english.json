@@ -10,18 +10,12 @@
 	"quit": "Quit",
 
 
-	//* Events
-	//= Responses
 	"yes":"Yes",
 	"no":"No",
 	"good":"Good",
 	"bad":"Bad",
 
-	//= New Bark Town
-	// Mom
-	// Talk
 	"newbarktown_mom_talk1_1":"Hope you have a good\nday, sweetheart.",
-	// Game beginning event
 	"newbarktown_mom_event1_1":"Goodmorning sweetheart.\nYou have a good\nnight sleep?",
 	"newbarktown_mom_event1_good_1":"That's good to hear.",
 	"newbarktown_mom_event1_good_2":"I'd offer you breakfast,\nbut I have something\nimportant to tell you!",
@@ -37,11 +31,10 @@
 	"newbarktown_mom_event1_9":"Not much we can do\nabout that, though.",
 	"newbarktown_mom_event1_10":"But enough of your old\nmother's ramblings.",
 	"newbarktown_mom_event1_11":"You should get going,\ndon't want to be late.",
-	// Lab
-	// Prof
+	
 	"newbarktown_elm_1_1":"Good luck out there\nNot like you'll need it.",
 	"newbarktown_elm_1_2":"And thanks again.",
-	// Event
+
 	"newbarktown_elm_event1_1":"Ah, {PLAYER_NAME}!\nYou're here.",
 	"newbarktown_elm_event1_2":"I'll keep things short and\nsweet since I'm sure you\nwant to get going.",
 	"newbarktown_elm_event1_3":"Today begins your journey\nas a pokemon trainer.",
@@ -75,7 +68,7 @@
 	"newbarktown_elm_event2lose_1":"That's right.",
 	"newbarktown_elm_event2lose_2":"Now get out of my sight before you get the same as that weak little trash.",
 
-	// Assistants
+	
 	"newbarktown_lab_assistant1_1_1":"Hey kid,\ndo you need something?",
 	"newbarktown_lab_assistant1_1_2":"... ... ...",
 	"newbarktown_lab_assistant1_1_3":"The professor?\nHe's in his office just\npast the bookshelves.",
@@ -91,7 +84,6 @@
 	"newbarktown_lab_assistant2_2_3":"WHAT!?",
 
 
-	//* Battle
 	"trainer_battle_win_1":"You've beaten\n\n{ENEMY_TRAINER}!",
 	"trainer_battle_win_2":"{MONSTER_0_NAME} gained\n\n{EXPERIENCE} experience!",
 	"trainer_battle_lose_1":"All of your pokemon have fainted.",
@@ -102,7 +94,6 @@
 
 	"level_up":"{MONSTER_0_NAME} has\n\nreached level {MONSTER_0_LEVEL}",
 
-	//* Monster
 	"starter_grass":"Chikorita",
 	"starter_grass_1":"Bayleaf",
 	"starter_grass_2":"Meganium",
@@ -113,7 +104,6 @@
 	"starter_water_1":"Croconaw",
 	"starter_water_2":"Feraligatr",
 
-	//* Attacks
 	"tackle_name":"Tackle",
 	"tackle_desc":"The user throws their body into the enemy.",
 	"scratch_name":"Scratch",
@@ -129,7 +119,6 @@
 	"watergun_name":"Water Gun",
 	"watergun_desc":"The user lets out a gush of water dealing damage with high knockback.",
 
-	//* Trainers
 	"rival_unnamed":"???",
-	"rival_named":"Rival {RIVAL_NAME}",
+	"rival_named":"Rival {RIVAL_NAME}"
 }

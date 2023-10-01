@@ -2,20 +2,24 @@
 
 //= Allows
 #![allow(non_snake_case)]
+#![allow(dead_code)]
 
 
-use std::clone;
-use std::sync::Mutex;
 //= Imports
-use std::{fs::File, fs::read_to_string, io::copy, io::stdout, io::Write, str::FromStr};
-use serde_json;
-
+use std::{collections::HashMap, fs::{read_to_string, File}, str::FromStr, io::Write, fmt::Display};
 use crate::utilities::debug;
-//use std::collections::HashMap;
-use crate::data;
 
 
-//= Structures / Enumeration
+//= Structures
+pub struct Settings {
+	pub screenWidth : i32,
+	pub screenHeight : i32,
+	pub screenFps : i32,
+
+	pub keybindings : HashMap<String, Keybinding>,
+
+	pub language : Language,
+}
 pub struct Keybinding {
 	pub origin		: Origin,
 	pub controller	: i32,
@@ -37,7 +41,15 @@ impl FromStr for Origin {
 		}
 	}
 }
-
+impl Display for Origin {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			Origin::Keyboard => write!(f, "keyboard"),
+			Origin::Mouse => write!(f, "mouse"),
+			Origin::Controller => write!(f, "controller"),
+		}
+	}
+}
 pub enum Language {
 	English,
 	French,
@@ -54,62 +66,100 @@ impl FromStr for Language {
 		}
 	}
 }
-
-
-//= Procedures
-pub fn init() {
-	let mut file_result = read_to_string("settings.json");
-	if file_result.is_err() {
-		debug::log("[ERROR] - Failed to find settings file.\n");
-		create_new_settings();
-		file_result = read_to_string("settings.json");
-	}
-	
-	let str = file_result.unwrap();
-	let jsonFile: serde_json::Value = serde_json::from_str(&str).unwrap();
-	
-	//* Read JSON */
-	unsafe {
-		data::screenWidth	= jsonFile["screen_width"].as_i64().unwrap() as i32;
-		data::screenHeight	= jsonFile["screen_height"].as_i64().unwrap() as i32;
-		data::screenFps		= jsonFile["screen_fps"].as_i64().unwrap() as i32;
-		data::language		= Language::from_str(jsonFile["language"].as_str().unwrap()).unwrap();
-		
-		let arr = jsonFile["keybindings"].as_array().unwrap().clone();
-		for x in 0..arr.len() {
-			
-			let name = arr[x].as_array().unwrap()[0].as_str().unwrap();
-			let info = arr[x].as_array().unwrap()[1].as_array().unwrap();
-			let kb = Keybinding{
-				origin		: Origin::from_str(info[0].as_str().unwrap()).unwrap(),
-				controller	: info[1].as_i64().unwrap() as i32,
-				code		: info[2].as_i64().unwrap() as i32,
-			};
-			let m = data::keybindings.get_mut().unwrap();
-			m.insert( name, kb);
-			//print!("{}\n",name)
-			//m.insert(name, kb);
-			//Mutex::new(m);
+impl Display for Language {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			Language::English => write!(f, "english"),
+			Language::French => write!(f, "french"),
+			Language::German => write!(f, "german"),
 		}
 	}
 }
 
-fn create_new_settings() {
+
+//= Procedures
+pub fn load() -> Settings {
+	let mut output = Settings{
+		screenWidth		: 0,
+		screenHeight 	: 0,
+		screenFps 		: 0,
+		keybindings 	: HashMap::new(),
+		language 		: Language::English,
+	};
+
+	//* Attempt to load file */
+	let fileResult = read_to_string("settings.json");
+	if fileResult.is_err() {
+		debug::log("[ERROR] - Failed to find settings file. Creating new file.\n");
+		output = generate_settings();
+		return output;
+	}
+
+	//* Convert to Json */
+	let str = fileResult.unwrap();
+	let jsonFile: serde_json::Value = serde_json::from_str(&str).unwrap();
+
+	//* Read Json */
+	output.screenWidth	= jsonFile["screen_width"].as_i64().unwrap() as i32;
+	output.screenHeight = jsonFile["screen_height"].as_i64().unwrap() as i32;
+	output.screenFps	= jsonFile["screen_fps"].as_i64().unwrap() as i32;
+	output.language		= Language::from_str(jsonFile["language"].as_str().unwrap()).unwrap();
+
+	for val in jsonFile["keybindings"].as_array().unwrap() {
+		let name = val.as_array().unwrap()[0].as_str().unwrap();
+		let info = val.as_array().unwrap()[1].as_array().unwrap();
+		let kb = Keybinding{
+			origin		: Origin::from_str(info[0].as_str().unwrap()).unwrap(),
+			controller	: info[1].as_i64().unwrap() as i32,
+			code		: info[2].as_i64().unwrap() as i32, 
+		};
+		output.keybindings.insert(name.to_string(), kb);
+	}
+
+	return output;
+}
+
+fn generate_settings() -> Settings {
+	let mut newSettings = Settings{
+		screenWidth		: 1280,
+		screenHeight 	:  720,
+		screenFps 		:   80,
+		keybindings 	: HashMap::new(),
+		language 		: Language::English,
+	};
+	
+	newSettings.keybindings.insert("up".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 87 });
+	newSettings.keybindings.insert("down".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 83 });
+	newSettings.keybindings.insert("left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 67 });
+	newSettings.keybindings.insert("right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 68 });
+	newSettings.keybindings.insert("rotate_left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 81 });
+	newSettings.keybindings.insert("rotate_right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
+	newSettings.keybindings.insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 65 });
+
+	save_file(&newSettings);
+
+	return newSettings;
+}
+
+fn save_file( settings : &Settings ) {
 	let mut newSettingsFile : String = String::from("");
+	let mut counter = 0;
 
 	newSettingsFile.push_str("{\n");
-	newSettingsFile.push_str("\t\"screen_width\": 1280,\n");
-	newSettingsFile.push_str("\t\"screen_height\": 720,\n");
-	newSettingsFile.push_str("\t\"screen_fps\": 80,\n");
-	newSettingsFile.push_str("\t\"language\": \"english\",\n");
+	newSettingsFile.push_str(format!("\t\"screen_width\": {},\n", settings.screenWidth).as_str());
+	newSettingsFile.push_str(format!("\t\"screen_height\": {},\n", settings.screenHeight).as_str());
+	newSettingsFile.push_str(format!("\t\"screen_fps\": {},\n", settings.screenFps).as_str());
+	newSettingsFile.push_str(format!("\t\"language\": \"{}\",\n", settings.language).as_str());
 	newSettingsFile.push_str("\t\"keybindings\": [\n");
-	newSettingsFile.push_str("\t\t\"up\": [0,0,87],\n");
-	newSettingsFile.push_str("\t\t\"down\": [0,0,83],\n");
-	newSettingsFile.push_str("\t\t\"left\": [0,0,67],\n");
-	newSettingsFile.push_str("\t\t\"right\": [0,0,68],\n");
-	newSettingsFile.push_str("\t\t\"rotate_left\": [0,0,81],\n");
-	newSettingsFile.push_str("\t\t\"rotate_right\": [0,0,69],\n");
-	newSettingsFile.push_str("\t\t\"confirm\": [0,0,65]\n");
+	for key in &settings.keybindings {
+		if counter == settings.keybindings.len()-1 {
+			newSettingsFile.push_str(format!("\t\t[\"{}\", [\"{}\",{},{}]]\n", key.0, key.1.origin, key.1.controller,key.1.code).as_str());
+		} else {
+			newSettingsFile.push_str(format!("\t\t[\"{}\", [\"{}\",{},{}]],\n", key.0, key.1.origin, key.1.controller,key.1.code).as_str());
+		}
+		
+		counter += 1;
+	}
 	newSettingsFile.push_str("\t]\n");
 	newSettingsFile.push_str("}");
 

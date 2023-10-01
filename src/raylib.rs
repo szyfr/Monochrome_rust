@@ -4,8 +4,8 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
-//= Imports
 
+//= Imports
 use crate::data;
 
 
@@ -46,12 +46,12 @@ pub fn set_trace_log_level( logLevel : raylib_ffi::enums::TraceLogLevel ) {
 	}
 }
 
-pub fn init_window( title : &str ) {
+pub fn init_window( gamestate : &data::Gamestate ) {
 	unsafe {
 		raylib_ffi::InitWindow(
-			data::screenWidth,
-			data::screenHeight,
-			raylib_ffi::rl_str!(title),
+			gamestate.settings.screenWidth,
+			gamestate.settings.screenHeight,
+			raylib_ffi::rl_str!(gamestate.localization["title"]),
 		);
 	}
 }
