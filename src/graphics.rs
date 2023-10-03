@@ -1,10 +1,11 @@
 
 
 //= Allows
+#![allow(non_snake_case)]
 
 
 //= Imports
-use std::collections::HashMap;
+use std::{collections::HashMap, fs::read_dir};
 use crate::raylib;
 
 
@@ -24,6 +25,24 @@ pub fn load_fonts() -> HashMap<String, raylib_ffi::Font> {
 
 	//* Default */
 	output.insert("default".to_string(), raylib::load_font("data/font.ttf"));
+
+	return output;
+}
+
+pub fn load_models() -> HashMap<String, raylib_ffi::Model> {
+	let mut output: HashMap<String, raylib_ffi::Model> = HashMap::new();
+	let rawDirectory = read_dir("data/tiles/").unwrap();
+
+	for i in rawDirectory {
+		let mem = i.unwrap().path().clone();
+		let str = mem.to_str().unwrap();
+		if str.contains(".obj") {
+			let mut name = str.to_string();
+			name = name.replace(".obj", "");
+			name = name.replace("data/tiles/", "");
+			output.insert(name, raylib::load_model(str));
+		}
+	}
 
 	return output;
 }

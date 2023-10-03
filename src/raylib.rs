@@ -5,17 +5,18 @@
 #![allow(dead_code)]
 
 
-use raylib_ffi::Vector3;
-
 //= Imports
 use crate::{data, camera::Camera};
+use raylib_ffi::Vector3;
+
+
+//= Structures
 
 
 //= Procedures
 pub fn begin_drawing() {
 	unsafe { raylib_ffi::BeginDrawing(); }
 }
-
 pub fn end_drawing() {
 	unsafe { raylib_ffi::EndDrawing(); }
 }
@@ -26,6 +27,20 @@ pub fn clear_background( color : raylib_ffi::Color ) {
 
 pub fn draw_text( text : *const std::os::raw::c_char, posX : i32, posY : i32, fontSize : i32, color : raylib_ffi::Color ) {
 	unsafe { raylib_ffi::DrawText(text, posX, posY, fontSize, color); }
+}
+pub fn draw_text_pro( font : raylib_ffi::Font, text : &str, position : raylib_ffi::Vector2, origin : raylib_ffi::Vector2, rotation : f32, fontSize : f32, spacing : f32, tint : raylib_ffi::Color ) {
+	unsafe {
+		raylib_ffi::DrawTextPro(
+			font,
+			raylib_ffi::rl_str!(text),
+			position,
+			origin,
+			rotation,
+			fontSize,
+			spacing,
+			tint,
+		);
+	}
 }
 
 pub fn window_should_close() -> bool {
@@ -45,6 +60,9 @@ pub fn init_window( gamestate : &data::Gamestate ) {
 		);
 	}
 }
+pub fn close_window() {
+	unsafe { raylib_ffi::CloseWindow(); }
+}
 
 pub fn set_target_fps( fps : i32 ) {
 	unsafe { raylib_ffi::SetTargetFPS(fps); }
@@ -52,10 +70,6 @@ pub fn set_target_fps( fps : i32 ) {
 
 pub fn set_exit_key( key : raylib_ffi::enums::KeyboardKey ) {
 	unsafe { raylib_ffi::SetExitKey(key as i32); }
-}
-
-pub fn close_window() {
-	unsafe { raylib_ffi::CloseWindow(); }
 }
 
 pub fn load_font( filename : &str ) -> raylib_ffi::Font {
@@ -66,19 +80,8 @@ pub fn load_texture( filename : &str ) -> raylib_ffi::Texture {
 	unsafe { return raylib_ffi::LoadTexture(raylib_ffi::rl_str!(filename)) }
 }
 
-pub fn draw_text_pro( font : raylib_ffi::Font, text : &str, position : raylib_ffi::Vector2, origin : raylib_ffi::Vector2, rotation : f32, fontSize : f32, spacing : f32, tint : raylib_ffi::Color ) {
-	unsafe {
-		raylib_ffi::DrawTextPro(
-			font,
-			raylib_ffi::rl_str!(text),
-			position,
-			origin,
-			rotation,
-			fontSize,
-			spacing,
-			tint,
-		);
-	}
+pub fn load_model( filename : &str ) -> raylib_ffi::Model {
+	unsafe { return raylib_ffi::LoadModel(raylib_ffi::rl_str!(filename)) }
 }
 
 pub fn get_frame_time() -> f32 {
@@ -88,8 +91,8 @@ pub fn get_frame_time() -> f32 {
 pub fn begin_3d_mode( camera : &Camera ) {
 	unsafe {
 		let rlCamera = raylib_ffi::Camera3D{
-			position:	camera.position,
-			target:		camera.target,
+			position:	camera.camPosition,
+			target:		camera.position,
 			up:			Vector3{x:0.0,y:1.0,z:0.0},
 			fovy:		camera.fovy,
 			projection:	raylib_ffi::enums::CameraProjection::Perspective as i32,
@@ -98,7 +101,6 @@ pub fn begin_3d_mode( camera : &Camera ) {
 		raylib_ffi::BeginMode3D(rlCamera);
 	}
 }
-
 pub fn end_3d_mode() {
 	unsafe { raylib_ffi::EndMode3D(); }
 }
@@ -106,3 +108,46 @@ pub fn end_3d_mode() {
 pub fn draw_grid( slices : i32, spacing : f32 ) {
 	unsafe { raylib_ffi::DrawGrid(slices, spacing); }
 }
+
+pub fn button_pressed( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsKeyPressed(key ); }
+}
+pub fn button_down( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsKeyDown(key ); }
+}
+pub fn button_released( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsKeyReleased(key); }
+}
+pub fn button_up( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsKeyUp(key); }
+}
+
+pub fn mouse_button_pressed( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsMouseButtonPressed(key); }
+}
+pub fn mouse_button_down( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsMouseButtonDown(key); }
+}
+pub fn mouse_button_released( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsMouseButtonReleased(key); }
+}
+pub fn mouse_button_up( key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsMouseButtonUp(key); }
+}
+
+pub fn gamepad_available( gamepad : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsGamepadAvailable(gamepad); }
+}
+pub fn gamepad_button_pressed( gamepad : i32, key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsGamepadButtonPressed(gamepad, key); }
+}
+pub fn gamepad_button_down( gamepad : i32, key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsGamepadButtonDown(gamepad, key); }
+}
+pub fn gamepad_button_released( gamepad : i32, key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsGamepadButtonReleased(gamepad, key); }
+}
+pub fn gamepad_button_up( gamepad : i32, key : i32 ) -> bool {
+	unsafe { return raylib_ffi::IsGamepadButtonUp(gamepad, key); }
+}
+

@@ -12,17 +12,19 @@ fn main() {
 		localization	: HashMap::new(),
 		fonts			: HashMap::new(),
 		textures		: HashMap::new(),
+		models			: HashMap::new(),
 		camera			: camera::init(),
 	};
 	gamestate.localization = localization::load(&gamestate.settings.language);
 
 	//* Raylib */
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
-	raylib::init_window( &gamestate );
+	raylib::init_window(&gamestate);
 	
 	//* Graphics */
 	gamestate.fonts		= graphics::load_fonts();
 	gamestate.textures	= graphics::load_textures();
+	gamestate.models	= graphics::load_models();
 
 	//* Camera / Player */
 
@@ -30,6 +32,7 @@ fn main() {
 
 	while !raylib::window_should_close() {
 		//* Update */
+		gamestate.camera = camera::update(&gamestate);
 
 		//* Draw */
 		raylib::begin_drawing();

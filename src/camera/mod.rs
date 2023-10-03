@@ -6,58 +6,87 @@
 
 
 //= Imports
-use crate::{raylib, data, utilities::math::{close_enough, mul_v3, add_v3}};
+use crate::{raylib, utilities::math, settings, data};
 use raylib_ffi::Vector3;
 
 
 //= Constants
-const MVSPEED : f32 = 5.0;
+const MVSPEED : f32 =   5.0;
+const CMSPEED : f32 = 500.0;
 
 
 //= Structures
+#[derive(Copy, Clone)]
 pub struct Camera {
-	// ! TEST
 	pub position	: Vector3,
-	pub target		: Vector3,
+	pub posTarget	: Vector3,
+	
+	pub rotation	: f32,
+	pub rotTarget	: f32,
+
+	pub camPosition	: Vector3,
 	pub fovy		: f32,
 
-	posTarget	: Vector3,
-	rotation	: f32,
-	rotTarget	: f32,
-
-	// TODO Figure out a better way to do this
-	targetUnit	: i32,
+	onPlayer		: bool,
 }
 
 
 //= Procedures
 pub fn init() -> Camera {
 	return Camera{
-		position:	Vector3 {x:0.5,y:7.0,z:5.5},
-		target:		Vector3 {x:0.5,y:0.0,z:0.5},
-		fovy:		70.0,
+		position:		Vector3 {x:0.5,y:0.0,z:0.5},
+		posTarget:		Vector3 {x:0.5,y:0.0,z:0.5},
+		
+		rotation:		0.0,
+		rotTarget:		0.0,
 
-		posTarget:	Vector3 {x:0.5,y:0.0,z:0.5},
-		rotation:	0.0,
-		rotTarget:	0.0,
+		camPosition:	Vector3 {x:0.5,y:7.0,z:5.5},
+		fovy:			70.0,
 
-		targetUnit:	0,
+		onPlayer:		false,
 	};
 }
 
-pub fn update( mut gamestate : data::Gamestate ) {
-	let camera = gamestate.camera;
+pub fn update( gamestate : &data::Gamestate ) -> Camera {
+	let mut newCamera = gamestate.camera;
 	let ft = raylib::get_frame_time();
 
 	//* Check if targetting a unit */
-	if camera.targetUnit != -1 {
+	if !newCamera.onPlayer {
+		// TODO
 		//camera.position	= gamestate.world.units[camera.targetUnit] + Vector3{0.0,1.0,0.0};
 		//camera.target		= gamestate.world.units[camera.targetUnit] + Vector3{0.0,1.0,0.0};
 	} else {
 		//* Update Position */
-		if close_enough(camera.position, camera.posTarget, 0.5) {
-			//let dir = Vector3{x:1.0,y:1.0,z:1.0};
-			//gamestate.camera.position = add_v3(gamestate.camera.position, mul_v3(dir, (MVSPEED * ft)));
-		}
+		if !math::close_enough_v3(newCamera.position, newCamera.posTarget, 0.5) {
+			let dir = math::get_direction_v3(newCamera.position, newCamera.posTarget);
+			newCamera.position = math::add_v3(newCamera.position, math::mul_v3(dir, MVSPEED * ft));
+		} else { newCamera.position = newCamera.posTarget; }
 	}
+	//* Update rotation */
+	if !math::close_enough_f32(newCamera.rotation, newCamera.rotTarget, 5.0) {
+		let dir = math::get_direction_f32(newCamera.rotation, newCamera.rotTarget);
+		newCamera.rotation += dir * (CMSPEED * ft);
+	} else {
+		newCamera.rotation = newCamera.rotTarget;
+
+		//* Bounds checking */
+		if newCamera.rotation < 0.0 {
+			newCamera.rotation += 360.0;
+			newCamera.rotTarget += 360.0;
+		}
+		if newCamera.rotation > 360.0 {
+			newCamera.rotation -= 360.0;
+			newCamera.rotTarget -= 360.0;
+		}
+
+		//* Controls */
+		if settings::button_down("rotate_right", &gamestate.settings) { newCamera.rotTarget -= 90.0; }
+		if settings::button_down("rotate_left",  &gamestate.settings) { newCamera.rotTarget += 90.0; }
+	}
+
+	//* Calculate rotation */
+	newCamera.camPosition = math::rotate(newCamera.position, newCamera.rotation);
+
+	return newCamera;
 }

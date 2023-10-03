@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, fs::{read_to_string, File}, str::FromStr, io::Write, fmt::Display};
-use crate::utilities::debug;
+use crate::{utilities::debug, raylib};
 
 
 //= Structures
@@ -165,4 +165,73 @@ fn save_file( settings : &Settings ) {
 
 	let newFile = File::create("settings.json");
 	let _ = newFile.unwrap().write_all(newSettingsFile.as_bytes());
+}
+
+pub fn button_pressed( key : &str, settings : &Settings ) -> bool {
+	//* Leave if key not found */
+	if !HashMap::contains_key(&settings.keybindings, key) {
+		debug::log("[WARNING] - Attempted to use a keybinding that wasn't mapped.");
+		return false;
+	}
+
+	let key = &settings.keybindings[key];
+
+	match key.origin {
+		Origin::Keyboard	=> return raylib::button_pressed(key.code),
+		Origin::Mouse		=> return raylib::mouse_button_pressed(key.code),
+		Origin::Controller	=> if raylib::gamepad_available(key.controller) { return raylib::gamepad_button_pressed(key.code, key.controller) },
+	}
+
+	return false;
+}
+pub fn button_down( key : &str, settings : &Settings ) -> bool {
+	//* Leave if key not found */
+	if !HashMap::contains_key(&settings.keybindings, key) {
+		debug::log("[WARNING] - Attempted to use a keybinding that wasn't mapped.");
+		return false;
+	}
+
+	let key = &settings.keybindings[key];
+
+	match key.origin {
+		Origin::Keyboard	=> return raylib::button_down(key.code),
+		Origin::Mouse		=> return raylib::mouse_button_down(key.code),
+		Origin::Controller	=> if raylib::gamepad_available(key.controller) { return raylib::gamepad_button_down(key.code, key.controller) },
+	}
+
+	return false;
+}
+pub fn button_released( key : &str, settings : &Settings ) -> bool {
+	//* Leave if key not found */
+	if !HashMap::contains_key(&settings.keybindings, key) {
+		debug::log("[WARNING] - Attempted to use a keybinding that wasn't mapped.");
+		return false;
+	}
+
+	let key = &settings.keybindings[key];
+
+	match key.origin {
+		Origin::Keyboard	=> return raylib::button_released(key.code),
+		Origin::Mouse		=> return raylib::mouse_button_released(key.code),
+		Origin::Controller	=> if raylib::gamepad_available(key.controller) { return raylib::gamepad_button_released(key.code, key.controller) },
+	}
+
+	return false;
+}
+pub fn button_up( key : &str, settings : &Settings ) -> bool {
+	//* Leave if key not found */
+	if !HashMap::contains_key(&settings.keybindings, key) {
+		debug::log("[WARNING] - Attempted to use a keybinding that wasn't mapped.");
+		return false;
+	}
+
+	let key = &settings.keybindings[key];
+
+	match key.origin {
+		Origin::Keyboard	=> return raylib::button_up(key.code),
+		Origin::Mouse		=> return raylib::mouse_button_up(key.code),
+		Origin::Controller	=> if raylib::gamepad_available(key.controller) { return raylib::gamepad_button_up(key.code, key.controller) },
+	}
+
+	return false;
 }

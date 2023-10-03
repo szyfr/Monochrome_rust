@@ -14,6 +14,7 @@ pub struct Gamestate {
 
 	pub fonts		: HashMap<String, raylib_ffi::Font>,
 	pub textures	: HashMap<String, raylib_ffi::Texture>,
+	pub models		: HashMap<String, raylib_ffi::Model>,
 
 	pub camera		: camera::Camera,
 }
