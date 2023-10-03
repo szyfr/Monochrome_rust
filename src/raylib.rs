@@ -67,6 +67,9 @@ pub fn close_window() {
 pub fn set_target_fps( fps : i32 ) {
 	unsafe { raylib_ffi::SetTargetFPS(fps); }
 }
+pub fn draw_fps( x : i32, y : i32 ) {
+	unsafe { raylib_ffi::DrawFPS(x, y); }
+}
 
 pub fn set_exit_key( key : raylib_ffi::enums::KeyboardKey ) {
 	unsafe { raylib_ffi::SetExitKey(key as i32); }
@@ -82,6 +85,10 @@ pub fn load_texture( filename : &str ) -> raylib_ffi::Texture {
 
 pub fn load_model( filename : &str ) -> raylib_ffi::Model {
 	unsafe { return raylib_ffi::LoadModel(raylib_ffi::rl_str!(filename)) }
+}
+
+pub fn load_default_material() -> raylib_ffi::Material {
+	unsafe { return raylib_ffi::LoadMaterialDefault(); }
 }
 
 pub fn get_frame_time() -> f32 {

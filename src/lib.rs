@@ -6,6 +6,8 @@ pub mod settings;
 pub mod localization;
 pub mod graphics;
 pub mod camera;
+pub mod player;
+pub mod overworld;
 
 pub mod raylib;
 

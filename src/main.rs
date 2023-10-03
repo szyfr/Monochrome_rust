@@ -20,6 +20,7 @@ fn main() {
 	//* Raylib */
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
+	raylib::set_target_fps(gamestate.settings.screenFps);
 	
 	//* Graphics */
 	gamestate.fonts		= graphics::load_fonts();
@@ -45,16 +46,17 @@ fn main() {
 
 			raylib::end_3d_mode();
 
-			raylib::draw_text_pro(
-				gamestate.fonts["default"],
-				"Fuck!",
-				raylib_ffi::Vector2{x:0.5,y:5.0},
-				raylib_ffi::Vector2{x:0.0,y:0.0},
-				0.0,
-				16.0,
-				0.0,
-				raylib_ffi::colors::BLACK,
-			);
+			//raylib::draw_text_pro(
+			//	gamestate.fonts["default"],
+			//	"Fuck!",
+			//	raylib_ffi::Vector2{x:0.5,y:5.0},
+			//	raylib_ffi::Vector2{x:0.0,y:0.0},
+			//	0.0,
+			//	16.0,
+			//	0.0,
+			//	raylib_ffi::colors::BLACK,
+			//);
+			raylib::draw_fps(0,0);
 		}
 		raylib::end_drawing();
 	}
