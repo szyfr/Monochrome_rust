@@ -2,7 +2,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use monorust::{raylib, data, settings, localization, graphics, camera};
+use monorust::{raylib, data, settings, localization, graphics, camera, player, overworld};
 
 
 //= Main
@@ -13,7 +13,9 @@ fn main() {
 		fonts			: HashMap::new(),
 		textures		: HashMap::new(),
 		models			: HashMap::new(),
+		animations		: graphics::load_animations(),
 		camera			: camera::init(),
+		player			: player::init(),
 	};
 	gamestate.localization = localization::load(&gamestate.settings.language);
 
@@ -26,6 +28,7 @@ fn main() {
 	gamestate.fonts		= graphics::load_fonts();
 	gamestate.textures	= graphics::load_textures();
 	gamestate.models	= graphics::load_models();
+	gamestate.player.unit.animator.textures = overworld::load_unit_textures("player_1.png");
 
 	//* Camera / Player */
 
@@ -43,6 +46,14 @@ fn main() {
 			raylib::begin_3d_mode(&gamestate.camera);
 
 			raylib::draw_grid(100, 1.0);
+
+			gamestate.player.unit = overworld::draw_unit(
+				&gamestate.animations,
+				//gamestate.models["unit"].meshes,
+				gamestate.models["unit"],
+				gamestate.player.unit,
+				gamestate.camera.rotation,
+			);
 
 			raylib::end_3d_mode();
 

@@ -4,6 +4,8 @@
 use std::collections::HashMap;
 use crate::settings;
 use crate::camera;
+use crate::player;
+use crate::overworld;
 
 
 //= Structs
@@ -15,6 +17,8 @@ pub struct Gamestate {
 	pub fonts		: HashMap<String, raylib_ffi::Font>,
 	pub textures	: HashMap<String, raylib_ffi::Texture>,
 	pub models		: HashMap<String, raylib_ffi::Model>,
+	pub animations	: HashMap<String, overworld::Animation>,
 
 	pub camera		: camera::Camera,
+	pub player		: player::Player,
 }

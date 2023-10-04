@@ -6,21 +6,21 @@
 
 
 //= Imports
-use crate::{overworld, data};
+use crate::overworld;
 
 
 //= Structures
 pub struct Player {
-	unit : overworld::Unit,
+	pub unit : overworld::Unit,
 
-	canMove : bool,
+	pub canMove : bool,
 }
 
 
 //= Procedures
-pub fn init( gamestate : &data::Gamestate ) -> Player {
+pub fn init() -> Player {
 	return Player {
-		unit:		overworld::create_unit(gamestate),
+		unit:		overworld::create_unit("player_1.png"),
 		canMove:	true,
 	}
 }

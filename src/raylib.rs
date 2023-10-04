@@ -63,6 +63,9 @@ pub fn init_window( gamestate : &data::Gamestate ) {
 pub fn close_window() {
 	unsafe { raylib_ffi::CloseWindow(); }
 }
+pub fn is_window_ready() -> bool {
+	unsafe { return raylib_ffi::IsWindowReady(); }
+}
 
 pub fn set_target_fps( fps : i32 ) {
 	unsafe { raylib_ffi::SetTargetFPS(fps); }
@@ -78,17 +81,53 @@ pub fn set_exit_key( key : raylib_ffi::enums::KeyboardKey ) {
 pub fn load_font( filename : &str ) -> raylib_ffi::Font {
 	unsafe { return raylib_ffi::LoadFont(raylib_ffi::rl_str!(filename)); }
 }
-
+pub fn load_image( filename : &str ) -> raylib_ffi::Image {
+	unsafe { return raylib_ffi::LoadImage(raylib_ffi::rl_str!(filename)); }
+}
+pub fn image_from_image( image : raylib_ffi::Image, rec : raylib_ffi::Rectangle ) -> raylib_ffi::Image {
+	unsafe { return raylib_ffi::ImageFromImage(image, rec); }
+}
+pub fn image_copy( image : raylib_ffi::Image ) -> raylib_ffi::Image {
+	unsafe { return raylib_ffi::ImageCopy(image); }
+}
+pub fn unload_image( image : raylib_ffi::Image ) {
+	unsafe { raylib_ffi::UnloadImage(image) }
+}
 pub fn load_texture( filename : &str ) -> raylib_ffi::Texture {
 	unsafe { return raylib_ffi::LoadTexture(raylib_ffi::rl_str!(filename)) }
+}
+pub fn load_texture_from_image( img : raylib_ffi::Image ) -> raylib_ffi::Texture {
+	unsafe { return raylib_ffi::LoadTextureFromImage(img); }
+}
+pub fn draw_texture( texture : raylib_ffi::Texture, posX : i32, posY : i32, tint : raylib_ffi::Color ) {
+	unsafe { raylib_ffi::DrawTexture(texture, posX, posY, tint) }
+}
+
+pub fn set_material_texture( material : &mut raylib_ffi::Material, mapType : raylib_ffi::enums::MaterialMapIndex, texture : raylib_ffi::Texture ) {
+	unsafe { raylib_ffi::SetMaterialTexture(material, mapType as i32, texture) }
 }
 
 pub fn load_model( filename : &str ) -> raylib_ffi::Model {
 	unsafe { return raylib_ffi::LoadModel(raylib_ffi::rl_str!(filename)) }
 }
 
+pub fn draw_mesh( mesh : *mut raylib_ffi::Mesh, material : &raylib_ffi::Material, transform : raylib_ffi::Matrix ) {
+	unsafe {
+		raylib_ffi::DrawMesh(*mesh, *material, transform);
+	}
+}
+pub fn draw_model( model : raylib_ffi::Model, position : raylib_ffi::Vector3, scale : f32, tint : raylib_ffi::Color ) {
+	unsafe { raylib_ffi::DrawModel(model, position, scale, tint); }
+}
+pub fn draw_model_ex( model : raylib_ffi::Model, position : raylib_ffi::Vector3, rotationAxis : raylib_ffi::Vector3, rotationAngle : f32, scale : raylib_ffi::Vector3, tint : raylib_ffi::Color ) {
+	unsafe { raylib_ffi::DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint); }
+}
+
 pub fn load_default_material() -> raylib_ffi::Material {
 	unsafe { return raylib_ffi::LoadMaterialDefault(); }
+}
+pub fn unload_material( material : raylib_ffi::Material ) {
+	unsafe { raylib_ffi::UnloadMaterial(material); }
 }
 
 pub fn get_frame_time() -> f32 {

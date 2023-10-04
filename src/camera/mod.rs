@@ -43,7 +43,7 @@ pub fn init() -> Camera {
 		camPosition:	Vector3 {x:0.5,y:7.0,z:5.5},
 		fovy:			70.0,
 
-		onPlayer:		false,
+		onPlayer:		true,
 	};
 }
 
@@ -52,10 +52,8 @@ pub fn update( gamestate : &data::Gamestate ) -> Camera {
 	let ft = raylib::get_frame_time();
 
 	//* Check if targetting a unit */
-	if !newCamera.onPlayer {
-		// TODO
-		//camera.position	= gamestate.world.units[camera.targetUnit] + Vector3{0.0,1.0,0.0};
-		//camera.target		= gamestate.world.units[camera.targetUnit] + Vector3{0.0,1.0,0.0};
+	if newCamera.onPlayer {
+		newCamera.position = math::add_v3(gamestate.player.unit.position, Vector3{x:0.0,y:1.0,z:0.0});
 	} else {
 		//* Update Position */
 		if !math::close_enough_v3(newCamera.position, newCamera.posTarget, 0.5) {
