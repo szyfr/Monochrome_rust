@@ -5,15 +5,14 @@
 #![allow(dead_code)]
 
 
-
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
 use raylib_ffi::Vector3;
-use crate::{raylib, utilities::debug};
+use crate::{raylib, utilities::{debug, math::close_enough_v3}};
 
 
 //= Enumerations
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
 	Null,
 	North,
@@ -56,8 +55,6 @@ pub struct Unit {
 	pub animator	: Animator,
 }
 pub struct Animator {
-	//mesh		: raylib_ffi::Mesh,
-	//pub material	: raylib_ffi::Material,
 	pub textures	: Vec<raylib_ffi::Texture>,
 
 	pub currentAnimation : String,
@@ -148,5 +145,60 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 		raylib_ffi::colors::WHITE,
 	);
 
+	return newUnit;
+}
+
+pub fn set_animation( unit : Unit, animation : String ) -> Unit {
+	let mut newUnit = unit;
+
+	if newUnit.animator.currentAnimation != animation {
+		newUnit.animator.counter = 0;
+		newUnit.animator.frame = 0;
+		newUnit.animator.currentAnimation = animation;
+	}
+
+	return newUnit;
+}
+
+pub fn move_unit( unit : Unit, direction : Direction ) -> Unit {
+	let mut newUnit = unit;
+	//print!("fuck\n");
+
+	if !close_enough_v3(newUnit.position, newUnit.posTarget, 0.05) { return newUnit; }
+	if newUnit.direction == Direction::Null { return newUnit; }
+
+	let mut newPos = newUnit.position;
+	
+	match direction {
+		Direction::North => newPos.z += -1.0,
+		Direction::South => newPos.z +=  1.0,
+		Direction::East  => newPos.x += -1.0,
+		Direction::West  => newPos.x +=  1.0,
+		_ => newPos = newUnit.position,
+	}
+
+	//TODO Tiles
+	let tile = true;
+	if !tile {
+		//newUnit = set_animation( newUnit, animStr );
+	}
+
+	//* Checking for even terrain */
+	//TODO This entire thing
+
+	//* Disallow movement over void */
+	//TODO
+
+	//* Check if Solid */
+	//TODO
+
+	//* Check for entity
+	// TODO
+
+	//* Change animation and move */
+	//animStr = "walk_".to_string() + &newUnit.direction.to_string();
+	//newUnit = set_animation( newUnit, animStr );
+
+	newUnit.posTarget = newPos;
 	return newUnit;
 }

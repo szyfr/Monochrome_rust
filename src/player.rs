@@ -50,7 +50,7 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 	//* Movement */
 	let ft = raylib::get_frame_time();
 
-	if math::close_enough_v3(newPlayer.unit.position, newPlayer.unit.posTarget, 0.05) {
+	if !math::close_enough_v3(newPlayer.unit.position, newPlayer.unit.posTarget, 0.05) {
 		let dir = math::get_direction_v3(newPlayer.unit.position, newPlayer.unit.posTarget);
 		newPlayer.unit.position = math::add_v3(newPlayer.unit.position, math::mul_v3(dir, MVSPEED * ft));
 	} else if newPlayer.canMove {
@@ -64,12 +64,89 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 		let right = settings::button_down("right", &gamestate.settings);
 
 		let curRot = gamestate.camera.rotation;
+		let mut dir = newPlayer.unit.direction;
 
-		// TODO Figure this out again
-		//if curRot < 45.0 && curRot > -45.0 {
-		//	newPlayer.unit.direction = Direction::North;
-		//	newpos.z -= 1.0;
-		//}
+		if (curRot > -45.0 && curRot <=  45.0) || (curRot > 315.0 && curRot <= 405.0) {
+			if up {
+				dir = Direction::North;
+				newpos.z -= 1.0;
+			}
+			if down {
+				dir = Direction::South;
+				newpos.z += 1.0;
+			}
+			if left {
+				dir = Direction::East;
+				newpos.x -= 1.0;
+			}
+			if right {
+				dir = Direction::West;
+				newpos.x += 1.0;
+			}
+		}
+		if (curRot >  45.0 && curRot <= 135.0) || (curRot > 405.0 && curRot <= 495.0) {
+			if up {
+				dir = Direction::West;
+				newpos.x += 1.0;
+			}
+			if down {
+				dir = Direction::East;
+				newpos.x -= 1.0;
+			}
+			if left {
+				dir = Direction::North;
+				newpos.z -= 1.0;
+			}
+			if right {
+				dir = Direction::South;
+				newpos.z += 1.0;
+			}
+		}
+		if curRot > 135.0 && curRot <= 225.0 {
+			if up {
+				dir = Direction::South;
+				newpos.z += 1.0;
+			}
+			if down {
+				dir = Direction::North;
+				newpos.z -= 1.0;
+			}
+			if left {
+				dir = Direction::West;
+				newpos.x += 1.0;
+			}
+			if right {
+				dir = Direction::East;
+				newpos.x -= 1.0;
+			}
+		}
+		if (curRot > 225.0 && curRot <= 315.0) || (curRot > -135.0 && curRot <= -45.0) {
+			if up {
+				dir = Direction::East;
+				newpos.x -= 1.0;
+			}
+			if down {
+				dir = Direction::West;
+				newpos.x += 1.0;
+			}
+			if left {
+				dir = Direction::South;
+				newpos.z += 1.0;
+			}
+			if right {
+				dir = Direction::North;
+				newpos.z -= 1.0;
+			}
+		}
+
+		//* If the player is moving */
+		newPlayer.unit.direction = dir;
+		if !math::equal_v3(newPlayer.unit.posTarget, newpos) {
+			newPlayer.unit = overworld::set_animation( newPlayer.unit, "walk_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() );
+			newPlayer.unit = overworld::move_unit(newPlayer.unit, dir);
+		} else {
+			if newPlayer.unit.direction != Direction::Null { newPlayer.unit = overworld::set_animation( newPlayer.unit, "idle_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() ); }
+		}
 	}
 
 	return newPlayer;

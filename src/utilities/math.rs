@@ -6,6 +6,8 @@
 //= Imports
 use raylib_ffi::Vector3;
 
+use crate::{overworld::Direction, camera};
+
 
 //= Constants
 const XDIST : f32 = 0.0;
@@ -78,4 +80,53 @@ pub fn add_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 }
 pub fn sub_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	return Vector3 { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z };
+}
+
+pub fn equal_v3( v1 : Vector3, v2 : Vector3 ) -> bool {
+	if v1.x != v2.x { return false; }
+	if v1.y != v2.y { return false; }
+	if v1.z != v2.z { return false; }
+
+	return true;
+}
+
+pub fn get_relative_direction_dir( camera : &camera::Camera, direction : Direction ) -> Direction {
+	if (camera.rotation > -45.0 && camera.rotation <=  45.0) || (camera.rotation > 315.0 && camera.rotation <= 405.0) {
+		match direction {
+			Direction::North => return Direction::North,
+			Direction::South => return Direction::South,
+			Direction::East  => return Direction::East,
+			Direction::West  => return Direction::West,
+			_ => return Direction::Null,
+		}
+	}
+	if (camera.rotation >  45.0 && camera.rotation <= 135.0) || (camera.rotation > 405.0 && camera.rotation <= 495.0) {
+		match direction {
+			Direction::North => return Direction::East,
+			Direction::South => return Direction::West,
+			Direction::East  => return Direction::South,
+			Direction::West  => return Direction::North,
+			_ => return Direction::Null,
+		}
+	}
+	if camera.rotation > 135.0 && camera.rotation <= 225.0 {
+		match direction {
+			Direction::North => return Direction::South,
+			Direction::South => return Direction::North,
+			Direction::East  => return Direction::West,
+			Direction::West  => return Direction::East,
+			_ => return Direction::Null,
+		}
+	}
+	if (camera.rotation > 225.0 && camera.rotation <= 315.0) || (camera.rotation > -135.0 && camera.rotation <= -45.0) {
+		match direction {
+			Direction::North => return Direction::West,
+			Direction::South => return Direction::East,
+			Direction::East  => return Direction::North,
+			Direction::West  => return Direction::South,
+			_ => return Direction::Null,
+		}
+	}
+
+	return Direction::Null;
 }

@@ -130,11 +130,11 @@ fn generate_settings() -> Settings {
 	
 	newSettings.keybindings.insert("up".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 87 });
 	newSettings.keybindings.insert("down".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 83 });
-	newSettings.keybindings.insert("left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 67 });
+	newSettings.keybindings.insert("left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 65 });
 	newSettings.keybindings.insert("right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 68 });
 	newSettings.keybindings.insert("rotate_left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 81 });
 	newSettings.keybindings.insert("rotate_right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
-	newSettings.keybindings.insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 65 });
+	newSettings.keybindings.insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 32 });
 
 	save_file(&newSettings);
 
