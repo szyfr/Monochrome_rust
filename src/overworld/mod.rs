@@ -7,12 +7,13 @@
 
 
 //= Imports
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr, fmt::Display};
 use raylib_ffi::Vector3;
 use crate::{raylib, utilities::debug};
 
 
 //= Enumerations
+#[derive(Copy, Clone)]
 pub enum Direction {
 	Null,
 	North,
@@ -20,7 +21,30 @@ pub enum Direction {
 	East,
 	West,
 }
-
+impl FromStr for Direction {
+	type Err = ();
+	fn from_str( input : &str ) -> Result<Direction, Self::Err> {
+		match input {
+			"null"	=> Ok(Direction::Null),
+			"north"	=> Ok(Direction::North),
+			"south"	=> Ok(Direction::South),
+			"east"	=> Ok(Direction::East),
+			"west"	=> Ok(Direction::West),
+			_				=> Err(()),
+		}
+	}
+}
+impl Display for Direction {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			Direction::Null		=> write!(f, "null"),
+			Direction::North	=> write!(f, "north"),
+			Direction::South	=> write!(f, "south"),
+			Direction::East		=> write!(f, "east"),
+			Direction::West		=> write!(f, "west"),
+		}
+	}
+}
 
 //= Structures
 pub struct Unit {

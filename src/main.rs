@@ -37,6 +37,7 @@ fn main() {
 	while !raylib::window_should_close() {
 		//* Update */
 		gamestate.camera = camera::update(&gamestate);
+		gamestate.player = player::controls(&gamestate);
 
 		//* Draw */
 		raylib::begin_drawing();
@@ -49,7 +50,6 @@ fn main() {
 
 			gamestate.player.unit = overworld::draw_unit(
 				&gamestate.animations,
-				//gamestate.models["unit"].meshes,
 				gamestate.models["unit"],
 				gamestate.player.unit,
 				gamestate.camera.rotation,
