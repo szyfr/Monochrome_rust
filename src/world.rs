@@ -19,11 +19,11 @@ const HEIGHT : f32 = 10.0;
 
 //= Structures
 pub struct Tile {
-	model : String,
+	pub model : String,
 
-	solid : [bool;4],
-	water : bool,
-	trnsp : bool,
+	pub solid : [bool;4],
+	pub water : bool,
+	pub trnsp : bool,
 }
 
 
@@ -62,14 +62,14 @@ pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 	let mut output = [false, false, false, false];
 
 	for i in array {
-		match i.to_string().as_str() {
+		match i.as_str().unwrap() {
 			"all"	=> output = [true, true, true, true],
 			"none"	=> output = [false, false, false, false],
 			"north"	=> output[0] = true,
 			"south" => output[2] = true,
 			"east"	=> output[1] = true,
 			"west"	=> output[3] = true,
-			_		=> output = [false, false, false, false],
+			_		=> return output,
 		}
 	}
 

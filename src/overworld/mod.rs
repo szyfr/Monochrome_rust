@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
 use raylib_ffi::Vector3;
-use crate::{raylib, utilities::{debug, math::close_enough_v3}};
+use crate::{raylib, utilities::{debug, math::close_enough_v3}, data};
 
 
 //= Enumerations
@@ -138,7 +138,7 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 	//* Draw */
 	raylib::draw_model_ex(
 		model,
-		newUnit.position,
+		raylib_ffi::Vector3{x:newUnit.position.x, y: newUnit.position.y/2.0, z: newUnit.position.z},
 		raylib_ffi::Vector3{x:0.0,y:1.0,z:0.0},
 		-rotation,
 		raylib_ffi::Vector3{x:1.0,y:1.0,z:1.0},
@@ -160,7 +160,7 @@ pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 	return newUnit;
 }
 
-pub fn move_unit( unit : Unit, direction : Direction ) -> Unit {
+pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Direction ) -> Unit {
 	let mut newUnit = unit;
 
 	if !close_enough_v3(newUnit.position, newUnit.posTarget, 0.05) { return newUnit; }
@@ -176,28 +176,46 @@ pub fn move_unit( unit : Unit, direction : Direction ) -> Unit {
 		_ => newPos = newUnit.position,
 	}
 
-	//TODO Tiles
-	let tile = true;
-	if !tile {
-		//newUnit = set_animation( newUnit, animStr );
+	//* Check Tiles existance */
+	let tileExists = gamestate.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
+	if !tileExists {
+		//TODO If the reverse movement would not be allowed, jump
+		//* Checking for tile up */
+		let tileExistsUp = gamestate.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
+		let mut tileUpColli = false;
+		if tileExistsUp {
+			let tileUp = &gamestate.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
+			tileUpColli = !check_collision(direction, tileUp.solid);
+			if tileUpColli { newPos.y += 1.0; }
+		}
+		//* Checking for tile down */
+		let tileExistsDw = gamestate.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
+		let mut tileDwColli = false;
+		if tileExistsDw {
+			let tileDw = &gamestate.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
+			tileDwColli = !check_collision(direction, tileDw.solid);
+			if tileDwColli { newPos.y -= 1.0; }
+		}
+		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) { return newUnit; }
 	}
-
-	//* Checking for even terrain */
-	//TODO This entire thing
-
-	//* Disallow movement over void */
-	//TODO
+	let tile = &gamestate.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
 
 	//* Check if Solid */
-	//TODO
+	if check_collision(direction, tile.solid) { return newUnit; }
 
-	//* Check for entity
+	//* Check for entities
 	// TODO
-
-	//* Change animation and move */
-	//animStr = "walk_".to_string() + &newUnit.direction.to_string();
-	//newUnit = set_animation( newUnit, animStr );
 
 	newUnit.posTarget = newPos;
 	return newUnit;
+}
+
+fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {
+	match direction {
+		Direction::North => return collisionInfo[0],
+		Direction::South => return collisionInfo[2],
+		Direction::East  => return collisionInfo[3],
+		Direction::West  => return collisionInfo[1],
+		_ => return true,
+	}
 }

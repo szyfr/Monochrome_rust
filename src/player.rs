@@ -23,10 +23,14 @@ pub struct Player {
 
 //= Procedures
 pub fn init() -> Player {
-	return Player {
+	let mut player = Player{
 		unit:		overworld::create_unit("player_1.png"),
 		canMove:	true,
-	}
+	};
+	player.unit.position = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
+	player.unit.posTarget = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
+
+	return player;
 }
 
 pub fn controls( gamestate : &data::Gamestate ) -> Player {
@@ -143,7 +147,7 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 		newPlayer.unit.direction = dir;
 		if !math::equal_v3(newPlayer.unit.posTarget, newpos) {
 			newPlayer.unit = overworld::set_animation( newPlayer.unit, "walk_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() );
-			newPlayer.unit = overworld::move_unit(newPlayer.unit, dir);
+			newPlayer.unit = overworld::move_unit(gamestate, newPlayer.unit, dir);
 		} else {
 			if newPlayer.unit.direction != Direction::Null { newPlayer.unit = overworld::set_animation( newPlayer.unit, "idle_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() ); }
 		}

@@ -54,6 +54,7 @@ pub fn update( gamestate : &data::Gamestate ) -> Camera {
 	//* Check if targetting a unit */
 	if newCamera.onPlayer {
 		newCamera.position = math::add_v3(gamestate.player.unit.position, Vector3{x:0.0,y:1.0,z:0.0});
+		newCamera.position.y = newCamera.position.y / 2.0;
 	} else {
 		//* Update Position */
 		if !math::close_enough_v3(newCamera.position, newCamera.posTarget, 0.5) {
