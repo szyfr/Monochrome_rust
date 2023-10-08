@@ -162,7 +162,6 @@ pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 
 pub fn move_unit( unit : Unit, direction : Direction ) -> Unit {
 	let mut newUnit = unit;
-	//print!("fuck\n");
 
 	if !close_enough_v3(newUnit.position, newUnit.posTarget, 0.05) { return newUnit; }
 	if newUnit.direction == Direction::Null { return newUnit; }

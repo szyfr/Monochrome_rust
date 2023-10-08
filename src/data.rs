@@ -1,11 +1,16 @@
 
 
+//= Allow
+#![allow(non_snake_case)]
+
+
 //= Imports
 use std::collections::HashMap;
 use crate::settings;
 use crate::camera;
 use crate::player;
 use crate::overworld;
+use crate::world;
 
 
 //= Structs
@@ -18,6 +23,9 @@ pub struct Gamestate {
 	pub textures	: HashMap<String, raylib_ffi::Texture>,
 	pub models		: HashMap<String, raylib_ffi::Model>,
 	pub animations	: HashMap<String, overworld::Animation>,
+
+	pub currentMap	: HashMap<[i32;3], world::Tile>,
+//	pub unitMap		: Vec<overworld::Unit>,
 
 	pub camera		: camera::Camera,
 	pub player		: player::Player,

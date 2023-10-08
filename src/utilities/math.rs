@@ -82,6 +82,14 @@ pub fn sub_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	return Vector3 { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z };
 }
 
+pub fn round_v3( vector : Vector3 ) -> Vector3 {
+	return Vector3{
+		x: vector.x.round(),
+		y: vector.y.round(),
+		z: vector.z.round(),
+	};
+}
+
 pub fn equal_v3( v1 : Vector3, v2 : Vector3 ) -> bool {
 	if v1.x != v2.x { return false; }
 	if v1.y != v2.y { return false; }

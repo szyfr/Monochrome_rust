@@ -2,7 +2,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use monorust::{raylib, data, settings, localization, graphics, camera, player, overworld};
+use monorust::{raylib, data, settings, localization, graphics, camera, player, overworld, world};
 
 
 //= Main
@@ -14,6 +14,8 @@ fn main() {
 		textures		: HashMap::new(),
 		models			: HashMap::new(),
 		animations		: graphics::load_animations(),
+		currentMap		: HashMap::new(),
+	//	unitMap			: Vec::new(),
 		camera			: camera::init(),
 		player			: player::init(),
 	};
@@ -33,6 +35,7 @@ fn main() {
 	//* Camera / Player */
 
 	// ! TEMP
+	gamestate.currentMap = world::load_world("data/world/test.json".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
@@ -48,12 +51,14 @@ fn main() {
 
 			raylib::draw_grid(100, 1.0);
 
-			gamestate.player.unit = overworld::draw_unit(
-				&gamestate.animations,
-				gamestate.models["unit"],
-				gamestate.player.unit,
-				gamestate.camera.rotation,
-			);
+			gamestate = world::draw_world(gamestate);
+
+			//gamestate.player.unit = overworld::draw_unit(
+			//	&gamestate.animations,
+			//	gamestate.models["unit"],
+			//	gamestate.player.unit,
+			//	gamestate.camera.rotation,
+			//);
 
 			raylib::end_3d_mode();
 

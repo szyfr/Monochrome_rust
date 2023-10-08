@@ -61,7 +61,7 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 		let up	= settings::button_down("up", &gamestate.settings);
 		let down	= settings::button_down("down", &gamestate.settings);
 		let left	= settings::button_down("left", &gamestate.settings);
-		let right = settings::button_down("right", &gamestate.settings);
+		let right	= settings::button_down("right", &gamestate.settings);
 
 		let curRot = gamestate.camera.rotation;
 		let mut dir = newPlayer.unit.direction;
