@@ -35,7 +35,7 @@ fn main() {
 	//* Camera / Player */
 
 	// ! TEMP
-	gamestate.currentMap = world::load_world("data/world/test.json".to_string());
+	gamestate.currentMap = world::load_world("data/world/newbark.json".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
@@ -49,7 +49,7 @@ fn main() {
 
 			raylib::begin_3d_mode(&gamestate.camera);
 
-			raylib::draw_grid(100, 1.0);
+			//raylib::draw_grid(100, 1.0);
 
 			gamestate = world::draw_world(gamestate);
 
