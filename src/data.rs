@@ -6,6 +6,7 @@
 
 //= Imports
 use std::collections::HashMap;
+use crate::events;
 use crate::settings;
 use crate::camera;
 use crate::player;
@@ -25,7 +26,10 @@ pub struct Gamestate {
 	pub animations	: HashMap<String, overworld::Animation>,
 
 	pub currentMap	: HashMap<[i32;3], world::Tile>,
-	pub unitMap		: HashMap<String, overworld::Unit>,
+	pub unitMap		: [Option<overworld::Unit>;20],
+	pub triggerMap	: HashMap<[i32;3], String>,
+	pub eventList	: HashMap<String, events::Event>,
+	pub eventHandler: events::EventHandler,
 
 	pub camera		: camera::Camera,
 	pub player		: player::Player,

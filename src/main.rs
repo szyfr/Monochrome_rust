@@ -2,7 +2,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use monorust::{raylib, data, settings, localization, graphics, camera, player, overworld, world};
+use monorust::{raylib, data, settings, localization, graphics, camera, player, overworld, world, events};
 
 
 //= Main
@@ -15,7 +15,10 @@ fn main() {
 		models			: HashMap::new(),
 		animations		: graphics::load_animations(),
 		currentMap		: HashMap::new(),
-		unitMap			: HashMap::new(),
+		unitMap			: world::create_empty_unitmap(),
+		triggerMap		: HashMap::new(),
+		eventList		: HashMap::new(),
+		eventHandler	: events::create_eventhandler(),
 		camera			: camera::init(),
 		player			: player::init(),
 	};

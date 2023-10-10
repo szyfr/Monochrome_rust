@@ -6,8 +6,8 @@
 
 
 //= Imports
-use std::{collections::HashMap, fs::read_to_string, str::FromStr};
-use crate::{utilities::{debug, math}, data::Gamestate, overworld::{self, Unit}, raylib, events};
+use std::{collections::HashMap, fs::read_to_string, str::FromStr, mem::ManuallyDrop};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events};
 
 
 //= Constants
@@ -57,8 +57,9 @@ pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
 
 	return output;
 }
-pub fn load_entities( mapName : String ) -> HashMap<String, Unit> {
-	let mut output = HashMap::new();
+
+pub fn load_entities( mapName : String ) -> [Option<overworld::Unit>;20] {
+	let mut output = create_empty_unitmap();
 
 	//* Attempt to load entities file */
 	let fileResult_ent = read_to_string("data/world/".to_string() + &mapName + "/entities.json" );
@@ -69,38 +70,96 @@ pub fn load_entities( mapName : String ) -> HashMap<String, Unit> {
 
 	//* Convert to JSON and read */
 	let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
-	for i in jsonFile_ent["entities"].as_array().unwrap() {
-		let mut unit = overworld::create_unit(i["sprite"].as_str().unwrap());
+	//for i in jsonFile_ent["entities"].as_array().unwrap() {
+	let arr = jsonFile_ent["entities"].as_array().unwrap();
+	for i in 0..arr.len() {
+		let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
 
-		unit.direction = overworld::Direction::from_str(i["direction"].as_str().unwrap()).unwrap();
+		unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
 		unit.position = raylib_ffi::Vector3{
-			x: i["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
-			y: i["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
-			z: i["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
+			x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
+			y: arr[i]["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
+			z: arr[i]["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
 		};
 		unit.posTarget = unit.position;
 
-		for o in i["events"].as_array().unwrap() {
+		for o in arr[i]["events"].as_array().unwrap() {
 			let event = events::EntityEvent{
-				conditions: Vec::new(),
-				id: o["id"].as_str().unwrap().to_string(),
+				val: events::create_empty_conditions(),
+				key: o["id"].as_str().unwrap().to_string(),
 			};
-			for _e in o["conditions"].as_array().unwrap() {
-				//TODO Figure out conditions
-			}
-
-			unit.events.push(event);
+		//	for _e in o["conditions"].as_array().unwrap() {
+		//		//TODO Figure out conditions
+		//	}
+			unit.events[0] = Some(event);
 		}
 
-		for _o in i["conditions"].as_array().unwrap() {
+		for _o in arr[i]["conditions"].as_array().unwrap() {
 			//TODO Figure out conditions
 		}
 
-
-		output.insert(i["id"].as_str().unwrap().to_string(), unit);
+		output[i] = Some(unit);
+		//output.insert(i["id"].as_str().unwrap().to_string(), unit);
 	}
 
 	return output;
+}
+
+pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
+	let mut output = HashMap::new();
+
+	//* Attempt to load entities file */
+	let fileResult_evt = read_to_string("data/world/".to_string() + &mapName + "/events.json" );
+	if fileResult_evt.is_err() {
+		debug::log("[ERROR] - Failed to load map file.\n");
+		return output;
+	}
+
+	//* Convert to JSON and read */
+	let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
+	for i in jsonFile_evt["events"].as_array().unwrap() {
+		let mut event: events::Event = events::Event{ chain : Vec::new() };
+		for o in i["chain"].as_array().unwrap() {
+			let chain: events::EventChain;
+			match o.as_array().unwrap()[0].as_str().unwrap() {
+				"warp" => chain = events::EventChain{
+					warp: ManuallyDrop::new(events::WarpEvent{
+						entityID: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+						position: [
+							o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
+							o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
+							o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
+							],
+						direction: overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
+						doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
+					})
+				},
+				"text" => chain = events::EventChain{
+					text: ManuallyDrop::new(events::TextEvent{text: o.as_array().unwrap()[4].as_str().unwrap().to_string()})
+				},
+				_ => continue,
+			}
+			event.chain.push(chain);
+		}
+		output.insert(i["id"].as_str().unwrap().to_string(), event);
+	}
+
+	return output;
+}
+
+pub fn create_empty_unitmap() -> [Option<overworld::Unit>;20] {
+	return [
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+		None, None,
+	];
 }
 
 pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
@@ -172,6 +231,25 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
+				for i in newGamestate.unitMap.iter_mut() {
+					if i.is_none() { break; }
+					let clone = i.clone().expect("").copy_unit();
+					*i = Some(overworld::draw_unit(
+						&newGamestate.animations,
+						newGamestate.models["unit"],
+						clone,
+						newGamestate.camera.rotation,
+					),);
+				}
+				//for i in 0..newGamestate.unitMap.len() {
+				//	let clone = newGamestate.unitMap[i].expect("").copy_unit();
+				//	newGamestate.unitMap[i] = Some(overworld::draw_unit(
+				//		&newGamestate.animations,
+				//		newGamestate.models["unit"],
+				//		clone,
+				//		newGamestate.camera.rotation,
+				//	),);
+				//}
 				//let mut iter: HashMap<String, Unit> = HashMap::new();
 				//for i in &newGamestate.unitMap {
 				//	

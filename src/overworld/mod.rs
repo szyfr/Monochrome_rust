@@ -46,17 +46,52 @@ impl Display for Direction {
 }
 
 //= Structures
+#[derive(Clone)]
 pub struct Unit {
 	pub position	: Vector3,
 	pub posTarget	: Vector3,
 
 	pub direction	: Direction,
 
-	pub events		: Vec<events::EntityEvent>,
-	pub conditions	: Vec<events::Conditions>,
+	pub id			: String,
+	pub events		: [Option<events::EntityEvent>; 5],
+	pub conditions	: [Option<events::Condition>; 5],
 
 	pub animator	: Animator,
 }
+impl Unit {
+	pub fn copy_unit( &self ) -> Unit {
+		let mut output = Unit{
+			position: self.position,
+			posTarget: self.posTarget,
+			direction: self.direction,
+			id: self.id.to_string(),
+			events: events::create_empty_entityevents(),
+			conditions: events::create_empty_conditions(),
+			animator: Animator{
+				textures: Vec::new(),
+				currentAnimation: self.animator.currentAnimation.to_string(),
+				frame: self.animator.frame,
+				counter: self.animator.counter,
+			}
+		};
+		for i in 0..5 {
+			output.events[i] = Some(events::EntityEvent{
+				val: self.events[i].clone().expect("").val,
+				key: self.events[i].clone().expect("").key,
+			});
+			output.conditions[i] = Some(events::Condition{
+				val: self.conditions[i].clone().expect("").val,
+				key: self.conditions[i].clone().expect("").key,
+			});
+		}
+		for i in 0..self.animator.textures.len() {
+			output.animator.textures.push(self.animator.textures[i]);
+		}
+		return output;
+	}
+}
+#[derive(Clone)]
 pub struct Animator {
 	pub textures	: Vec<raylib_ffi::Texture>,
 
@@ -80,8 +115,9 @@ pub fn create_unit( filename : &str ) -> Unit {
 		position:	Vector3{x:0.0,y:0.0,z:0.0},
 		posTarget:	Vector3{x:0.0,y:0.0,z:0.0},
 		direction:	Direction::South,
-		events:		Vec::new(),
-		conditions:	Vec::new(),
+		id:			"".to_string(),
+		events:		events::create_empty_entityevents(),
+		conditions:	events::create_empty_conditions(),
 		animator:	Animator{
 			textures:	textures,
 			currentAnimation: "walk_south".to_string(),
@@ -150,32 +186,22 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 	return newUnit;
 }
 
-//pub fn copy_unit( unit : &Unit ) -> Unit {
-//	let mut newUnit = Unit{
-//		position:	unit.position,
-//		posTarget:	unit.posTarget,
-//		direction:	unit.direction,
-//		events:		Vec::new(),
-//		conditions:	Vec::new(),
-//		animator:	Animator {
-//			textures: Vec::new(),
-//			currentAnimation: unit.animator.currentAnimation.to_string(),
-//			frame: unit.animator.frame,
-//			counter: unit.animator.counter,
-//		},
-//	};
-//	for i in &unit.events {
-//		newUnit.events.push(*i);
-//	}
-//	for i in &unit.conditions {
-//		newUnit.conditions.push(*i);
-//	}
-//	for i in &unit.animator.textures {
-//		newUnit.animator.textures.push(*i);
-//	}
-//
-//	return newUnit;
-//}
+pub fn empty() -> Unit {
+	return Unit {
+		position:	Vector3{x:0.0,y:0.0,z:0.0},
+		posTarget:	Vector3{x:0.0,y:0.0,z:0.0},
+		direction:	Direction::South,
+		id:			"".to_string(),
+		events:		events::create_empty_entityevents(),
+		conditions:	events::create_empty_conditions(),
+		animator:	Animator{
+			textures:	Vec::new(),
+			currentAnimation: "walk_south".to_string(),
+			frame: 		0,
+			counter: 	0,
+		},
+	};
+}
 
 pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 	let mut newUnit = unit;

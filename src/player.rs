@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Unit, Animator, Direction}, data, raylib, utilities::math, settings};
+use crate::{overworld::{self, Unit, Animator, Direction}, data, raylib, utilities::math, settings, events};
 
 
 //= Constants
@@ -40,8 +40,9 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 			position:	gamestate.player.unit.position,
 			posTarget:	gamestate.player.unit.posTarget,
 			direction:	gamestate.player.unit.direction,
-			events:		Vec::new(),
-			conditions:	Vec::new(),
+			id:			"player".to_string(),
+			events:		events::create_empty_entityevents(),
+			conditions:	events::create_empty_conditions(),
 			animator:	Animator {
 				textures: Vec::new(),
 				currentAnimation: gamestate.player.unit.animator.currentAnimation.to_string(),
