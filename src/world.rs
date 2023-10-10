@@ -6,8 +6,8 @@
 
 
 //= Imports
-use std::{collections::HashMap, fs::read_to_string};
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib};
+use std::{collections::HashMap, fs::read_to_string, str::FromStr};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld::{self, Unit}, raylib, events};
 
 
 //= Constants
@@ -31,16 +31,16 @@ pub struct Tile {
 pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
 	let mut output = HashMap::new();
 
-	//* Attempt to load file */
-	let fileResult = read_to_string(mapName);
-	if fileResult.is_err() {
+	//* Attempt to load map file */
+	let fileResult_map = read_to_string("data/world/".to_string() + &mapName + "/map.json" );
+	if fileResult_map.is_err() {
 		debug::log("[ERROR] - Failed to load map file.\n");
 		return output;
 	}
 
 	//* Convert to JSON and read */
-	let jsonFile: serde_json::Value = serde_json::from_str(&fileResult.unwrap()).unwrap();
-	for i in jsonFile["tiles"].as_array().unwrap() {
+	let jsonFile_map: serde_json::Value = serde_json::from_str(&fileResult_map.unwrap()).unwrap();
+	for i in jsonFile_map["tiles"].as_array().unwrap() {
 		let tile = Tile {
 			model: i["tile"].as_str().unwrap().to_string(),
 			solid: solid_tag_to_bool(i["tags"].as_array().unwrap()[0].as_array().unwrap()),
@@ -53,6 +53,51 @@ pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
 			i["position"].as_array().unwrap()[2].as_f64().unwrap() as i32,
 		];
 		output.insert(position, tile);
+	}
+
+	return output;
+}
+pub fn load_entities( mapName : String ) -> HashMap<String, Unit> {
+	let mut output = HashMap::new();
+
+	//* Attempt to load entities file */
+	let fileResult_ent = read_to_string("data/world/".to_string() + &mapName + "/entities.json" );
+	if fileResult_ent.is_err() {
+		debug::log("[ERROR] - Failed to load map file.\n");
+		return output;
+	}
+
+	//* Convert to JSON and read */
+	let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
+	for i in jsonFile_ent["entities"].as_array().unwrap() {
+		let mut unit = overworld::create_unit(i["sprite"].as_str().unwrap());
+
+		unit.direction = overworld::Direction::from_str(i["direction"].as_str().unwrap()).unwrap();
+		unit.position = raylib_ffi::Vector3{
+			x: i["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
+			y: i["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
+			z: i["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
+		};
+		unit.posTarget = unit.position;
+
+		for o in i["events"].as_array().unwrap() {
+			let event = events::EntityEvent{
+				conditions: Vec::new(),
+				id: o["id"].as_str().unwrap().to_string(),
+			};
+			for _e in o["conditions"].as_array().unwrap() {
+				//TODO Figure out conditions
+			}
+
+			unit.events.push(event);
+		}
+
+		for _o in i["conditions"].as_array().unwrap() {
+			//TODO Figure out conditions
+		}
+
+
+		output.insert(i["id"].as_str().unwrap().to_string(), unit);
 	}
 
 	return output;
@@ -127,7 +172,42 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				// TODO
+				//let mut iter: HashMap<String, Unit> = HashMap::new();
+				//for i in &newGamestate.unitMap {
+				//	
+				//}
+				//let iter = newGamestate.unitMap.
+				//for (string, unit) in gamestate.unitMap.iter() {
+				//	let v3 = raylib_ffi::Vector3{x: x as f32,y: y as f32,z: z as f32};
+				//	if math::equal_v3(unit.position, v3) {
+				//		let key = string.to_string();
+				//		newGamestate.unitMap.insert(
+				//			key, 
+				//			overworld::draw_unit(
+				//				&newGamestate.animations,
+				//				newGamestate.models["unit"],
+				//				overworld::copy_unit(unit),
+				//				newGamestate.camera.rotation,
+				//			),
+				//		);
+				//	}
+				//}
+				//let iter = &mut newGamestate.unitMap;
+				//for (key, value) in &*iter {
+				//	let v3 = raylib_ffi::Vector3{x: x as f32,y: y as f32,z: z as f32};
+				//	if math::equal_v3(value.position, v3) {
+				//		let key = key.to_string();
+				//		newGamestate.unitMap.insert(
+				//			key, 
+				//			overworld::draw_unit(
+				//				&newGamestate.animations,
+				//				newGamestate.models["unit"],
+				//				newGamestate.unitMap.get(&key).unwrap().clone(),
+				//				newGamestate.camera.rotation,
+				//			),
+				//		);
+				//	}
+				//}
 			}
 			if !flip	{ x += 1; }
 			else		{ x -= 1; }

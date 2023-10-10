@@ -25,8 +25,11 @@ pub struct Gamestate {
 	pub animations	: HashMap<String, overworld::Animation>,
 
 	pub currentMap	: HashMap<[i32;3], world::Tile>,
-//	pub unitMap		: Vec<overworld::Unit>,
+	pub unitMap		: HashMap<String, overworld::Unit>,
 
 	pub camera		: camera::Camera,
 	pub player		: player::Player,
 }
+
+
+//= Procedures

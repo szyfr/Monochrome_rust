@@ -24,7 +24,7 @@ pub struct Player {
 //= Procedures
 pub fn init() -> Player {
 	let mut player = Player{
-		unit:		overworld::create_unit("player_1.png"),
+		unit:		overworld::create_unit("player_1"),
 		canMove:	true,
 	};
 	player.unit.position = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
@@ -37,10 +37,12 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 	//! Temporary until I implemant copy
 	let mut newPlayer = Player {
 		unit: Unit {
-			position: gamestate.player.unit.position,
-			posTarget: gamestate.player.unit.posTarget,
-			direction: gamestate.player.unit.direction,
-			animator: Animator {
+			position:	gamestate.player.unit.position,
+			posTarget:	gamestate.player.unit.posTarget,
+			direction:	gamestate.player.unit.direction,
+			events:		Vec::new(),
+			conditions:	Vec::new(),
+			animator:	Animator {
 				textures: Vec::new(),
 				currentAnimation: gamestate.player.unit.animator.currentAnimation.to_string(),
 				frame: gamestate.player.unit.animator.frame,

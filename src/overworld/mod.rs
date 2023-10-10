@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
 use raylib_ffi::Vector3;
-use crate::{raylib, utilities::{debug, math::close_enough_v3}, data};
+use crate::{raylib, utilities::{debug, math::close_enough_v3}, data, events};
 
 
 //= Enumerations
@@ -52,6 +52,9 @@ pub struct Unit {
 
 	pub direction	: Direction,
 
+	pub events		: Vec<events::EntityEvent>,
+	pub conditions	: Vec<events::Conditions>,
+
 	pub animator	: Animator,
 }
 pub struct Animator {
@@ -77,9 +80,9 @@ pub fn create_unit( filename : &str ) -> Unit {
 		position:	Vector3{x:0.0,y:0.0,z:0.0},
 		posTarget:	Vector3{x:0.0,y:0.0,z:0.0},
 		direction:	Direction::South,
+		events:		Vec::new(),
+		conditions:	Vec::new(),
 		animator:	Animator{
-			//mesh:		*gamestate.models["unit"].meshes,
-			//material:	raylib::load_default_material(),
 			textures:	textures,
 			currentAnimation: "walk_south".to_string(),
 			frame: 		0,
@@ -90,8 +93,7 @@ pub fn create_unit( filename : &str ) -> Unit {
 
 pub fn load_unit_textures( filename : &str ) -> Vec<raylib_ffi::Texture> {
 	//* Create full path */
-	let mut fullPath = "data/sprites/overworld/".to_string();
-	fullPath.push_str(filename);
+	let fullPath = "data/sprites/overworld/".to_string() + filename + ".png";
 
 	//* Load image */
 	let img = raylib::load_image(&fullPath);
@@ -147,6 +149,33 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 
 	return newUnit;
 }
+
+//pub fn copy_unit( unit : &Unit ) -> Unit {
+//	let mut newUnit = Unit{
+//		position:	unit.position,
+//		posTarget:	unit.posTarget,
+//		direction:	unit.direction,
+//		events:		Vec::new(),
+//		conditions:	Vec::new(),
+//		animator:	Animator {
+//			textures: Vec::new(),
+//			currentAnimation: unit.animator.currentAnimation.to_string(),
+//			frame: unit.animator.frame,
+//			counter: unit.animator.counter,
+//		},
+//	};
+//	for i in &unit.events {
+//		newUnit.events.push(*i);
+//	}
+//	for i in &unit.conditions {
+//		newUnit.conditions.push(*i);
+//	}
+//	for i in &unit.animator.textures {
+//		newUnit.animator.textures.push(*i);
+//	}
+//
+//	return newUnit;
+//}
 
 pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 	let mut newUnit = unit;

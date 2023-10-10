@@ -1,0 +1,15 @@
+{
+	"entities":[
+		{
+			"id":"TEST",
+			"location": [12,0,12],
+			"sprite":"player_1",
+			"movement":"random",
+			"direction":"south",
+			"events":[
+				{ "conditions":[], "id":"test" }
+			],
+			"conditions":[]
+		}
+	]
+}

@@ -15,7 +15,7 @@ fn main() {
 		models			: HashMap::new(),
 		animations		: graphics::load_animations(),
 		currentMap		: HashMap::new(),
-	//	unitMap			: Vec::new(),
+		unitMap			: HashMap::new(),
 		camera			: camera::init(),
 		player			: player::init(),
 	};
@@ -30,12 +30,13 @@ fn main() {
 	gamestate.fonts		= graphics::load_fonts();
 	gamestate.textures	= graphics::load_textures();
 	gamestate.models	= graphics::load_models();
-	gamestate.player.unit.animator.textures = overworld::load_unit_textures("player_1.png");
+	gamestate.player.unit.animator.textures = overworld::load_unit_textures("player_1");
 
 	//* Camera / Player */
 
 	// ! TEMP
-	gamestate.currentMap = world::load_world("data/world/newbark.json".to_string());
+	gamestate.currentMap = world::load_world("newbark".to_string());
+	gamestate.unitMap = world::load_entities("newbark".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
