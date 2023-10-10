@@ -76,10 +76,14 @@ impl Unit {
 			}
 		};
 		for i in 0..5 {
+			if self.events[i].is_none() { break; }
 			output.events[i] = Some(events::EntityEvent{
 				val: self.events[i].clone().expect("").val,
 				key: self.events[i].clone().expect("").key,
 			});
+		}
+		for i in 0..5 {
+			if self.conditions[i].is_none() { break; }
 			output.conditions[i] = Some(events::Condition{
 				val: self.conditions[i].clone().expect("").val,
 				key: self.conditions[i].clone().expect("").key,

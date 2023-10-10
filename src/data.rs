@@ -27,6 +27,7 @@ pub struct Gamestate {
 
 	pub currentMap	: HashMap<[i32;3], world::Tile>,
 	pub unitMap		: [Option<overworld::Unit>;20],
+	pub unitTest : HashMap<String, overworld::Unit>,
 	pub triggerMap	: HashMap<[i32;3], String>,
 	pub eventList	: HashMap<String, events::Event>,
 	pub eventHandler: events::EventHandler,

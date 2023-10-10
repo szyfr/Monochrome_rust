@@ -16,6 +16,7 @@ fn main() {
 		animations		: graphics::load_animations(),
 		currentMap		: HashMap::new(),
 		unitMap			: world::create_empty_unitmap(),
+		unitTest: HashMap::new(),
 		triggerMap		: HashMap::new(),
 		eventList		: HashMap::new(),
 		eventHandler	: events::create_eventhandler(),
@@ -40,6 +41,7 @@ fn main() {
 	// ! TEMP
 	gamestate.currentMap = world::load_world("newbark".to_string());
 	gamestate.unitMap = world::load_entities("newbark".to_string());
+	gamestate.unitTest = world::load_entities_test("newbark".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
