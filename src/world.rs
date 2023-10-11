@@ -11,13 +11,17 @@ use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events
 
 
 //= Constants
-const OFFSET : f32 = 10.0;
-const DEPTH  : f32 = 20.0;
+/// Render width (x)
 const WIDTH  : f32 = 20.0;
+/// Render height (y)
 const HEIGHT : f32 = 10.0;
+/// Render depth (z)
+const DEPTH  : f32 = 20.0;
 
 
 //= Structures
+
+/// Tile storage structure
 pub struct Tile {
 	pub model : String,
 
@@ -28,6 +32,8 @@ pub struct Tile {
 
 
 //= Procedures
+
+/// Load tile data from input file to Hashmap indexed by their position.
 pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
 	let mut output = HashMap::new();
 
@@ -58,54 +64,8 @@ pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
 	return output;
 }
 
-pub fn load_entities( mapName : String ) -> [Option<overworld::Unit>;20] {
-	let mut output = create_empty_unitmap();
-
-	//* Attempt to load entities file */
-	let fileResult_ent = read_to_string("data/world/".to_string() + &mapName + "/entities.json" );
-	if fileResult_ent.is_err() {
-		debug::log("[ERROR] - Failed to load map file.\n");
-		return output;
-	}
-
-	//* Convert to JSON and read */
-	let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
-	//for i in jsonFile_ent["entities"].as_array().unwrap() {
-	let arr = jsonFile_ent["entities"].as_array().unwrap();
-	for i in 0..arr.len() {
-		let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
-
-		unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
-		unit.position = raylib_ffi::Vector3{
-			x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
-			y: arr[i]["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
-			z: arr[i]["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
-		};
-		unit.posTarget = unit.position;
-
-		for o in arr[i]["events"].as_array().unwrap() {
-			let event = events::EntityEvent{
-				val: events::create_empty_conditions(),
-				key: o["id"].as_str().unwrap().to_string(),
-			};
-		//	for _e in o["conditions"].as_array().unwrap() {
-		//		//TODO Figure out conditions
-		//	}
-			unit.events[0] = Some(event);
-		}
-
-		for _o in arr[i]["conditions"].as_array().unwrap() {
-			//TODO Figure out conditions
-		}
-
-		output[i] = Some(unit);
-		//output.insert(i["id"].as_str().unwrap().to_string(), unit);
-	}
-
-	return output;
-}
-
-pub fn load_entities_test( mapName : String ) -> HashMap<String, overworld::Unit> {
+/// Loads entity data from input file to Hashmap indexed by their ID.
+pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
 	let mut output = HashMap::new();
 
 	//* Attempt to load entities file */
@@ -117,7 +77,6 @@ pub fn load_entities_test( mapName : String ) -> HashMap<String, overworld::Unit
 
 	//* Convert to JSON and read */
 	let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
-	//for i in jsonFile_ent["entities"].as_array().unwrap() {
 	let arr = jsonFile_ent["entities"].as_array().unwrap();
 	for i in 0..arr.len() {
 		let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
@@ -131,14 +90,14 @@ pub fn load_entities_test( mapName : String ) -> HashMap<String, overworld::Unit
 		unit.posTarget = unit.position;
 
 		for o in arr[i]["events"].as_array().unwrap() {
-			let event = events::EntityEvent{
+			let _event = events::EntityEvent{
 				val: events::create_empty_conditions(),
 				key: o["id"].as_str().unwrap().to_string(),
 			};
-		//	for _e in o["conditions"].as_array().unwrap() {
-		//		//TODO Figure out conditions
-		//	}
-			unit.events[0] = Some(event);
+			for _e in o["conditions"].as_array().unwrap() {
+				//TODO Figure out conditions
+			}
+			//unit.events[0] = Some(event);
 		}
 
 		for _o in arr[i]["conditions"].as_array().unwrap() {
@@ -152,6 +111,7 @@ pub fn load_entities_test( mapName : String ) -> HashMap<String, overworld::Unit
 	return output;
 }
 
+/// Loads event data from input file to Hashmap indexed by their ID.
 pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 	let mut output = HashMap::new();
 
@@ -194,21 +154,7 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 	return output;
 }
 
-pub fn create_empty_unitmap() -> [Option<overworld::Unit>;20] {
-	return [
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-		None, None,
-	];
-}
-
+/// Converts input JSON value into an array of 4 bools representing a collision box.
 pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 	let mut output = [false, false, false, false];
 
@@ -227,6 +173,7 @@ pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 	return output;
 }
 
+// Draws the world.
 pub fn draw_world( gamestate : Gamestate ) -> Gamestate {
 	let rotation = gamestate.camera.rotation;
 
@@ -238,6 +185,7 @@ pub fn draw_world( gamestate : Gamestate ) -> Gamestate {
 	return gamestate;
 }
 
+/// Draws tiles and units from a north-facing persepective.
 fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 	let mut newGamestate = gamestate;
 
@@ -278,7 +226,7 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				for (string, unit) in &mut newGamestate.unitTest {
+				for (_, unit) in &mut newGamestate.unitMap {
 					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
 						*unit = overworld::draw_unit(
 							&newGamestate.animations,
@@ -288,63 +236,6 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 						);
 					}
 				}
-				//for i in &mut newGamestate.unitMap {
-				//	if i.is_none() { continue; }
-				//	if math::equal_v3(i.clone().expect("").position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
-				//	//	*i = Some(overworld::draw_unit(
-				//	//		&newGamestate.animations,
-				//	//		newGamestate.models["unit"],
-				//	//		i.clone().expect(""),
-				//	//		newGamestate.camera.rotation,
-				//	//	));
-				//		print!("fuck");
-				//	}
-				//}
-				//for i in 0..newGamestate.unitMap.len() {
-				//	let clone = newGamestate.unitMap[i].expect("").copy_unit();
-				//	newGamestate.unitMap[i] = Some(overworld::draw_unit(
-				//		&newGamestate.animations,
-				//		newGamestate.models["unit"],
-				//		clone,
-				//		newGamestate.camera.rotation,
-				//	),);
-				//}
-				//let mut iter: HashMap<String, Unit> = HashMap::new();
-				//for i in &newGamestate.unitMap {
-				//	
-				//}
-				//let iter = newGamestate.unitMap.
-				//for (string, unit) in gamestate.unitMap.iter() {
-				//	let v3 = raylib_ffi::Vector3{x: x as f32,y: y as f32,z: z as f32};
-				//	if math::equal_v3(unit.position, v3) {
-				//		let key = string.to_string();
-				//		newGamestate.unitMap.insert(
-				//			key, 
-				//			overworld::draw_unit(
-				//				&newGamestate.animations,
-				//				newGamestate.models["unit"],
-				//				overworld::copy_unit(unit),
-				//				newGamestate.camera.rotation,
-				//			),
-				//		);
-				//	}
-				//}
-				//let iter = &mut newGamestate.unitMap;
-				//for (key, value) in &*iter {
-				//	let v3 = raylib_ffi::Vector3{x: x as f32,y: y as f32,z: z as f32};
-				//	if math::equal_v3(value.position, v3) {
-				//		let key = key.to_string();
-				//		newGamestate.unitMap.insert(
-				//			key, 
-				//			overworld::draw_unit(
-				//				&newGamestate.animations,
-				//				newGamestate.models["unit"],
-				//				newGamestate.unitMap.get(&key).unwrap().clone(),
-				//				newGamestate.camera.rotation,
-				//			),
-				//		);
-				//	}
-				//}
 			}
 			if !flip	{ x += 1; }
 			else		{ x -= 1; }
@@ -359,6 +250,7 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 	return newGamestate
 }
 
+/// Draws tiles and units from a east-facing persepective.
 fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 	let mut newGamestate = gamestate;
 
@@ -401,7 +293,16 @@ fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				// TODO
+				for (_, unit) in &mut newGamestate.unitMap {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+						*unit = overworld::draw_unit(
+							&newGamestate.animations,
+							newGamestate.models["unit"],
+							unit.clone(),
+							newGamestate.camera.rotation,
+						);
+					}
+				}
 			}
 			if !flip	{ z -= 1; }
 			else		{ z += 1; }
@@ -416,6 +317,7 @@ fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 	return newGamestate
 }
 
+/// Draws tiles and units from a south-facing persepective.
 fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 	let mut newGamestate = gamestate;
 
@@ -458,7 +360,16 @@ fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				// TODO
+				for (_, unit) in &mut newGamestate.unitMap {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+						*unit = overworld::draw_unit(
+							&newGamestate.animations,
+							newGamestate.models["unit"],
+							unit.clone(),
+							newGamestate.camera.rotation,
+						);
+					}
+				}
 			}
 			if !flip	{ x -= 1; }
 			else		{ x += 1; }
@@ -473,6 +384,7 @@ fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 	return newGamestate
 }
 
+/// Draws tiles and units from a west-facing persepective.
 fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 	let mut newGamestate = gamestate;
 
@@ -515,7 +427,16 @@ fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				// TODO
+				for (_, unit) in &mut newGamestate.unitMap {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+						*unit = overworld::draw_unit(
+							&newGamestate.animations,
+							newGamestate.models["unit"],
+							unit.clone(),
+							newGamestate.camera.rotation,
+						);
+					}
+				}
 			}
 			if !flip	{ z += 1; }
 			else		{ z -= 1; }

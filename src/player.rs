@@ -6,14 +6,17 @@
 
 
 //= Imports
-use crate::{overworld::{self, Unit, Animator, Direction}, data, raylib, utilities::math, settings, events};
+use std::collections::HashMap;
+use crate::{overworld::{self, Unit, Animator, Direction}, data, raylib, utilities::math, settings};
 
 
 //= Constants
+/// Player movement speed
 const MVSPEED : f32 = 3.0;
 
 
 //= Structures
+/// Storage structure for Player data
 pub struct Player {
 	pub unit : overworld::Unit,
 
@@ -22,6 +25,8 @@ pub struct Player {
 
 
 //= Procedures
+
+/// Initialize player data
 pub fn init() -> Player {
 	let mut player = Player{
 		unit:		overworld::create_unit("player_1"),
@@ -33,16 +38,17 @@ pub fn init() -> Player {
 	return player;
 }
 
+/// Poll controls and move player or open menus if necessary.
 pub fn controls( gamestate : &data::Gamestate ) -> Player {
-	//! Temporary until I implemant copy
+	// TODO Temporary until I implemant copy
 	let mut newPlayer = Player {
 		unit: Unit {
 			position:	gamestate.player.unit.position,
 			posTarget:	gamestate.player.unit.posTarget,
 			direction:	gamestate.player.unit.direction,
 			id:			"player".to_string(),
-			events:		events::create_empty_entityevents(),
-			conditions:	events::create_empty_conditions(),
+			events:		HashMap::new(),
+			conditions:	HashMap::new(),
 			animator:	Animator {
 				textures: Vec::new(),
 				currentAnimation: gamestate.player.unit.animator.currentAnimation.to_string(),
@@ -149,12 +155,15 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 		//* If the player is moving */
 		newPlayer.unit.direction = dir;
 		if !math::equal_v3(newPlayer.unit.posTarget, newpos) {
-			newPlayer.unit = overworld::set_animation( newPlayer.unit, "walk_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() );
+			newPlayer.unit = overworld::set_animation( newPlayer.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 			newPlayer.unit = overworld::move_unit(gamestate, newPlayer.unit, dir);
 		} else {
-			if newPlayer.unit.direction != Direction::Null { newPlayer.unit = overworld::set_animation( newPlayer.unit, "idle_".to_string() + &math::get_relative_direction_dir(&gamestate.camera, dir).to_string() ); }
+			if newPlayer.unit.direction != Direction::Null { newPlayer.unit = overworld::set_animation( newPlayer.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() ); }
 		}
 	}
+
+	//* Menus */
+	// TODO
 
 	return newPlayer;
 }

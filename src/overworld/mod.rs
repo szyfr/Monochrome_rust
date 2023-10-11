@@ -7,11 +7,12 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use raylib_ffi::Vector3;
-use crate::{raylib, utilities::{debug, math::close_enough_v3}, data, events};
+use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, data, events};
 
 
 //= Enumerations
+
+/// Unit facing direction.
 #[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
 	Null,
@@ -46,55 +47,22 @@ impl Display for Direction {
 }
 
 //= Structures
+
+/// Represents an overworld Character/Item. Also used with the Player.
 #[derive(Clone)]
 pub struct Unit {
-	pub position	: Vector3,
-	pub posTarget	: Vector3,
+	pub position	: raylib_ffi::Vector3,
+	pub posTarget	: raylib_ffi::Vector3,
 
 	pub direction	: Direction,
 
 	pub id			: String,
-	pub events		: [Option<events::EntityEvent>; 5],
-	pub conditions	: [Option<events::Condition>; 5],
+	pub events		: HashMap<String, events::EntityEvent>,
+	pub conditions	: HashMap<String, events::Condition>,
 
 	pub animator	: Animator,
 }
-impl Unit {
-	pub fn copy_unit( &self ) -> Unit {
-		let mut output = Unit{
-			position: self.position,
-			posTarget: self.posTarget,
-			direction: self.direction,
-			id: self.id.to_string(),
-			events: events::create_empty_entityevents(),
-			conditions: events::create_empty_conditions(),
-			animator: Animator{
-				textures: Vec::new(),
-				currentAnimation: self.animator.currentAnimation.to_string(),
-				frame: self.animator.frame,
-				counter: self.animator.counter,
-			}
-		};
-		for i in 0..5 {
-			if self.events[i].is_none() { break; }
-			output.events[i] = Some(events::EntityEvent{
-				val: self.events[i].clone().expect("").val,
-				key: self.events[i].clone().expect("").key,
-			});
-		}
-		for i in 0..5 {
-			if self.conditions[i].is_none() { break; }
-			output.conditions[i] = Some(events::Condition{
-				val: self.conditions[i].clone().expect("").val,
-				key: self.conditions[i].clone().expect("").key,
-			});
-		}
-		for i in 0..self.animator.textures.len() {
-			output.animator.textures.push(self.animator.textures[i]);
-		}
-		return output;
-	}
-}
+/// The animation controller for Units.
 #[derive(Clone)]
 pub struct Animator {
 	pub textures	: Vec<raylib_ffi::Texture>,
@@ -104,6 +72,7 @@ pub struct Animator {
 	pub frame	: i32,
 	pub counter : i32,
 }
+/// Storage format for animations loaded from file.
 pub struct Animation {
 	pub frames	: Vec<i32>,
 	pub delay	: i32,
@@ -111,17 +80,20 @@ pub struct Animation {
 
 
 //= Procedures
+
+/// Creates a new Unit.<br>
+/// If the Raylib window is ready, input filename will be loaded as the texture. It will be dropped otherwise.
 pub fn create_unit( filename : &str ) -> Unit {
 	let mut textures: Vec<raylib_ffi::Texture> = Vec::new();
 
 	if raylib::is_window_ready() { textures = load_unit_textures(filename); }
 	return Unit {
-		position:	Vector3{x:0.0,y:0.0,z:0.0},
-		posTarget:	Vector3{x:0.0,y:0.0,z:0.0},
+		position:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
+		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
 		direction:	Direction::South,
 		id:			"".to_string(),
-		events:		events::create_empty_entityevents(),
-		conditions:	events::create_empty_conditions(),
+		events:		HashMap::new(),
+		conditions:	HashMap::new(),
 		animator:	Animator{
 			textures:	textures,
 			currentAnimation: "walk_south".to_string(),
@@ -131,6 +103,7 @@ pub fn create_unit( filename : &str ) -> Unit {
 	};
 }
 
+/// Concatenates the full path to the input and loads the respective Image into a ``Vec<Texture>``.
 pub fn load_unit_textures( filename : &str ) -> Vec<raylib_ffi::Texture> {
 	//* Create full path */
 	let fullPath = "data/sprites/overworld/".to_string() + filename + ".png";
@@ -155,14 +128,25 @@ pub fn load_unit_textures( filename : &str ) -> Vec<raylib_ffi::Texture> {
 	return output;
 }
 
+/// Draws the input Unit in the world as well as updating the Unit's animations.
 pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::Model, unit : Unit, rotation : f32 ) -> Unit {
 	let mut newUnit = unit;
+
+	//* Check if animation exists */
 	if !animations.contains_key(&newUnit.animator.currentAnimation) {
 		debug::log("[ERROR] - Attempting to use animation that doesn't exist.\n");
-		print!("{}\n", newUnit.animator.currentAnimation);
 		return newUnit;
 	}
 	let animation = &animations[&newUnit.animator.currentAnimation];
+
+	//* Check animations */
+	if !math::equal_v3(newUnit.position, newUnit.posTarget) {
+		let dir = math::get_relative_direction_dir(rotation, newUnit.direction);
+		newUnit = set_animation(newUnit, format!("walk_{}",dir))
+	} else {
+		let dir = math::get_relative_direction_dir(rotation, newUnit.direction);
+		newUnit = set_animation(newUnit, format!("idle_{}",dir))
+	}
 
 	//* Update animation */
 	newUnit.animator.counter += 1;
@@ -190,27 +174,13 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 	return newUnit;
 }
 
-pub fn empty() -> Unit {
-	return Unit {
-		position:	Vector3{x:0.0,y:0.0,z:0.0},
-		posTarget:	Vector3{x:0.0,y:0.0,z:0.0},
-		direction:	Direction::South,
-		id:			"".to_string(),
-		events:		events::create_empty_entityevents(),
-		conditions:	events::create_empty_conditions(),
-		animator:	Animator{
-			textures:	Vec::new(),
-			currentAnimation: "walk_south".to_string(),
-			frame: 		0,
-			counter: 	0,
-		},
-	};
-}
-
+/// Sets the Unit's current animation
 pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 	let mut newUnit = unit;
 
+	//* Check if new animation is the not the one currently playing */
 	if newUnit.animator.currentAnimation != animation {
+		//* Reset all variables */
 		newUnit.animator.counter = 0;
 		newUnit.animator.frame = 0;
 		newUnit.animator.currentAnimation = animation;
@@ -219,14 +189,16 @@ pub fn set_animation( unit : Unit, animation : String ) -> Unit {
 	return newUnit;
 }
 
+/// Calculates whether the Unit can move in the input direction and if possible set them to move.
 pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Direction ) -> Unit {
 	let mut newUnit = unit;
 
+	//* Leave if still moving or current direction is Null */
 	if !close_enough_v3(newUnit.position, newUnit.posTarget, 0.05) { return newUnit; }
 	if newUnit.direction == Direction::Null { return newUnit; }
 
+	//* Calculate new position */
 	let mut newPos = newUnit.position;
-	
 	match direction {
 		Direction::North => newPos.z += -1.0,
 		Direction::South => newPos.z +=  1.0,
@@ -262,13 +234,16 @@ pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Directi
 	//* Check if Solid */
 	if check_collision(direction, tile.solid) { return newUnit; }
 
-	//* Check for entities
-	// TODO
+	//* Check for entities */
+	for (_, unit) in gamestate.unitMap.iter() {
+		if math::equal_v3(newPos ,unit.position) { return newUnit; }
+	}
 
 	newUnit.posTarget = newPos;
 	return newUnit;
 }
 
+/// Calculates collision.
 fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {
 	match direction {
 		Direction::North => return collisionInfo[0],
@@ -276,5 +251,16 @@ fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {
 		Direction::East  => return collisionInfo[3],
 		Direction::West  => return collisionInfo[1],
 		_ => return true,
+	}
+}
+
+/// Checks if current animation is walking
+fn check_walking_animation( unit : &Unit ) -> bool {
+	match unit.animator.currentAnimation.as_str() {
+		"walk_north" => return true,
+		"walk_south" => return true,
+		"walk_east"  => return true,
+		"walk_west"  => return true,
+		_ => return false,
 	}
 }

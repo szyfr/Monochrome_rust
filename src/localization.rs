@@ -12,6 +12,8 @@ use crate::utilities::debug;
 
 
 //= Procedures
+
+/// Loads all language strings into Hashmap using input language
 pub fn load( language : &settings::Language ) -> HashMap<String, String> {
 	let mut output : HashMap<String, String> = HashMap::new();
 

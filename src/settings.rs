@@ -11,6 +11,8 @@ use crate::{utilities::debug, raylib};
 
 
 //= Structures
+
+/// Storage for all settings
 pub struct Settings {
 	pub screenWidth : i32,
 	pub screenHeight : i32,
@@ -20,11 +22,14 @@ pub struct Settings {
 
 	pub language : Language,
 }
+
+/// Storage for individual keybindings
 pub struct Keybinding {
 	pub origin		: Origin,
 	pub controller	: i32,
 	pub code		: i32,
 }
+/// Key origin
 pub enum Origin {
 	Keyboard,
 	Mouse,
@@ -50,6 +55,8 @@ impl Display for Origin {
 		}
 	}
 }
+
+/// Language for Localization
 pub enum Language {
 	English,
 	French,
@@ -78,6 +85,8 @@ impl Display for Language {
 
 
 //= Procedures
+
+/// Attempts to load file and store settings.
 pub fn load() -> Settings {
 	let mut output = Settings{
 		screenWidth		: 0,
@@ -119,6 +128,7 @@ pub fn load() -> Settings {
 	return output;
 }
 
+/// Creates new settings
 fn generate_settings() -> Settings {
 	let mut newSettings = Settings{
 		screenWidth		: 1280,
@@ -141,6 +151,7 @@ fn generate_settings() -> Settings {
 	return newSettings;
 }
 
+/// Saves current settings to file
 fn save_file( settings : &Settings ) {
 	let mut newSettingsFile : String = String::from("");
 	let mut counter = 0;
@@ -167,6 +178,7 @@ fn save_file( settings : &Settings ) {
 	let _ = newFile.unwrap().write_all(newSettingsFile.as_bytes());
 }
 
+/// Checks if button is pressed once.
 pub fn button_pressed( key : &str, settings : &Settings ) -> bool {
 	//* Leave if key not found */
 	if !HashMap::contains_key(&settings.keybindings, key) {
@@ -184,6 +196,7 @@ pub fn button_pressed( key : &str, settings : &Settings ) -> bool {
 
 	return false;
 }
+/// Checks if button is held down.
 pub fn button_down( key : &str, settings : &Settings ) -> bool {
 	//* Leave if key not found */
 	if !HashMap::contains_key(&settings.keybindings, key) {
@@ -201,6 +214,7 @@ pub fn button_down( key : &str, settings : &Settings ) -> bool {
 
 	return false;
 }
+/// Checks if button is let go.
 pub fn button_released( key : &str, settings : &Settings ) -> bool {
 	//* Leave if key not found */
 	if !HashMap::contains_key(&settings.keybindings, key) {
@@ -218,6 +232,7 @@ pub fn button_released( key : &str, settings : &Settings ) -> bool {
 
 	return false;
 }
+/// Checks if button is not pressed.
 pub fn button_up( key : &str, settings : &Settings ) -> bool {
 	//* Leave if key not found */
 	if !HashMap::contains_key(&settings.keybindings, key) {

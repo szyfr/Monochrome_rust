@@ -11,11 +11,15 @@ use raylib_ffi::Vector3;
 
 
 //= Constants
+/// Character movement speed.
 const MVSPEED : f32 =   5.0;
+/// Camera rotation speed.
 const CMSPEED : f32 = 500.0;
 
 
 //= Structures
+
+/// Camera storage structure.
 #[derive(Copy, Clone)]
 pub struct Camera {
 	pub position	: Vector3,
@@ -32,6 +36,8 @@ pub struct Camera {
 
 
 //= Procedures
+
+/// Initializes a new Camera structure.
 pub fn init() -> Camera {
 	return Camera{
 		position:		Vector3 {x:0.5,y:0.0,z:0.5},
@@ -47,12 +53,14 @@ pub fn init() -> Camera {
 	};
 }
 
+/// Updates Camera position and rotation.
 pub fn update( gamestate : &data::Gamestate ) -> Camera {
 	let mut newCamera = gamestate.camera;
 	let ft = raylib::get_frame_time();
 
 	//* Check if targetting a unit */
 	if newCamera.onPlayer {
+		//* Have camera's movements match player */
 		newCamera.position = math::add_v3(gamestate.player.unit.position, Vector3{x:0.0,y:1.0,z:0.0});
 		newCamera.position.y = newCamera.position.y / 2.0;
 	} else {

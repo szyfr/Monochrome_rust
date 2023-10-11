@@ -6,16 +6,21 @@
 //= Imports
 use raylib_ffi::Vector3;
 
-use crate::{overworld::Direction, camera};
+use crate::overworld::Direction;
 
 
 //= Constants
+/// X Distance for camera
 const XDIST : f32 = 0.0;
+/// Y Distance for camera
 const YDIST : f32 = 5.0;
+/// Z Distance for camera
 const ZDIST : f32 = 5.0;
 
 
 //= Procedures
+
+/// Returns position of camera rotated around input ``Vector3``.
 pub fn rotate( pos : Vector3, rot : f32 ) -> Vector3 {
 	let mut position = Vector3{x:0.0,y:0.0,z:0.0};
 
@@ -29,6 +34,7 @@ pub fn rotate( pos : Vector3, rot : f32 ) -> Vector3 {
 	return position;
 }
 
+/// Returns ``true`` if inputted ``Vector3``s are within ``offset`` of each other.
 pub fn close_enough_v3( v1 : Vector3, v2 : Vector3, offset : f32 ) -> bool {
 	let mut output = true;
 
@@ -38,12 +44,14 @@ pub fn close_enough_v3( v1 : Vector3, v2 : Vector3, offset : f32 ) -> bool {
 
 	return output;
 }
+/// Returns ``true`` if inputted ``float``s are within ``offset`` of each other.
 pub fn close_enough_f32( f1 : f32, f2 : f32, offset : f32 ) -> bool {
 	if f1 < f2 - offset || f1 > f2 + offset { return false; }
 
 	return true
 }
 
+/// Returns the direction of ``v2`` from ``v1`` as a ``Vector3``.
 pub fn get_direction_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	let difference = sub_v3(v2, v1);
 	let mut output = Vector3{x:0.0,y:0.0,z:0.0};
@@ -62,6 +70,7 @@ pub fn get_direction_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	
 	return output;
 }
+/// Returns whether the difference between input floats is positive, negative, or zero.
 pub fn get_direction_f32( f1 : f32, f2 : f32 ) -> f32 {
 	let difference = f2 - f1;
 
@@ -71,17 +80,20 @@ pub fn get_direction_f32( f1 : f32, f2 : f32 ) -> f32 {
 	return 0.0;
 }
 
+/// Multiplies two ``Vector3``s and returns the result.
 pub fn mul_v3( vec : Vector3, value : f32 ) -> Vector3 {
 	return Vector3 { x: vec.x * value, y: vec.y * value, z: vec.z * value };	
 }
-
+/// Adds two ``Vector3``s and returns the result
 pub fn add_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	return Vector3 { x: v1.x + v2.x, y: v1.y + v2.y, z: v1.z + v2.z };
 }
+/// Subtracts two ``Vector3``s and returns the result
 pub fn sub_v3( v1 : Vector3, v2 : Vector3 ) -> Vector3 {
 	return Vector3 { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z };
 }
 
+/// Rounds input ``Vector3`` to the nearest integer and returns the result.
 pub fn round_v3( vector : Vector3 ) -> Vector3 {
 	return Vector3{
 		x: vector.x.round(),
@@ -90,6 +102,7 @@ pub fn round_v3( vector : Vector3 ) -> Vector3 {
 	};
 }
 
+/// Checks if two ``Vector3``s are equal.
 pub fn equal_v3( v1 : Vector3, v2 : Vector3 ) -> bool {
 	if v1.x != v2.x { return false; }
 	if v1.y != v2.y { return false; }
@@ -98,8 +111,9 @@ pub fn equal_v3( v1 : Vector3, v2 : Vector3 ) -> bool {
 	return true;
 }
 
-pub fn get_relative_direction_dir( camera : &camera::Camera, direction : Direction ) -> Direction {
-	if (camera.rotation > -45.0 && camera.rotation <=  45.0) || (camera.rotation > 315.0 && camera.rotation <= 405.0) {
+/// Returns the Direction a unit would be facing relative to the camera given their current true direction.
+pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Direction {
+	if (rotation > -45.0 && rotation <=  45.0) || (rotation > 315.0 && rotation <= 405.0) {
 		match direction {
 			Direction::North => return Direction::North,
 			Direction::South => return Direction::South,
@@ -108,7 +122,7 @@ pub fn get_relative_direction_dir( camera : &camera::Camera, direction : Directi
 			_ => return Direction::Null,
 		}
 	}
-	if (camera.rotation >  45.0 && camera.rotation <= 135.0) || (camera.rotation > 405.0 && camera.rotation <= 495.0) {
+	if (rotation >  45.0 && rotation <= 135.0) || (rotation > 405.0 && rotation <= 495.0) {
 		match direction {
 			Direction::North => return Direction::East,
 			Direction::South => return Direction::West,
@@ -117,7 +131,7 @@ pub fn get_relative_direction_dir( camera : &camera::Camera, direction : Directi
 			_ => return Direction::Null,
 		}
 	}
-	if camera.rotation > 135.0 && camera.rotation <= 225.0 {
+	if rotation > 135.0 && rotation <= 225.0 {
 		match direction {
 			Direction::North => return Direction::South,
 			Direction::South => return Direction::North,
@@ -126,7 +140,7 @@ pub fn get_relative_direction_dir( camera : &camera::Camera, direction : Directi
 			_ => return Direction::Null,
 		}
 	}
-	if (camera.rotation > 225.0 && camera.rotation <= 315.0) || (camera.rotation > -135.0 && camera.rotation <= -45.0) {
+	if (rotation > 225.0 && rotation <= 315.0) || (rotation > -135.0 && rotation <= -45.0) {
 		match direction {
 			Direction::North => return Direction::West,
 			Direction::South => return Direction::East,

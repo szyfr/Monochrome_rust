@@ -10,6 +10,8 @@ use chrono;
 
 
 //= Procedures
+
+/// Prints error string to console and to log.txt in game directory
 pub fn log( input : &str ) {
 	//* Print to console */
 	print!("{}", input);

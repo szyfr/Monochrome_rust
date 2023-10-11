@@ -10,6 +10,8 @@ use crate::{raylib, overworld::Animation, utilities::debug};
 
 
 //= Procedures
+
+/// Loads all necessary textures into Hashmap indexed by their names.
 pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	let mut output: HashMap<String, raylib_ffi::Texture> = HashMap::new();
 
@@ -20,6 +22,7 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	return output;
 }
 
+/// Loads all necessary fonts into Hashmap indexed by their names.
 pub fn load_fonts() -> HashMap<String, raylib_ffi::Font> {
 	let mut output: HashMap<String, raylib_ffi::Font> = HashMap::new();
 
@@ -29,6 +32,7 @@ pub fn load_fonts() -> HashMap<String, raylib_ffi::Font> {
 	return output;
 }
 
+/// Loads all necessary models into Hashmap indexed by their names.
 pub fn load_models() -> HashMap<String, raylib_ffi::Model> {
 	let mut output: HashMap<String, raylib_ffi::Model> = HashMap::new();
 	let rawDirectory = read_dir("data/tiles/").unwrap();
@@ -47,6 +51,7 @@ pub fn load_models() -> HashMap<String, raylib_ffi::Model> {
 	return output;
 }
 
+/// Loads all necessary animations into Hashmap indexed by their names.
 pub fn load_animations() -> HashMap<String, Animation> {
 	let mut output: HashMap<String, Animation> = HashMap::new();
 

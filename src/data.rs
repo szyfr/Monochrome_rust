@@ -6,15 +6,12 @@
 
 //= Imports
 use std::collections::HashMap;
-use crate::events;
-use crate::settings;
-use crate::camera;
-use crate::player;
-use crate::overworld;
-use crate::world;
+use crate::{settings, camera, player, overworld, world, events, graphics, localization};
 
 
 //= Structs
+
+/// Structure containing all current information on the games state.
 pub struct Gamestate {
 	pub settings : settings::Settings,
 
@@ -26,8 +23,7 @@ pub struct Gamestate {
 	pub animations	: HashMap<String, overworld::Animation>,
 
 	pub currentMap	: HashMap<[i32;3], world::Tile>,
-	pub unitMap		: [Option<overworld::Unit>;20],
-	pub unitTest : HashMap<String, overworld::Unit>,
+	pub unitMap		: HashMap<String, overworld::Unit>,
 	pub triggerMap	: HashMap<[i32;3], String>,
 	pub eventList	: HashMap<String, events::Event>,
 	pub eventHandler: events::EventHandler,
@@ -38,3 +34,25 @@ pub struct Gamestate {
 
 
 //= Procedures
+
+/// Creates a new gamestate from default values
+pub fn init() -> Gamestate {
+	let mut output = Gamestate{
+		settings		: settings::load(),
+		localization	: HashMap::new(),
+		fonts			: HashMap::new(),
+		textures		: HashMap::new(),
+		models			: HashMap::new(),
+		animations		: graphics::load_animations(),
+		currentMap		: HashMap::new(),
+		unitMap			: HashMap::new(),
+		triggerMap		: HashMap::new(),
+		eventList		: HashMap::new(),
+		eventHandler	: events::create_eventhandler(),
+		camera			: camera::init(),
+		player			: player::init(),
+	};
+	output.localization = localization::load(&output.settings.language);
+
+	return output;
+}
