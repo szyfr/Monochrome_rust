@@ -81,6 +81,7 @@ pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
 	for i in 0..arr.len() {
 		let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
 
+		//* Set entity direction and position */
 		unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
 		unit.position = raylib_ffi::Vector3{
 			x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
@@ -89,22 +90,47 @@ pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
 		};
 		unit.posTarget = unit.position;
 
+		//* Set entity events */
 		for o in arr[i]["events"].as_array().unwrap() {
-			let _event = events::EntityEvent{
-				val: events::create_empty_conditions(),
+			let mut event = events::EntityEvent{
+				val: Vec::new(),
 				key: o["id"].as_str().unwrap().to_string(),
 			};
 			for _e in o["conditions"].as_array().unwrap() {
-				//TODO Figure out conditions
+				let mut cond = events::Condition{
+					value: events::ConditionsType{ bl: true },
+					condType: events::ConditionType::Boolean,
+					key: o[0].as_str().unwrap().to_string(),
+				};
+				if o[1].is_boolean() { cond.value.bl = o[1].as_bool().is_some(); }
+				if o[1].is_i64() { cond.value.int = o[1].as_i64().is_some() as i32; }
+
+				event.val.push(cond);
 			}
-			//unit.events[0] = Some(event);
+			unit.events.push(event);
 		}
 
-		for _o in arr[i]["conditions"].as_array().unwrap() {
-			//TODO Figure out conditions
+		//* Set entity appearance conditions */
+		if arr[i]["conditions"].as_array().unwrap().len() > 0 {
+			for o in arr[i]["conditions"].as_array().unwrap() {
+				let mut cond = events::Condition{
+					value: events::ConditionsType{ bl: true },
+					condType: events::ConditionType::Boolean,
+					key: o[0].as_str().unwrap().to_string(),
+				};
+				if o[1].is_boolean() {
+					cond.condType = events::ConditionType::Boolean;
+					cond.value.bl = o[1].as_bool().is_some();
+				}
+				if o[1].is_i64() {
+					cond.condType = events::ConditionType::Integer;
+					cond.value.int = o[1].as_i64().is_some() as i32;
+				}
+
+				unit.conditions.push(cond);
+			}
 		}
 
-		//output[i] = Some(unit);
 		output.insert(arr[i]["id"].as_str().unwrap().to_string(), unit);
 	}
 
@@ -428,7 +454,9 @@ fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut newGamestate.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+					let pos = raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32};
+					//if math::equal_v3(unit.position, pos) && overworld::exists(&newGamestate.eventHandler, &unit) {
+					if math::equal_v3(unit.position, pos) {
 						*unit = overworld::draw_unit(
 							&newGamestate.animations,
 							newGamestate.models["unit"],

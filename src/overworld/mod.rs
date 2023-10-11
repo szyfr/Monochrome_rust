@@ -57,8 +57,8 @@ pub struct Unit {
 	pub direction	: Direction,
 
 	pub id			: String,
-	pub events		: HashMap<String, events::EntityEvent>,
-	pub conditions	: HashMap<String, events::Condition>,
+	pub events		: Vec<events::EntityEvent>,
+	pub conditions	: Vec<events::Condition>,
 
 	pub animator	: Animator,
 }
@@ -92,8 +92,8 @@ pub fn create_unit( filename : &str ) -> Unit {
 		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
 		direction:	Direction::South,
 		id:			"".to_string(),
-		events:		HashMap::new(),
-		conditions:	HashMap::new(),
+		events:		Vec::new(),
+		conditions:	Vec::new(),
 		animator:	Animator{
 			textures:	textures,
 			currentAnimation: "walk_south".to_string(),
@@ -242,6 +242,14 @@ pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Directi
 	newUnit.posTarget = newPos;
 	return newUnit;
 }
+
+/// Returns whether the Unit should exist.
+//pub fn exists( handler : &events::EventHandler, unit : &Unit ) -> bool {
+//	//for i in unit.conditions {
+//	//	if handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key] == i.value { return true; }
+//	//}
+//	return false;
+//}
 
 /// Calculates collision.
 fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {

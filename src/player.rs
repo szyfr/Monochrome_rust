@@ -6,7 +6,6 @@
 
 
 //= Imports
-use std::collections::HashMap;
 use crate::{overworld::{self, Unit, Animator, Direction}, data, raylib, utilities::math, settings};
 
 
@@ -47,8 +46,8 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 			posTarget:	gamestate.player.unit.posTarget,
 			direction:	gamestate.player.unit.direction,
 			id:			"player".to_string(),
-			events:		HashMap::new(),
-			conditions:	HashMap::new(),
+			events:		Vec::new(),
+			conditions:	Vec::new(),
 			animator:	Animator {
 				textures: Vec::new(),
 				currentAnimation: gamestate.player.unit.animator.currentAnimation.to_string(),

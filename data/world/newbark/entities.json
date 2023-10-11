@@ -5,11 +5,22 @@
 			"location": [4,0,4],
 			"sprite":"player_1",
 			"movement":"random",
-			"direction":"south",
+			"direction":"west",
 			"events":[
 				{ "conditions":[], "id":"test" }
 			],
 			"conditions":[]
+		},
+		{
+			"id":"TEST_2",
+			"location": [5,0,4],
+			"sprite":"player_1",
+			"movement":"random",
+			"direction":"east",
+			"events":[
+				{ "conditions":[], "id":"test_2" }
+			],
+			"conditions":[["test",true]]
 		}
 	]
 }

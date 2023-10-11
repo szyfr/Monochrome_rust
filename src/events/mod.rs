@@ -13,6 +13,13 @@ use crate::overworld::Direction;
 
 //= Enumerations
 
+///
+#[derive(Clone)]
+pub enum ConditionType {
+	Null,
+	Integer,
+	Boolean,
+}
 
 
 //= Structures
@@ -31,23 +38,24 @@ pub struct EventHandler{
 }
 #[derive(Clone)]
 pub struct EntityEvent{
-	pub val : [Option<Condition>; 5],
+	pub val : Vec<Condition>,
 	pub key : String,
 }
 impl EntityEvent {
 	pub fn new() -> EntityEvent {
-		return EntityEvent {val: create_empty_conditions(), key: "".to_string()};
+		return EntityEvent {val: Vec::new(), key: "".to_string()};
 	}
 }
 
 #[derive(Clone)]
 pub struct Condition {
-	pub val : ConditionsType,
-	pub key : String,
+	pub value		: ConditionsType,
+	pub condType	: ConditionType,
+	pub key			: String,
 }
 impl Condition {
 	pub fn new() -> Condition {
-		return Condition {val: ConditionsType{int:0}, key: "".to_string()};
+		return Condition {value: ConditionsType{int:0}, condType: ConditionType::Integer, key: "".to_string()};
 	}
 }
 
