@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, data, events};
+use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, data, events::{self, ConditionType}};
 
 
 //= Enumerations
@@ -236,7 +236,7 @@ pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Directi
 
 	//* Check for entities */
 	for (_, unit) in gamestate.unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) { return newUnit; }
+		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) { return newUnit; }
 	}
 
 	newUnit.posTarget = newPos;
@@ -244,12 +244,21 @@ pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Directi
 }
 
 /// Returns whether the Unit should exist.
-//pub fn exists( handler : &events::EventHandler, unit : &Unit ) -> bool {
-//	//for i in unit.conditions {
-//	//	if handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key] == i.value { return true; }
-//	//}
-//	return false;
-//}
+// TODO I might want to change this to a result declared at the start that gets changed by the match so that multiple variables can decide it?
+pub fn exists( handler : &events::EventHandler, unit : &Unit ) -> bool {
+	if unit.conditions.len() == 0 { return true; }
+	for i in unit.conditions.iter() {
+		unsafe {
+			//print!("{}\n",i.value.bl);
+			match i.condType {
+				ConditionType::Boolean => if (handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key].bl == i.value.bl) || (!handler.eventVariables.contains_key(&i.key) && i.value.bl == false) { return true; },
+				ConditionType::Integer => if (handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key].int == i.value.int) || (!handler.eventVariables.contains_key(&i.key) && i.value.int == 0) { return true; },
+				_ => return false,
+			}
+		}
+	}
+	return false;
+}
 
 /// Calculates collision.
 fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {

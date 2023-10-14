@@ -1,23 +1,32 @@
 {
 	"events":[
 		{
+			"id": "test",
+			"chain": [
+				["sound","inside",1],
+				["animation","flash",23,8,[0,1,2],true],
+				["warp","player",[ 5,0,5 ],true,"north"],
+				["animation","flash",23,8,[2,1,0],false]
+			]},
+		{
 			"id": "warp_elmlab_in",
 			"chain": [
 				["sound","inside",1],
 				["animation","flash",23,8,[0,1,2],true],
-				["warp","player",[ 5,0,42 ],true,"up"],
-				["animation","flash",23,8,[2,1,0],false],
+				["warp","player",[ 5,0,42 ],true,"north"],
+				["animation","flash",23,8,[2,1,0],false]
 			]},
 		{
 			"id": "warp_elmlab_out",
 			"chain": [
 				["sound","outside",1],
 				["animation","flash",23,8,[0,1,2],true],
-				["warp","player",[ 20,0,9 ],true,"down"],
-				["animation","flash",23,8,[2,1,0],false],
+				["warp","player",[ 20,0,9 ],true,"south"],
+				["animation","flash",23,8,[2,1,0],false]
 			]}
 	],
 	"triggers":[
+		{ "location": [ 2,0, 3 ], "event": "test" },
 		{ "location": [ 5,0,42 ], "event": "warp_elmlab_out" },
 		{ "location": [ 6,0,42 ], "event": "warp_elmlab_out" },
 		{ "location": [ 6,0,42 ], "event": "warp_elmlab_in" }

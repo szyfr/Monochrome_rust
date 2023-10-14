@@ -20,6 +20,12 @@ pub enum ConditionType {
 	Integer,
 	Boolean,
 }
+pub enum ChainType {
+	Test,
+
+	Warp,
+	Text,
+}
 
 
 //= Structures
@@ -68,7 +74,11 @@ pub union ConditionsType {
 pub struct Event{
 	pub chain : Vec<EventChain>,
 }
-pub union EventChain{
+pub struct EventChain{
+	pub evt		: ChainType,
+	pub value	: EventChainValue,
+}
+pub union EventChainValue{
 	pub test: ManuallyDrop<TestEvent>,
 	
 	pub warp: ManuallyDrop<WarpEvent>,
@@ -118,3 +128,8 @@ pub fn create_empty_conditions() -> [Option<Condition>; 5] {
 		None,
 	];
 }
+
+///// Check for trigger in target tile
+//pub fn check_for_event( events : &HashMap<String, Event>, position : raylib_ffi::Vector3 ) -> bool {
+//	
+//}

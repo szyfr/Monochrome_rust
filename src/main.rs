@@ -24,7 +24,9 @@ fn main() {
 
 	// ! TEMP
 	gamestate.currentMap = world::load_world("newbark".to_string());
-	gamestate.unitMap = world::load_entities("newbark".to_string());
+	gamestate.unitMap    = world::load_entities("newbark".to_string());
+	gamestate.triggerMap = world::load_triggers("newbark".to_string());
+	gamestate.eventList  = world::load_events("newbark".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */

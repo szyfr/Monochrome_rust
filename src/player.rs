@@ -69,6 +69,17 @@ pub fn controls( gamestate : &data::Gamestate ) -> Player {
 		newPlayer.unit.position = newPlayer.unit.posTarget;
 		let mut newpos = newPlayer.unit.position;
 
+		//* Check for trigger */
+		let pos = [
+			newPlayer.unit.position.x as i32,
+			newPlayer.unit.position.y as i32,
+			newPlayer.unit.position.z as i32,
+		];
+		if gamestate.triggerMap.contains_key(&pos) {
+			// DO event stuff
+			return newPlayer;
+		}
+
 		//* Gather inputs */
 		let up	= settings::button_down("up", &gamestate.settings);
 		let down	= settings::button_down("down", &gamestate.settings);

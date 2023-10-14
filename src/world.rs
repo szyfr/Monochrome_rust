@@ -120,11 +120,11 @@ pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
 				};
 				if o[1].is_boolean() {
 					cond.condType = events::ConditionType::Boolean;
-					cond.value.bl = o[1].as_bool().is_some();
+					cond.value.bl = o[1].as_bool().unwrap();
 				}
 				if o[1].is_i64() {
 					cond.condType = events::ConditionType::Integer;
-					cond.value.int = o[1].as_i64().is_some() as i32;
+					cond.value.int = o[1].as_i64().unwrap() as i32;
 				}
 
 				unit.conditions.push(cond);
@@ -156,7 +156,8 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 			let chain: events::EventChain;
 			match o.as_array().unwrap()[0].as_str().unwrap() {
 				"warp" => chain = events::EventChain{
-					warp: ManuallyDrop::new(events::WarpEvent{
+					evt: events::ChainType::Warp,
+					value: events::EventChainValue{ warp: ManuallyDrop::new(events::WarpEvent{
 						entityID: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
 						position: [
 							o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
@@ -165,18 +166,45 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 							],
 						direction: overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
 						doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
-					})
+					})},
 				},
 				"text" => chain = events::EventChain{
-					text: ManuallyDrop::new(events::TextEvent{text: o.as_array().unwrap()[4].as_str().unwrap().to_string()})
+					evt: events::ChainType::Text,
+					value: events::EventChainValue{ text: ManuallyDrop::new(events::TextEvent{text: o.as_array().unwrap()[1].as_str().unwrap().to_string()}) },
 				},
 				_ => chain = events::EventChain{
-					test: ManuallyDrop::new(events::TestEvent{text: o.as_array().unwrap()[4].as_str().unwrap().to_string()})
+					evt: events::ChainType::Test,
+					value: events::EventChainValue{ test: ManuallyDrop::new(events::TestEvent{text: o.as_array().unwrap()[0].as_str().unwrap().to_string()}) },
 				},
 			}
 			event.chain.push(chain);
 		}
 		output.insert(i["id"].as_str().unwrap().to_string(), event);
+	}
+
+	return output;
+}
+
+/// Loads trigger data from input file to hasmap indexed by position.
+pub fn load_triggers( mapName : String ) -> HashMap<[i32;3], String> {
+	let mut output = HashMap::new();
+
+	//* Attempt to load entities file */
+	let fileResult_evt = read_to_string("data/world/".to_string() + &mapName + "/events.json" );
+	if fileResult_evt.is_err() {
+		debug::log("[ERROR] - Failed to load map file.\n");
+		return output;
+	}
+
+	//* Convert to JSON and read */
+	let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
+	for i in jsonFile_evt["triggers"].as_array().unwrap() {
+		let pos = [
+			i["location"].as_array().unwrap()[0].as_i64().unwrap() as i32,
+			i["location"].as_array().unwrap()[1].as_i64().unwrap() as i32,
+			i["location"].as_array().unwrap()[2].as_i64().unwrap() as i32,
+		];
+		output.insert(pos, i["event"].as_str().unwrap().to_string());
 	}
 
 	return output;
@@ -255,7 +283,7 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut newGamestate.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&newGamestate.eventHandler, unit) {
 						*unit = overworld::draw_unit(
 							&newGamestate.animations,
 							newGamestate.models["unit"],
