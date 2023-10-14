@@ -170,7 +170,9 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 				"text" => chain = events::EventChain{
 					text: ManuallyDrop::new(events::TextEvent{text: o.as_array().unwrap()[4].as_str().unwrap().to_string()})
 				},
-				_ => continue,
+				_ => chain = events::EventChain{
+					test: ManuallyDrop::new(events::TestEvent{text: o.as_array().unwrap()[4].as_str().unwrap().to_string()})
+				},
 			}
 			event.chain.push(chain);
 		}
@@ -199,7 +201,7 @@ pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 	return output;
 }
 
-// Draws the world.
+/// Draws the world.
 pub fn draw_world( gamestate : Gamestate ) -> Gamestate {
 	let rotation = gamestate.camera.rotation;
 

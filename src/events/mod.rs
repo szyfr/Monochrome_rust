@@ -69,8 +69,13 @@ pub struct Event{
 	pub chain : Vec<EventChain>,
 }
 pub union EventChain{
+	pub test: ManuallyDrop<TestEvent>,
+	
 	pub warp: ManuallyDrop<WarpEvent>,
 	pub text: ManuallyDrop<TextEvent>,
+}
+pub struct TestEvent{
+	pub text: String,
 }
 pub struct WarpEvent{
 	pub entityID	: String,
