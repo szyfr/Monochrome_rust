@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, data, events::{self, ConditionType}};
+use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}};
 
 
 //= Enumerations
@@ -57,8 +57,8 @@ pub struct Unit {
 	pub direction	: Direction,
 
 	pub id			: String,
-	pub events		: Vec<events::EntityEvent>,
-	pub conditions	: Vec<events::Condition>,
+	pub events		: HashMap<String, HashMap<String, events::conditionals::Condition>>,
+	pub conditions	: HashMap<String, events::conditionals::Condition>,
 
 	pub animator	: Animator,
 }
@@ -92,8 +92,8 @@ pub fn create_unit( filename : &str ) -> Unit {
 		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
 		direction:	Direction::South,
 		id:			"".to_string(),
-		events:		Vec::new(),
-		conditions:	Vec::new(),
+		events:		HashMap::new(),
+		conditions:	HashMap::new(),
 		animator:	Animator{
 			textures:	textures,
 			currentAnimation: "walk_south".to_string(),
@@ -129,135 +129,136 @@ pub fn load_unit_textures( filename : &str ) -> Vec<raylib_ffi::Texture> {
 }
 
 /// Draws the input Unit in the world as well as updating the Unit's animations.
-pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::Model, unit : Unit, rotation : f32 ) -> Unit {
-	let mut newUnit = unit;
-
+pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::Model, unit : &mut Unit, rotation : f32 ) {
 	//* Check if animation exists */
-	if !animations.contains_key(&newUnit.animator.currentAnimation) {
+	if !animations.contains_key(&unit.animator.currentAnimation) {
 		debug::log("[ERROR] - Attempting to use animation that doesn't exist.\n");
-		return newUnit;
+		return;
 	}
-	let animation = &animations[&newUnit.animator.currentAnimation];
+	let animation = &animations[&unit.animator.currentAnimation];
 
 	//* Check animations */
-	if !math::equal_v3(newUnit.position, newUnit.posTarget) {
-		let dir = math::get_relative_direction_dir(rotation, newUnit.direction);
-		newUnit = set_animation(newUnit, format!("walk_{}",dir))
+	if !math::equal_v3(unit.position, unit.posTarget) {
+		let dir = math::get_relative_direction_dir(rotation, unit.direction);
+		set_animation(unit, format!("walk_{}",dir))
 	} else {
-		let dir = math::get_relative_direction_dir(rotation, newUnit.direction);
-		newUnit = set_animation(newUnit, format!("idle_{}",dir))
+		let dir = math::get_relative_direction_dir(rotation, unit.direction);
+		set_animation(unit, format!("idle_{}",dir))
 	}
 
 	//* Update animation */
-	newUnit.animator.counter += 1;
-	if animation.delay != 0 && newUnit.animator.counter >= animation.delay {
-		newUnit.animator.counter = 0;
-		newUnit.animator.frame += 1;
-		if newUnit.animator.frame >= animation.frames.len() as i32 { newUnit.animator.frame = 0; }
+	unit.animator.counter += 1;
+	if animation.delay != 0 && unit.animator.counter >= animation.delay {
+		unit.animator.counter = 0;
+		unit.animator.frame += 1;
+		if unit.animator.frame >= animation.frames.len() as i32 { unit.animator.frame = 0; }
 	}
 
 	//* Update material */
-	let index = newUnit.animator.frame as usize;
+	let index = unit.animator.frame as usize;
 	let frame = animation.frames[index] as usize;
-	unsafe { (*(*model.materials).maps).texture = newUnit.animator.textures[frame]; }
+	unsafe { (*(*model.materials).maps).texture = unit.animator.textures[frame]; }
 
 	//* Draw */
 	raylib::draw_model_ex(
 		model,
-		raylib_ffi::Vector3{x:newUnit.position.x, y: newUnit.position.y/2.0, z: newUnit.position.z},
+		raylib_ffi::Vector3{x: unit.position.x, y: unit.position.y/2.0, z: unit.position.z},
 		raylib_ffi::Vector3{x:0.0,y:1.0,z:0.0},
 		-rotation,
 		raylib_ffi::Vector3{x:1.0,y:1.0,z:1.0},
 		raylib_ffi::colors::WHITE,
 	);
-
-	return newUnit;
 }
 
 /// Sets the Unit's current animation
-pub fn set_animation( unit : Unit, animation : String ) -> Unit {
-	let mut newUnit = unit;
-
+pub fn set_animation( unit : &mut Unit, animation : String ) {
 	//* Check if new animation is the not the one currently playing */
-	if newUnit.animator.currentAnimation != animation {
+	if unit.animator.currentAnimation != animation {
 		//* Reset all variables */
-		newUnit.animator.counter = 0;
-		newUnit.animator.frame = 0;
-		newUnit.animator.currentAnimation = animation;
+		unit.animator.counter = 0;
+		unit.animator.frame = 0;
+		unit.animator.currentAnimation = animation;
 	}
-
-	return newUnit;
 }
 
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
-pub fn move_unit( gamestate : &data::Gamestate, unit : Unit, direction : Direction ) -> Unit {
-	let mut newUnit = unit;
-
+pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direction ) {
 	//* Leave if still moving or current direction is Null */
-	if !close_enough_v3(newUnit.position, newUnit.posTarget, 0.05) { return newUnit; }
-	if newUnit.direction == Direction::Null { return newUnit; }
+	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
+	if unit.direction == Direction::Null { return; }
 
 	//* Calculate new position */
-	let mut newPos = newUnit.position;
+	let mut newPos = unit.position;
 	match direction {
 		Direction::North => newPos.z += -1.0,
 		Direction::South => newPos.z +=  1.0,
 		Direction::East  => newPos.x += -1.0,
 		Direction::West  => newPos.x +=  1.0,
-		_ => newPos = newUnit.position,
+		_ => newPos = unit.position,
 	}
 
 	//* Check Tiles existance */
-	let tileExists = gamestate.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
+	let tileExists = worldData.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
 	if !tileExists {
 		//TODO If the reverse movement would not be allowed, jump
 		//* Checking for tile up */
-		let tileExistsUp = gamestate.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
+		let tileExistsUp = worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
 		let mut tileUpColli = false;
 		if tileExistsUp {
-			let tileUp = &gamestate.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
+			let tileUp = &worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
 			tileUpColli = !check_collision(direction, tileUp.solid);
 			if tileUpColli { newPos.y += 1.0; }
 		}
 		//* Checking for tile down */
-		let tileExistsDw = gamestate.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
+		let tileExistsDw = worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
 		let mut tileDwColli = false;
 		if tileExistsDw {
-			let tileDw = &gamestate.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
+			let tileDw = &worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
 			tileDwColli = !check_collision(direction, tileDw.solid);
 			if tileDwColli { newPos.y -= 1.0; }
 		}
-		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) { return newUnit; }
+		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) { return; }
 	}
-	let tile = &gamestate.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
+	let tile = &worldData.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
 
 	//* Check if Solid */
-	if check_collision(direction, tile.solid) { return newUnit; }
+	if check_collision(direction, tile.solid) { return; }
 
 	//* Check for entities */
-	for (_, unit) in gamestate.unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) { return newUnit; }
+	for (_, unit) in worldData.unitMap.iter() {
+		if math::equal_v3(newPos ,unit.position) && exists(&worldData.eventHandler, unit) { return; }
 	}
 
-	newUnit.posTarget = newPos;
-	return newUnit;
+	unit.posTarget = newPos;
 }
 
 /// Returns whether the Unit should exist.
-// TODO I might want to change this to a result declared at the start that gets changed by the match so that multiple variables can decide it?
-pub fn exists( handler : &events::EventHandler, unit : &Unit ) -> bool {
+pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) -> bool {
+	let mut result = false;
+
 	if unit.conditions.len() == 0 { return true; }
-	for i in unit.conditions.iter() {
-		unsafe {
-			//print!("{}\n",i.value.bl);
-			match i.condType {
-				ConditionType::Boolean => if (handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key].bl == i.value.bl) || (!handler.eventVariables.contains_key(&i.key) && i.value.bl == false) { return true; },
-				ConditionType::Integer => if (handler.eventVariables.contains_key(&i.key) && handler.eventVariables[&i.key].int == i.value.int) || (!handler.eventVariables.contains_key(&i.key) && i.value.int == 0) { return true; },
-				_ => return false,
-			}
+
+	for (str, cond) in &unit.conditions {
+		match cond {
+			Condition::Integer(_) =>
+				if handler.eventVariables.contains_key(str) {
+					if handler.eventVariables[str] == *cond { result = true; }
+					else { result = false; }
+				} else {
+					if *cond == Condition::Integer(0) { result = true; }
+					else { result = false; }
+				},
+			Condition::Boolean(_) =>
+				if handler.eventVariables.contains_key(str) {
+					if handler.eventVariables[str] == *cond { result = true; }
+					else { result = false; }
+				} else {
+					if *cond == Condition::Boolean(false) { result = true; }
+					else { result = false; }
+				},
 		}
 	}
-	return false;
+	return result;
 }
 
 /// Calculates collision.

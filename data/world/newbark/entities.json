@@ -20,7 +20,10 @@
 			"events":[
 				{ "conditions":[], "id":"test_2" }
 			],
-			"conditions":[["test",true]]
+			"conditions":[
+				["test",true],
+				["test2",false]
+			]
 		}
 	]
 }

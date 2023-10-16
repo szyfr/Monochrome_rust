@@ -6,7 +6,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use crate::{settings, camera, player, overworld, world, events, graphics, localization};
+use crate::{settings, camera, player, overworld, world, graphics, localization};
 
 
 //= Structs
@@ -22,11 +22,7 @@ pub struct Gamestate {
 	pub models		: HashMap<String, raylib_ffi::Model>,
 	pub animations	: HashMap<String, overworld::Animation>,
 
-	pub currentMap	: HashMap<[i32;3], world::Tile>,
-	pub unitMap		: HashMap<String, overworld::Unit>,
-	pub triggerMap	: HashMap<[i32;3], String>,
-	pub eventList	: HashMap<String, events::Event>,
-	pub eventHandler: events::EventHandler,
+	pub worldData	: world::World,
 
 	pub camera		: camera::Camera,
 	pub player		: player::Player,
@@ -44,11 +40,7 @@ pub fn init() -> Gamestate {
 		textures		: HashMap::new(),
 		models			: HashMap::new(),
 		animations		: graphics::load_animations(),
-		currentMap		: HashMap::new(),
-		unitMap			: HashMap::new(),
-		triggerMap		: HashMap::new(),
-		eventList		: HashMap::new(),
-		eventHandler	: events::create_eventhandler(),
+		worldData		: world::init_empty(),
 		camera			: camera::init(),
 		player			: player::init(),
 	};

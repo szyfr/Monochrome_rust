@@ -6,8 +6,9 @@
 
 
 //= Imports
-use std::{collections::HashMap, fs::read_to_string, str::FromStr, mem::ManuallyDrop};
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events};
+use std::{collections::HashMap, fs::read_to_string, str::FromStr};
+
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::Condition}};
 
 
 //= Constants
@@ -21,8 +22,20 @@ const DEPTH  : f32 = 20.0;
 
 //= Structures
 
+/// World data storage
+pub struct World{
+	pub currentMap	: HashMap<[i32;3], Tile>,
+
+	pub unitMap		: HashMap<String, overworld::Unit>,
+
+	pub triggerMap	: HashMap<[i32;3], String>,
+	pub eventList	: HashMap<String, events::Event>,
+
+	pub eventHandler: events::event_handler::EventHandler,
+}
+
 /// Tile storage structure
-pub struct Tile {
+pub struct Tile{
 	pub model : String,
 
 	pub solid : [bool;4],
@@ -32,6 +45,20 @@ pub struct Tile {
 
 
 //= Procedures
+
+/// Creates an empty worlddata structure.
+pub fn init_empty() -> World {
+	return World{
+		currentMap		: HashMap::new(),
+
+		unitMap			: HashMap::new(),
+
+		triggerMap		: HashMap::new(),
+		eventList		: HashMap::new(),
+
+		eventHandler	: events::event_handler::create(),
+	}
+}
 
 /// Load tile data from input file to Hashmap indexed by their position.
 pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
@@ -92,42 +119,27 @@ pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
 
 		//* Set entity events */
 		for o in arr[i]["events"].as_array().unwrap() {
-			let mut event = events::EntityEvent{
-				val: Vec::new(),
-				key: o["id"].as_str().unwrap().to_string(),
-			};
-			for _e in o["conditions"].as_array().unwrap() {
-				let mut cond = events::Condition{
-					value: events::ConditionsType{ bl: true },
-					condType: events::ConditionType::Boolean,
-					key: o[0].as_str().unwrap().to_string(),
-				};
-				if o[1].is_boolean() { cond.value.bl = o[1].as_bool().is_some(); }
-				if o[1].is_i64() { cond.value.int = o[1].as_i64().is_some() as i32; }
-
-				event.val.push(cond);
+			let mut conds: HashMap<String, events::conditionals::Condition> = HashMap::new();
+			for e in o["conditions"].as_array().unwrap() {
+				let str = e.as_array().unwrap()[0].as_str().unwrap().to_string();
+				let arr2: &serde_json::Value = &e.as_array().unwrap()[1];
+				match arr2 {
+					serde_json::Value::Bool(_)		=> _ = conds.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
+					serde_json::Value::Number(_)	=> _ = conds.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+					_ => continue,
+				}
 			}
-			unit.events.push(event);
+			unit.events.insert(o["id"].as_str().unwrap().to_string(), conds);
 		}
 
 		//* Set entity appearance conditions */
-		if arr[i]["conditions"].as_array().unwrap().len() > 0 {
-			for o in arr[i]["conditions"].as_array().unwrap() {
-				let mut cond = events::Condition{
-					value: events::ConditionsType{ bl: true },
-					condType: events::ConditionType::Boolean,
-					key: o[0].as_str().unwrap().to_string(),
-				};
-				if o[1].is_boolean() {
-					cond.condType = events::ConditionType::Boolean;
-					cond.value.bl = o[1].as_bool().unwrap();
-				}
-				if o[1].is_i64() {
-					cond.condType = events::ConditionType::Integer;
-					cond.value.int = o[1].as_i64().unwrap() as i32;
-				}
-
-				unit.conditions.push(cond);
+		for o in arr[i]["conditions"].as_array().unwrap() {
+			let str = o.as_array().unwrap()[0].as_str().unwrap().to_string();
+			let arr2: &serde_json::Value = &o.as_array().unwrap()[1];
+			match arr2 {
+				serde_json::Value::Bool(_)		=> _ = unit.conditions.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
+				serde_json::Value::Number(_)	=> _ = unit.conditions.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+				_ => continue,
 			}
 		}
 
@@ -155,27 +167,18 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 		for o in i["chain"].as_array().unwrap() {
 			let chain: events::EventChain;
 			match o.as_array().unwrap()[0].as_str().unwrap() {
-				"warp" => chain = events::EventChain{
-					evt: events::ChainType::Warp,
-					value: events::EventChainValue{ warp: ManuallyDrop::new(events::WarpEvent{
-						entityID: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
-						position: [
-							o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
-							],
-						direction: overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
-						doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
-					})},
+				"warp" => chain = events::EventChain::Warp{
+					entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+					position:	[
+						o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
+						o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
+						o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
+						],
+					direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
+					doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
 				},
-				"text" => chain = events::EventChain{
-					evt: events::ChainType::Text,
-					value: events::EventChainValue{ text: ManuallyDrop::new(events::TextEvent{text: o.as_array().unwrap()[1].as_str().unwrap().to_string()}) },
-				},
-				_ => chain = events::EventChain{
-					evt: events::ChainType::Test,
-					value: events::EventChainValue{ test: ManuallyDrop::new(events::TestEvent{text: o.as_array().unwrap()[0].as_str().unwrap().to_string()}) },
-				},
+				"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+				_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
 			}
 			event.chain.push(chain);
 		}
@@ -230,22 +233,18 @@ pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 }
 
 /// Draws the world.
-pub fn draw_world( gamestate : Gamestate ) -> Gamestate {
+pub fn draw_world( gamestate : &mut Gamestate ) {
 	let rotation = gamestate.camera.rotation;
 
 	if (rotation > -45.0 && rotation <=  45.0) || (rotation > 315.0 && rotation <= 405.0)	{ return draw_rot_000(gamestate); }
 	if (rotation >  45.0 && rotation <= 135.0) || (rotation > 405.0 && rotation <= 495.0)	{ return draw_rot_090(gamestate); }
 	if  rotation > 135.0 && rotation <= 225.0												{ return draw_rot_180(gamestate); }
 	if (rotation > 225.0 && rotation <= 315.0) || (rotation > -135.0 && rotation <= -45.0)	{ return draw_rot_270(gamestate); }
-	
-	return gamestate;
 }
 
 /// Draws tiles and units from a north-facing persepective.
-fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
-	let mut newGamestate = gamestate;
-
-	let playerPosition = math::round_v3(newGamestate.player.unit.position);
+fn draw_rot_000( gamestate : &mut Gamestate ) {
+	let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -259,21 +258,21 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z-1 {
-			newGamestate.player.unit = overworld::draw_unit(
-				&newGamestate.animations,
-				newGamestate.models["unit"],
-				newGamestate.player.unit,
-				newGamestate.camera.rotation,
+			overworld::draw_unit(
+				&gamestate.animations,
+				gamestate.models["unit"],
+				&mut gamestate.player.unit,
+				gamestate.camera.rotation,
 			);
 		}
 
 		for _ in minX..maxX {
 			for y in minY..maxY {
 				//* Check if tile exists */
-				if newGamestate.currentMap.contains_key(&[x, y, z]) {
-					let tile = &newGamestate.currentMap[&[x, y, z]];
+				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
+					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					raylib::draw_model_ex(
-						newGamestate.models[tile.model.as_str()],
+						gamestate.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						-360.0,
@@ -282,13 +281,13 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				for (_, unit) in &mut newGamestate.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&newGamestate.eventHandler, unit) {
-						*unit = overworld::draw_unit(
-							&newGamestate.animations,
-							newGamestate.models["unit"],
-							unit.clone(),
-							newGamestate.camera.rotation,
+				for (_, unit) in &mut gamestate.worldData.unitMap {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
+						overworld::draw_unit(
+							&gamestate.animations,
+							gamestate.models["unit"],
+							unit,
+							gamestate.camera.rotation,
 						);
 					}
 				}
@@ -302,15 +301,11 @@ fn draw_rot_000( gamestate : Gamestate ) -> Gamestate {
 			}
 		}
 	}
-
-	return newGamestate
 }
 
 /// Draws tiles and units from a east-facing persepective.
-fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
-	let mut newGamestate = gamestate;
-
-	let playerPosition = math::round_v3(newGamestate.player.unit.position);
+fn draw_rot_090( gamestate : &mut Gamestate ){
+	let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -324,23 +319,23 @@ fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x+1 {
-			newGamestate.player.unit = overworld::draw_unit(
-				&newGamestate.animations,
-				newGamestate.models["unit"],
-				newGamestate.player.unit,
-				newGamestate.camera.rotation,
+			overworld::draw_unit(
+				&gamestate.animations,
+				gamestate.models["unit"],
+				&mut gamestate.player.unit,
+				gamestate.camera.rotation,
 			);
 		}
 
 		for _ in minZ..maxZ {
 			for y in minY..maxY {
 				//* Check if tile exists */
-				if newGamestate.currentMap.contains_key(&[x, y, z]) {
-					let tile = &newGamestate.currentMap[&[x, y, z]];
+				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
+					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					let mut rot = -360.0;
 					if tile.trnsp { rot = -90.0; }
 					raylib::draw_model_ex(
-						newGamestate.models[tile.model.as_str()],
+						gamestate.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -349,13 +344,13 @@ fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				for (_, unit) in &mut newGamestate.unitMap {
+				for (_, unit) in &mut gamestate.worldData.unitMap {
 					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
-						*unit = overworld::draw_unit(
-							&newGamestate.animations,
-							newGamestate.models["unit"],
-							unit.clone(),
-							newGamestate.camera.rotation,
+						overworld::draw_unit(
+							&gamestate.animations,
+							gamestate.models["unit"],
+							unit,
+							gamestate.camera.rotation,
 						);
 					}
 				}
@@ -369,15 +364,11 @@ fn draw_rot_090( gamestate : Gamestate ) -> Gamestate {
 			}
 		}
 	}
-
-	return newGamestate
 }
 
 /// Draws tiles and units from a south-facing persepective.
-fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
-	let mut newGamestate = gamestate;
-
-	let playerPosition = math::round_v3(newGamestate.player.unit.position);
+fn draw_rot_180( gamestate : &mut Gamestate ) {
+	let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -391,23 +382,23 @@ fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z+1 {
-			newGamestate.player.unit = overworld::draw_unit(
-				&newGamestate.animations,
-				newGamestate.models["unit"],
-				newGamestate.player.unit,
-				newGamestate.camera.rotation,
+			overworld::draw_unit(
+				&gamestate.animations,
+				gamestate.models["unit"],
+				&mut gamestate.player.unit,
+				gamestate.camera.rotation,
 			);
 		}
 
 		for _ in minX..maxX {
 			for y in minY..maxY {
 				//* Check if tile exists */
-				if newGamestate.currentMap.contains_key(&[x, y, z]) {
-					let tile = &newGamestate.currentMap[&[x, y, z]];
+				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
+					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					let mut rot = -360.0;
 					if tile.trnsp { rot = -180.0; }
 					raylib::draw_model_ex(
-						newGamestate.models[tile.model.as_str()],
+						gamestate.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -416,13 +407,13 @@ fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				for (_, unit) in &mut newGamestate.unitMap {
+				for (_, unit) in &mut gamestate.worldData.unitMap {
 					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
-						*unit = overworld::draw_unit(
-							&newGamestate.animations,
-							newGamestate.models["unit"],
-							unit.clone(),
-							newGamestate.camera.rotation,
+						overworld::draw_unit(
+							&gamestate.animations,
+							gamestate.models["unit"],
+							unit,
+							gamestate.camera.rotation,
 						);
 					}
 				}
@@ -436,15 +427,11 @@ fn draw_rot_180( gamestate : Gamestate ) -> Gamestate {
 			}
 		}
 	}
-
-	return newGamestate
 }
 
 /// Draws tiles and units from a west-facing persepective.
-fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
-	let mut newGamestate = gamestate;
-
-	let playerPosition = math::round_v3(newGamestate.player.unit.position);
+fn draw_rot_270( gamestate : &mut Gamestate ) {
+	let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -458,23 +445,23 @@ fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x-1 {
-			newGamestate.player.unit = overworld::draw_unit(
-				&newGamestate.animations,
-				newGamestate.models["unit"],
-				newGamestate.player.unit,
-				newGamestate.camera.rotation,
+			overworld::draw_unit(
+				&gamestate.animations,
+				gamestate.models["unit"],
+				&mut gamestate.player.unit,
+				gamestate.camera.rotation,
 			);
 		}
 
 		for _ in minZ..maxZ {
 			for y in minY..maxY {
 				//* Check if tile exists */
-				if newGamestate.currentMap.contains_key(&[x, y, z]) {
-					let tile = &newGamestate.currentMap[&[x, y, z]];
+				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
+					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					let mut rot = -360.0;
 					if tile.trnsp { rot = -270.0; }
 					raylib::draw_model_ex(
-						newGamestate.models[tile.model.as_str()],
+						gamestate.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -483,15 +470,15 @@ fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 					)
 				}
 				//* Check if unit exists */
-				for (_, unit) in &mut newGamestate.unitMap {
+				for (_, unit) in &mut gamestate.worldData.unitMap {
 					let pos = raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32};
-					//if math::equal_v3(unit.position, pos) && overworld::exists(&newGamestate.eventHandler, &unit) {
+					//if math::equal_v3(unit.position, pos) && overworld::exists(&gamestate.eventHandler, &unit) {
 					if math::equal_v3(unit.position, pos) {
-						*unit = overworld::draw_unit(
-							&newGamestate.animations,
-							newGamestate.models["unit"],
-							unit.clone(),
-							newGamestate.camera.rotation,
+						overworld::draw_unit(
+							&gamestate.animations,
+							gamestate.models["unit"],
+							unit,
+							gamestate.camera.rotation,
 						);
 					}
 				}
@@ -505,6 +492,4 @@ fn draw_rot_270( gamestate : Gamestate ) -> Gamestate {
 			}
 		}
 	}
-
-	return newGamestate
 }

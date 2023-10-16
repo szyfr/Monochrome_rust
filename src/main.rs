@@ -23,15 +23,16 @@ fn main() {
 	//* Camera / Player */
 
 	// ! TEMP
-	gamestate.currentMap = world::load_world("newbark".to_string());
-	gamestate.unitMap    = world::load_entities("newbark".to_string());
-	gamestate.triggerMap = world::load_triggers("newbark".to_string());
-	gamestate.eventList  = world::load_events("newbark".to_string());
+	gamestate.worldData.currentMap = world::load_world("newbark".to_string());
+	gamestate.worldData.unitMap    = world::load_entities("newbark".to_string());
+	gamestate.worldData.triggerMap = world::load_triggers("newbark".to_string());
+	gamestate.worldData.eventList  = world::load_events("newbark".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
-		gamestate.camera = camera::update(&gamestate);
-		gamestate.player = player::controls(&gamestate);
+		camera::update(&mut gamestate);
+		//events
+		player::controls(&mut gamestate);
 
 		//* Draw */
 		raylib::begin_drawing();
@@ -40,7 +41,7 @@ fn main() {
 
 			raylib::begin_3d_mode(&gamestate.camera);
 
-			gamestate = world::draw_world(gamestate);
+			world::draw_world(&mut gamestate);
 
 			raylib::end_3d_mode();
 
