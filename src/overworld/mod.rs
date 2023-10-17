@@ -234,7 +234,7 @@ pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direc
 
 /// Returns whether the Unit should exist.
 pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) -> bool {
-	let mut result = false;
+	let mut result = true;
 
 	if unit.conditions.len() == 0 { return true; }
 
@@ -242,23 +242,27 @@ pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) ->
 		match cond {
 			Condition::Integer(_) =>
 				if handler.eventVariables.contains_key(str) {
-					if handler.eventVariables[str] == *cond { result = true; }
-					else { result = false; }
+					if handler.eventVariables[str] != *cond { result = false; }
 				} else {
-					if *cond == Condition::Integer(0) { result = true; }
-					else { result = false; }
+					if *cond != Condition::Integer(0) { result = false; }
 				},
 			Condition::Boolean(_) =>
 				if handler.eventVariables.contains_key(str) {
-					if handler.eventVariables[str] == *cond { result = true; }
-					else { result = false; }
+					if handler.eventVariables[str] != *cond { result = false; }
 				} else {
-					if *cond == Condition::Boolean(false) { result = true; }
-					else { result = false; }
+					if *cond != Condition::Boolean(false) { result = false; }
 				},
 		}
 	}
 	return result;
+}
+
+/// Checks if there is a Unit in that position.
+pub fn check_for_unit( unitMap : &HashMap<String, Unit>, position : &[i32;3] ) -> (bool, String) {
+	for (str, unit) in unitMap {
+		if [unit.position.x as i32, unit.position.y as i32, unit.position.z as i32] == *position { return (true, str.to_string()); }
+	}
+	return (false, "".to_string());
 }
 
 /// Calculates collision.

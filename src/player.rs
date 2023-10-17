@@ -58,7 +58,28 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 		if gamestate.worldData.triggerMap.contains_key(&pos) {
 			// TODO Migrate this to events
 			gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string();
+		}
 
+		//* Check for interaction */
+		let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
+		if settings::button_down("confirm", &gamestate.settings) {
+			match gamestate.player.unit.direction {
+				Direction::North => position[2] = position[2] - 1,
+				Direction::South => position[2] = position[2] + 1,
+				Direction::East  => position[0] = position[0] - 1,
+				Direction::West  => position[0] = position[0] + 1,
+				_ => return,
+			}
+			//if gamestate.worldData.unitMap.contains_key(&pos) {
+			let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
+			if unitCheck.0 && overworld::exists(&gamestate.worldData.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
+				gamestate.worldData.eventHandler.currentEvent = unitCheck.1;
+			}
+		}
+
+		//* Event handling */
+		if gamestate.worldData.eventHandler.currentEvent != "".to_string() {
+			print!("{}\n",gamestate.worldData.eventHandler.currentEvent);
 			let event = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent];
 			if gamestate.worldData.eventHandler.currentChain >= event.chain.len() as i32 {
 				gamestate.worldData.eventHandler.currentEvent = "".to_string();
