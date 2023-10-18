@@ -62,6 +62,7 @@ pub struct Unit {
 
 	pub animator	: Animator,
 }
+
 /// The animation controller for Units.
 #[derive(Clone)]
 pub struct Animator {
@@ -72,6 +73,7 @@ pub struct Animator {
 	pub frame	: i32,
 	pub counter : i32,
 }
+
 /// Storage format for animations loaded from file.
 pub struct Animation {
 	pub frames	: Vec<i32>,
@@ -182,7 +184,8 @@ pub fn set_animation( unit : &mut Unit, animation : String ) {
 }
 
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
-pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direction ) {
+//pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direction ) {
+pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
 	//* Leave if still moving or current direction is Null */
 	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
 	if unit.direction == Direction::Null { return; }
@@ -198,39 +201,41 @@ pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direc
 	}
 
 	//* Check Tiles existance */
-	let tileExists = worldData.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
+	let tileExists = currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
 	if !tileExists {
 		//TODO If the reverse movement would not be allowed, jump
 		//* Checking for tile up */
-		let tileExistsUp = worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
+		let tileExistsUp = currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
 		let mut tileUpColli = false;
 		if tileExistsUp {
-			let tileUp = &worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
+			let tileUp = &currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
 			tileUpColli = !check_collision(direction, tileUp.solid);
 			if tileUpColli { newPos.y += 1.0; }
 		}
 		//* Checking for tile down */
-		let tileExistsDw = worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
+		let tileExistsDw = currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
 		let mut tileDwColli = false;
 		if tileExistsDw {
-			let tileDw = &worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
+			let tileDw = &currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
 			tileDwColli = !check_collision(direction, tileDw.solid);
 			if tileDwColli { newPos.y -= 1.0; }
 		}
 		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) { return; }
 	}
-	let tile = &worldData.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
+	let tile = &currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
 
 	//* Check if Solid */
 	if check_collision(direction, tile.solid) { return; }
 
 	//* Check for entities */
-	for (_, unit) in worldData.unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&worldData.eventHandler, unit) { return; }
+	for (_, unit) in unitMap.iter() {
+		if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return; }
 	}
 
 	unit.posTarget = newPos;
 }
+
+///
 
 /// Returns whether the Unit should exist.
 pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) -> bool {
@@ -253,6 +258,17 @@ pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) ->
 					if *cond != Condition::Boolean(false) { result = false; }
 				},
 		}
+	}
+	return result;
+}
+
+pub fn check_conditions( handler : &events::event_handler::EventHandler, conditions : &HashMap<String, events::conditionals::Condition> ) -> bool {
+	let mut result = true;
+	
+	for (str, cond) in conditions {
+		if handler.eventVariables.contains_key(str) {
+			if handler.eventVariables[str] == *cond { result = true; }
+		} else if *cond == events::conditionals::Condition::Boolean(false) { result = true; }
 	}
 	return result;
 }

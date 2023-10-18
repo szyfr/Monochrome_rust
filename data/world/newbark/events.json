@@ -5,8 +5,13 @@
 			"chain": [
 				["sound","inside",1],
 				["animation","flash",23,8,[0,1,2],true],
-				["warp","player",[ 5,0,5 ],true,"north"],
+				["warp","player",[ 6,0,3 ],true,"south"],
 				["animation","flash",23,8,[2,1,0],false]
+			]},
+		{
+			"id":"newbarktown_mom_talk1_1",
+			"chain": [
+				["text","newbarktown_mom_talk1_1"]
 			]},
 		{
 			"id": "warp_elmlab_in",

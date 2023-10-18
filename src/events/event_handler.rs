@@ -11,6 +11,7 @@
 //= Enumerations
 use std::collections::HashMap;
 use super::conditionals::Condition;
+use super::textbox;
 
 
 
@@ -18,15 +19,17 @@ use super::conditionals::Condition;
 pub struct EventHandler{
 	pub currentEvent : String,
 	//pub textbox : textbox:Box,
-	pub currentChain : i32,
+	pub currentChain: i32,
 
-	pub internal : i32,
+	pub internal: i32,
 
-	pub eventVariables : HashMap<String, Condition>,
+	pub textbox: textbox::Textbox,
 
-	pub playerName : String,
-	pub playerPronouns : [String; 3],
-	pub rivalName : String,
+	pub eventVariables: HashMap<String, Condition>,
+
+	pub playerName: String,
+	pub playerPronouns: [String; 3],
+	pub rivalName: String,
 }
 
 
@@ -39,6 +42,8 @@ pub fn create() -> EventHandler {
 		currentChain:	0,
 
 		internal:		0,
+
+		textbox: 		textbox::init(),
 
 		eventVariables: HashMap::new(),
 

@@ -8,26 +8,35 @@
 //= Imports
 pub mod conditionals;
 pub mod event_handler;
-use crate::overworld::Direction;
+pub mod textbox;
+use crate::{overworld::{Direction, self}, data};
 
 
 //= Enumerations
 
 /// Event types
 pub enum EventChain{
-	/// Test / Debug Event
+	/// Test / Debug
 	Test{ text: String },
 	
-	/// Textbox display Event
+	/// Textbox display
 	Text{ text: String },
+	/// Textbox choice display
+	//Choice{ text: String },
 
-	/// Teleport unit Event
+	/// Teleport unit
 	Warp{
 		entityID:	String,
 		position:	[i32;3],
 		direction:	Direction,
 		doMove:		bool,
 	
+	},
+	/// Move unit
+	Move{
+		entityID: String,
+		direction: Direction,
+		times: i32,
 	},
 }
 
@@ -41,3 +50,72 @@ pub struct Event{
 
 
 //= Procedures
+
+/// Parses the current event.
+pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
+
+	//* If there isn't an event currently, leave */
+	if gamestate.worldData.eventHandler.currentEvent == "".to_string() { return false; }
+
+	//* If the current event doesn't exist, clear it */
+	if !gamestate.worldData.eventList.contains_key(&gamestate.worldData.eventHandler.currentEvent) { clear_event(gamestate); return false; }
+	
+	let event = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent];
+	//* Check if event chain position is at the end of the event */
+	if gamestate.worldData.eventHandler.currentChain >= event.chain.len() as i32 { clear_event(gamestate); return false; }
+
+	//* Parse the the current chain event */
+	let chPos = gamestate.worldData.eventHandler.currentChain as usize;
+	let chain = &event.chain[chPos];
+	match chain {
+		EventChain::Test{ text } => {
+				print!("TEXT: {}\n",text);
+				gamestate.worldData.eventHandler.currentChain += 1;
+			},
+			EventChain::Text { text } => {
+				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
+			},
+			EventChain::Warp { entityID, position, direction, doMove } => {
+				let unit: &mut overworld::Unit;
+				let unitMap = gamestate.worldData.unitMap.clone();
+				//* Check if target is player */
+				if entityID == "player" { unit = &mut gamestate.player.unit; }
+				else if !gamestate.worldData.unitMap.contains_key(entityID) { gamestate.worldData.eventHandler.currentChain += 1; return false; }
+				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
+
+				//* Move unit */
+				unit.position  = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				unit.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				unit.direction = *direction;
+
+				//* If doMove is true, move */
+				if *doMove { overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.worldData.eventHandler, unit, *direction); }
+				else { unit.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32}; }
+				
+				gamestate.worldData.eventHandler.currentChain += 1;
+			},
+			EventChain::Move { entityID, direction, times } => {
+				let unit: &mut overworld::Unit;
+				let unitMap = gamestate.worldData.unitMap.clone();
+				//* Check if target is player */
+				if entityID == "player" { unit = &mut gamestate.player.unit; }
+				else if !gamestate.worldData.unitMap.contains_key(entityID) { gamestate.worldData.eventHandler.currentChain += 1; return false; }
+				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
+
+				overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.worldData.eventHandler, unit, *direction);
+				
+				gamestate.worldData.eventHandler.internal += 1;
+				if gamestate.worldData.eventHandler.internal >= *times { gamestate.worldData.eventHandler.currentChain += 1; }
+			},
+			//_ => return,
+	}
+	return true;
+}
+
+/// Clears the current event and sets all event data to 0.
+pub fn clear_event( gamestate : &mut data::Gamestate ) {
+	gamestate.worldData.eventHandler.currentChain = 0;
+	gamestate.worldData.eventHandler.currentEvent = "".to_string();
+	gamestate.worldData.eventHandler.internal = 0;
+	gamestate.player.canMove = true;
+}

@@ -102,6 +102,25 @@ pub fn load_texture_from_image( img : raylib_ffi::Image ) -> raylib_ffi::Texture
 pub fn draw_texture( texture : raylib_ffi::Texture, posX : i32, posY : i32, tint : raylib_ffi::Color ) {
 	unsafe { raylib_ffi::DrawTexture(texture, posX, posY, tint) }
 }
+pub fn draw_texture_npatch( texture : raylib_ffi::Texture, dest : raylib_ffi::Rectangle, origin : raylib_ffi::Vector2, rotation : f32, tint : raylib_ffi::Color ) {
+	let nPatchInfo = raylib_ffi::NPatchInfo {
+		source: raylib_ffi::Rectangle {
+			x: 0.0,
+			y: 0.0,
+			width: texture.width as f32,
+			height: texture.height as f32,
+		},
+		left: texture.width / 3,
+		top: texture.height / 3,
+		right: texture.width / 3,
+		bottom: texture.height / 3,
+		layout: raylib_ffi::enums::NPatchLayout::NinePatch as i32,
+	};
+	unsafe { raylib_ffi::DrawTextureNPatch(texture, nPatchInfo, dest, origin, rotation, tint); }
+}
+pub fn image_resize_nn( image : &mut raylib_ffi::Image, scale : i32 ) {
+	unsafe { raylib_ffi::ImageResizeNN(image, image.width * scale, image.height * scale); }
+}
 
 pub fn set_material_texture( material : &mut raylib_ffi::Material, mapType : raylib_ffi::enums::MaterialMapIndex, texture : raylib_ffi::Texture ) {
 	unsafe { raylib_ffi::SetMaterialTexture(material, mapType as i32, texture) }

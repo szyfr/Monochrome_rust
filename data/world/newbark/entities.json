@@ -7,7 +7,7 @@
 			"movement":"random",
 			"direction":"west",
 			"events":[
-				{ "conditions":[], "id":"test" }
+				{ "conditions":[], "id":"newbarktown_mom_talk1_1" }
 			],
 			"conditions":[]
 		},

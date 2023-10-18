@@ -1,7 +1,7 @@
 
 
 //= Imports
-use monorust::{raylib, data, graphics, camera, player, overworld, world};
+use monorust::{raylib, data, graphics, camera, player, overworld, world, events};
 
 
 //= Main
@@ -44,6 +44,8 @@ fn main() {
 			world::draw_world(&mut gamestate);
 
 			raylib::end_3d_mode();
+
+			events::textbox::draw(&mut gamestate);
 
 			raylib::draw_fps(0,0);
 		}

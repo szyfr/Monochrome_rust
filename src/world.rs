@@ -177,6 +177,11 @@ pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
 					direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
 					doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
 				},
+				"move" => chain = events::EventChain::Move {
+					entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+					direction:	overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
+					times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
+				},
 				"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
 				_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
 			}

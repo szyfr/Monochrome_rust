@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib, utilities::math, settings, events::EventChain};
+use crate::{overworld::{self, Direction}, data, raylib, utilities::math, settings, events};
 
 
 //= Constants
@@ -45,77 +45,57 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 	if !math::close_enough_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget, 0.05) {
 		let dir = math::get_direction_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget);
 		gamestate.player.unit.position = math::add_v3(gamestate.player.unit.position, math::mul_v3(dir, MVSPEED * ft));
-	} else if gamestate.player.canMove {
-		gamestate.player.unit.position = gamestate.player.unit.posTarget;
-		let mut newpos = gamestate.player.unit.position;
-
-		//* Check for trigger */
-		let pos = [
-			gamestate.player.unit.position.x as i32,
-			gamestate.player.unit.position.y as i32,
-			gamestate.player.unit.position.z as i32,
-		];
-		if gamestate.worldData.triggerMap.contains_key(&pos) {
-			// TODO Migrate this to events
-			gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string();
-		}
-
-		//* Check for interaction */
-		let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
-		if settings::button_down("confirm", &gamestate.settings) {
-			match gamestate.player.unit.direction {
-				Direction::North => position[2] = position[2] - 1,
-				Direction::South => position[2] = position[2] + 1,
-				Direction::East  => position[0] = position[0] - 1,
-				Direction::West  => position[0] = position[0] + 1,
-				_ => return,
-			}
-			//if gamestate.worldData.unitMap.contains_key(&pos) {
-			let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
-			if unitCheck.0 && overworld::exists(&gamestate.worldData.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
-				gamestate.worldData.eventHandler.currentEvent = unitCheck.1;
-			}
-		}
-
+	} else {
 		//* Event handling */
-		if gamestate.worldData.eventHandler.currentEvent != "".to_string() {
-			print!("{}\n",gamestate.worldData.eventHandler.currentEvent);
-			let event = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent];
-			if gamestate.worldData.eventHandler.currentChain >= event.chain.len() as i32 {
-				gamestate.worldData.eventHandler.currentEvent = "".to_string();
-				gamestate.worldData.eventHandler.currentChain = 0;
-			} else {
-				let cond = &event.chain[gamestate.worldData.eventHandler.currentChain as usize];
-				match cond {
-					EventChain::Test{ text } => {
-						print!("TEST: {}\n",text);
-						gamestate.worldData.eventHandler.currentChain += 1;
-					},
-					EventChain::Text { text } => {
-						print!("TEXT: {}\n",text);
-						gamestate.worldData.eventHandler.currentChain += 1;
-					},
-					EventChain::Warp { entityID, position, .. } => {
-						print!("WARP: {}->[{},{},{}]\n", entityID, position[0], position[1], position[2]);
-						gamestate.worldData.eventHandler.currentChain += 1;
-					},
-					//_ => return,
+		if events::parse_event(gamestate) { return; }
+
+		if gamestate.player.canMove {
+
+			gamestate.player.unit.position = gamestate.player.unit.posTarget;
+			let mut newpos = gamestate.player.unit.position;
+
+			//* Check for trigger */
+			let pos = [
+				gamestate.player.unit.position.x as i32,
+				gamestate.player.unit.position.y as i32,
+				gamestate.player.unit.position.z as i32,
+			];
+			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); }
+
+			//* Check for interaction */
+			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
+			if settings::button_down("confirm", &gamestate.settings) {
+				match gamestate.player.unit.direction {
+					Direction::North => position[2] = position[2] - 1,
+					Direction::South => position[2] = position[2] + 1,
+					Direction::East  => position[0] = position[0] - 1,
+					Direction::West  => position[0] = position[0] + 1,
+					_ => return,
 				}
-				let _ = std::io::Write::flush(&mut std::io::stdout());
-				return;
+
+				//* The last event in the loop that the conditions are met for is done. */
+				let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
+				if unitCheck.0 && overworld::exists(&gamestate.worldData.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
+					if gamestate.worldData.unitMap.contains_key(&unitCheck.1) {
+						for (str, event) in &gamestate.worldData.unitMap[&unitCheck.1].events {
+							if overworld::check_conditions(&gamestate.worldData.eventHandler, &event) {
+								gamestate.worldData.eventHandler.currentEvent = str.to_string();
+							}
+						}
+					}
+				}
 			}
-		}
 
-		//* Gather inputs */
-		let up	= settings::button_down("up", &gamestate.settings);
-		let down	= settings::button_down("down", &gamestate.settings);
-		let left	= settings::button_down("left", &gamestate.settings);
-		let right	= settings::button_down("right", &gamestate.settings);
+			//* Gather inputs */
+			let up	= settings::button_down("up", &gamestate.settings);
+			let down	= settings::button_down("down", &gamestate.settings);
+			let left	= settings::button_down("left", &gamestate.settings);
+			let right	= settings::button_down("right", &gamestate.settings);
 
-		let curRot = gamestate.camera.rotation;
-		let mut dir = gamestate.player.unit.direction;
+			let curRot = gamestate.camera.rotation;
+			let mut dir = gamestate.player.unit.direction;
 
-		if (curRot > -45.0 && curRot <=  45.0) || (curRot > 315.0 && curRot <= 405.0) {
+			if (curRot > -45.0 && curRot <=  45.0) || (curRot > 315.0 && curRot <= 405.0) {
 			if up {
 				dir = Direction::North;
 				newpos.z -= 1.0;
@@ -133,7 +113,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				newpos.x += 1.0;
 			}
 		}
-		if (curRot >  45.0 && curRot <= 135.0) || (curRot > 405.0 && curRot <= 495.0) {
+			if (curRot >  45.0 && curRot <= 135.0) || (curRot > 405.0 && curRot <= 495.0) {
 			if up {
 				dir = Direction::West;
 				newpos.x += 1.0;
@@ -151,7 +131,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				newpos.z += 1.0;
 			}
 		}
-		if curRot > 135.0 && curRot <= 225.0 {
+			if curRot > 135.0 && curRot <= 225.0 {
 			if up {
 				dir = Direction::South;
 				newpos.z += 1.0;
@@ -169,7 +149,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				newpos.x -= 1.0;
 			}
 		}
-		if (curRot > 225.0 && curRot <= 315.0) || (curRot > -135.0 && curRot <= -45.0) {
+			if (curRot > 225.0 && curRot <= 315.0) || (curRot > -135.0 && curRot <= -45.0) {
 			if up {
 				dir = Direction::East;
 				newpos.x -= 1.0;
@@ -188,13 +168,14 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			}
 		}
 
-		//* If the player is moving */
-		gamestate.player.unit.direction = dir;
-		if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
-			overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
-			overworld::move_unit(&gamestate.worldData, &mut gamestate.player.unit, dir);
-		} else {
-			if gamestate.player.unit.direction != Direction::Null { overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() ); }
+			//* If the player is moving */
+			gamestate.player.unit.direction = dir;
+			if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
+				overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
+				overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.worldData.eventHandler, &mut gamestate.player.unit, dir);
+			} else {
+				if gamestate.player.unit.direction != Direction::Null { overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() ); }
+			}
 		}
 	}
 
