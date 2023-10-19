@@ -56,15 +56,15 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 			//* Check for trigger */
 			let pos = [
-				gamestate.player.unit.position.x as i32,
-				gamestate.player.unit.position.y as i32,
-				gamestate.player.unit.position.z as i32,
+				gamestate.player.unit.posTarget.x as i32,
+				gamestate.player.unit.posTarget.y as i32,
+				gamestate.player.unit.posTarget.z as i32,
 			];
 			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); }
 
 			//* Check for interaction */
 			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
-			if settings::button_down("confirm", &gamestate.settings) {
+			if settings::button_pressed("confirm", &gamestate.settings) {
 				match gamestate.player.unit.direction {
 					Direction::North => position[2] = position[2] - 1,
 					Direction::South => position[2] = position[2] + 1,

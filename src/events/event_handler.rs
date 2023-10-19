@@ -18,7 +18,6 @@ use super::textbox;
 //= Structures
 pub struct EventHandler{
 	pub currentEvent : String,
-	//pub textbox : textbox:Box,
 	pub currentChain: i32,
 
 	pub internal: i32,

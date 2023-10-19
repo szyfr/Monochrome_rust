@@ -11,7 +11,8 @@
 		{
 			"id":"newbarktown_mom_talk1_1",
 			"chain": [
-				["text","newbarktown_mom_talk1_1"]
+				["text","newbarktown_mom_talk1_1"],
+				["warp","player",[ 6,0,3 ],true,"south"]
 			]},
 		{
 			"id": "warp_elmlab_in",

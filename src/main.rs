@@ -8,6 +8,7 @@ use monorust::{raylib, data, graphics, camera, player, overworld, world, events}
 fn main() {
 	//* Create Initial gamestate */
 	let mut gamestate = data::init();
+	unsafe { data::SETTINGS.load(); }
 
 	//* Raylib */
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);

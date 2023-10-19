@@ -2,11 +2,12 @@
 
 //= Allow
 #![allow(non_snake_case)]
+#![allow(non_snake_case)]
 
 
 //= Imports
 use std::collections::HashMap;
-use crate::{settings, camera, player, overworld, world, graphics, localization};
+use crate::{settings, camera, player, overworld, world, graphics, localization, gSettings};
 
 
 //= Structs
@@ -27,6 +28,16 @@ pub struct Gamestate {
 	pub camera		: camera::Camera,
 	pub player		: player::Player,
 }
+
+
+//= Globals
+pub static mut SETTINGS : gSettings::Settings = gSettings::Settings{
+	screenWidth: 1280,
+	screenHeight: 720,
+	screenFps: 80,
+	keybindings: None,
+	language: gSettings::Language::English,
+};
 
 
 //= Procedures

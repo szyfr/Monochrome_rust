@@ -6,11 +6,8 @@
 
 
 //= Imports
-
-
-//= Enumerations
+use std::fmt::Display;
 use crate::{data, raylib, settings};
-
 use super::EventChain;
 
 
@@ -21,6 +18,16 @@ pub enum TextboxState{
 	Active,
 	Finished,
 	Reset,
+}
+impl Display for TextboxState {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			TextboxState::Inactive	=> write!(f, "inactive"),
+			TextboxState::Active	=> write!(f, "active"),
+			TextboxState::Finished	=> write!(f, "finished"),
+			TextboxState::Reset		=> write!(f, "reset"),
+		}
+	}
 }
 
 
@@ -40,6 +47,23 @@ pub struct Textbox{
 	pub hasChoice: bool,
 	pub choiceList: Vec<Choice>,
 	pub curPosition: i32,
+}
+impl Textbox {
+	/// Resets the textbox to it's default state.
+	pub fn reset(&mut self) {
+		self.state = TextboxState::Inactive;
+
+		self.currentText = "".to_string();
+		self.targetText = "".to_string();
+
+		self.timer = 0;
+		self.pause = 0;
+		self.position = 0;
+
+		self.hasChoice = false;
+		self.choiceList = Vec::new();
+		self.curPosition = 0;
+	}
 }
 
 /// Choices structure
@@ -79,18 +103,20 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			gamestate.worldData.eventHandler.textbox.targetText = gamestate.localization[&text.to_string()].to_string();
 			gamestate.worldData.eventHandler.textbox.timer = 0;
 			gamestate.worldData.eventHandler.textbox.pause = 0;
-			gamestate.worldData.eventHandler.textbox.position = 0;
+			gamestate.worldData.eventHandler.textbox.position = 1;
 			gamestate.worldData.eventHandler.textbox.hasChoice = false;
 			gamestate.worldData.eventHandler.textbox.choiceList = Vec::new();
 			gamestate.worldData.eventHandler.textbox.curPosition = 0;
 
-			return true;
+			return false;
 		},
 		TextboxState::Active => {
 			//* Increase timer */
 			// TODO timer amount
 			gamestate.worldData.eventHandler.textbox.timer += 1;
+			print!("fuck1\n");
 			if gamestate.worldData.eventHandler.textbox.timer >= 5 {
+				print!("fuck2\n");
 				gamestate.worldData.eventHandler.textbox.timer = 0;
 				gamestate.worldData.eventHandler.textbox.position += 1;
 
@@ -115,7 +141,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 
 						},
 						_ => {
-							gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive;
+							gamestate.worldData.eventHandler.textbox.reset();
 						},
 					}
 					return true;
@@ -128,7 +154,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 	return false;
 }
 
-/// 
+/// Draw textbox
 //TODO Apply screen scaling
 pub fn draw( gamestate : &mut data::Gamestate ) {
 	let widthOffset = gamestate.settings.screenWidth as f32 / 8.0;

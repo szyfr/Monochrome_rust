@@ -33,6 +33,40 @@ pub struct Camera {
 
 	onPlayer		: bool,
 }
+impl Camera {
+	fn update_rotation(&mut self) {
+		let ft = raylib::get_frame_time();
+
+		//* Update rotation */
+		if !math::close_enough_f32(self.rotation, self.rotTarget, 5.0) {
+			let dir = math::get_direction_f32(self.rotation, self.rotTarget);
+			self.rotation += dir * (CMSPEED * ft);
+		} else {
+			self.rotation = self.rotTarget;
+	
+			//* Bounds checking */
+			if self.rotation < 0.0 {
+				self.rotation += 360.0;
+				self.rotTarget += 360.0;
+			}
+			if self.rotation > 360.0 {
+				self.rotation -= 360.0;
+				self.rotTarget -= 360.0;
+			}
+	
+			//* Controls */
+			unsafe {
+				if data::SETTINGS.key_down("rotate_right") { self.rotTarget -= 90.0; }
+				if data::SETTINGS.key_down("rotate_left")  { self.rotTarget += 90.0; }
+			}
+			//if settings::button_down("rotate_right", &gamestate.settings) { self.rotTarget -= 90.0; }
+			//if settings::button_down("rotate_left",  &gamestate.settings) { self.rotTarget += 90.0; }
+		}
+	
+		//* Calculate rotation */
+		self.camPosition = math::rotate(self.position, self.rotation);
+	}
+}
 
 
 //= Procedures
@@ -69,28 +103,29 @@ pub fn update( gamestate : &mut data::Gamestate ) {
 			gamestate.camera.position = math::add_v3(gamestate.camera.position, math::mul_v3(dir, MVSPEED * ft));
 		} else { gamestate.camera.position = gamestate.camera.posTarget; }
 	}
-	//* Update rotation */
-	if !math::close_enough_f32(gamestate.camera.rotation, gamestate.camera.rotTarget, 5.0) {
-		let dir = math::get_direction_f32(gamestate.camera.rotation, gamestate.camera.rotTarget);
-		gamestate.camera.rotation += dir * (CMSPEED * ft);
-	} else {
-		gamestate.camera.rotation = gamestate.camera.rotTarget;
-
-		//* Bounds checking */
-		if gamestate.camera.rotation < 0.0 {
-			gamestate.camera.rotation += 360.0;
-			gamestate.camera.rotTarget += 360.0;
-		}
-		if gamestate.camera.rotation > 360.0 {
-			gamestate.camera.rotation -= 360.0;
-			gamestate.camera.rotTarget -= 360.0;
-		}
-
-		//* Controls */
-		if settings::button_down("rotate_right", &gamestate.settings) { gamestate.camera.rotTarget -= 90.0; }
-		if settings::button_down("rotate_left",  &gamestate.settings) { gamestate.camera.rotTarget += 90.0; }
-	}
-
-	//* Calculate rotation */
-	gamestate.camera.camPosition = math::rotate(gamestate.camera.position, gamestate.camera.rotation);
+	gamestate.camera.update_rotation();
+	////* Update rotation */
+	//if !math::close_enough_f32(gamestate.camera.rotation, gamestate.camera.rotTarget, 5.0) {
+	//	let dir = math::get_direction_f32(gamestate.camera.rotation, gamestate.camera.rotTarget);
+	//	gamestate.camera.rotation += dir * (CMSPEED * ft);
+	//} else {
+	//	gamestate.camera.rotation = gamestate.camera.rotTarget;
+//
+	//	//* Bounds checking */
+	//	if gamestate.camera.rotation < 0.0 {
+	//		gamestate.camera.rotation += 360.0;
+	//		gamestate.camera.rotTarget += 360.0;
+	//	}
+	//	if gamestate.camera.rotation > 360.0 {
+	//		gamestate.camera.rotation -= 360.0;
+	//		gamestate.camera.rotTarget -= 360.0;
+	//	}
+//
+	//	//* Controls */
+	//	if settings::button_down("rotate_right", &gamestate.settings) { gamestate.camera.rotTarget -= 90.0; }
+	//	if settings::button_down("rotate_left",  &gamestate.settings) { gamestate.camera.rotTarget += 90.0; }
+	//}
+//
+	////* Calculate rotation */
+	//gamestate.camera.camPosition = math::rotate(gamestate.camera.position, gamestate.camera.rotation);
 }
