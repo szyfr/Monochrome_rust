@@ -79,14 +79,25 @@ pub struct Settings {
 
 	pub language : Language,
 }
+
+/// Storage for individual keybindings
+pub struct Keybinding {
+	pub origin		: Origin,
+	pub controller	: i32,
+	pub code		: i32,
+}
+
+
+//= Procedures
+
 impl Settings {
-	//
+	/// Load settings from file.
 	pub fn load(&mut self) {
 		//* Attempt to load file */
 		let fileResult = read_to_string("settings.json");
 		if fileResult.is_err() {
 			debug::log("[ERROR] - Failed to find settings file. Creating new file.\n");
-			self.generate_settings();
+			self.generate();
 		}
 
 		//* Convert to Json */
@@ -112,8 +123,8 @@ impl Settings {
 		}
 	}
 
-	//
-	fn generate_settings(&mut self) {
+	/// Set settings to default values.
+	fn generate(&mut self) {
 		self.screenWidth	= 1280;
 		self.screenHeight 	=  720;
 		self.screenFps 		=   80;
@@ -128,11 +139,11 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("rotate_right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
 		self.keybindings.as_mut().unwrap().insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 32 });
 
-		self.save_file();
+		self.save();
 	}
 
-	//
-	fn save_file(&self) {
+	/// Save settings to file.
+	fn save(&self) {
 		let mut newSettingsFile : String = String::from("");
 		let mut counter = 0;
 
@@ -243,15 +254,3 @@ impl Settings {
 		return false;
 	}
 }
-
-/// Storage for individual keybindings
-pub struct Keybinding {
-	pub origin		: Origin,
-	pub controller	: i32,
-	pub code		: i32,
-}
-
-
-//= Procedures
-
-//
