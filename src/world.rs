@@ -46,6 +46,153 @@ pub struct Tile{
 
 //= Procedures
 
+impl World {
+	/// Load tile data from input file to Hashmap indexed by their position.
+	pub fn load_world( &mut self, mapName : &str ) {
+		//* Attempt to load map file */
+		let fileResult_map = read_to_string("data/world/".to_string() + mapName + "/map.json" );
+		if fileResult_map.is_err() {
+			debug::log("[ERROR] - Failed to load map file.\n");
+			return;
+		}
+
+		//* Convert to JSON and read */
+		let jsonFile_map: serde_json::Value = serde_json::from_str(&fileResult_map.unwrap()).unwrap();
+		for i in jsonFile_map["tiles"].as_array().unwrap() {
+			let tile = Tile {
+				model: i["tile"].as_str().unwrap().to_string(),
+				solid: solid_tag_to_bool(i["tags"].as_array().unwrap()[0].as_array().unwrap()),
+				water: i["tags"].as_array().unwrap()[1].as_bool().unwrap(),
+				trnsp: i["tags"].as_array().unwrap()[2].as_bool().unwrap(),
+			};
+			let position = [
+				i["position"].as_array().unwrap()[0].as_f64().unwrap() as i32,
+				i["position"].as_array().unwrap()[1].as_f64().unwrap() as i32,
+				i["position"].as_array().unwrap()[2].as_f64().unwrap() as i32,
+			];
+			self.currentMap.insert(position, tile);
+		}
+	}
+
+	/// Loads entity data from input file to Hashmap indexed by their ID.
+	pub fn load_entities( &mut self, mapName : &str ) {
+		//* Attempt to load entities file */
+		let fileResult_ent = read_to_string("data/world/".to_string() + mapName + "/entities.json" );
+		if fileResult_ent.is_err() {
+			debug::log("[ERROR] - Failed to load map file.\n");
+			return;
+		}
+
+		//* Convert to JSON and read */
+		let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
+		let arr = jsonFile_ent["entities"].as_array().unwrap();
+		for i in 0..arr.len() {
+			let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
+
+			//* Set entity direction and position */
+			unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
+			unit.position = raylib_ffi::Vector3{
+				x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
+				y: arr[i]["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
+				z: arr[i]["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
+			};
+			unit.posTarget = unit.position;
+
+			//* Set entity events */
+			for o in arr[i]["events"].as_array().unwrap() {
+				let mut conds: HashMap<String, events::conditionals::Condition> = HashMap::new();
+				for e in o["conditions"].as_array().unwrap() {
+					let str = e.as_array().unwrap()[0].as_str().unwrap().to_string();
+					let arr2: &serde_json::Value = &e.as_array().unwrap()[1];
+					match arr2 {
+						serde_json::Value::Bool(_)		=> _ = conds.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
+						serde_json::Value::Number(_)	=> _ = conds.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+						_ => continue,
+					}
+				}
+				unit.events.insert(o["id"].as_str().unwrap().to_string(), conds);
+			}
+
+			//* Set entity appearance conditions */
+			for o in arr[i]["conditions"].as_array().unwrap() {
+				let str = o.as_array().unwrap()[0].as_str().unwrap().to_string();
+				let arr2: &serde_json::Value = &o.as_array().unwrap()[1];
+				match arr2 {
+					serde_json::Value::Bool(_)		=> _ = unit.conditions.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
+					serde_json::Value::Number(_)	=> _ = unit.conditions.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+					_ => continue,
+				}
+			}
+
+			self.unitMap.insert(arr[i]["id"].as_str().unwrap().to_string(), unit);
+		}
+	}
+
+	/// Loads event data from input file to Hashmap indexed by their ID.
+	pub fn load_events( &mut self, mapName : &str ) {
+		//* Attempt to load entities file */
+		let fileResult_evt = read_to_string("data/world/".to_string() + mapName + "/events.json" );
+		if fileResult_evt.is_err() {
+			debug::log("[ERROR] - Failed to load map file.\n");
+			return;
+		}
+
+		//* Convert to JSON and read */
+		let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
+		for i in jsonFile_evt["events"].as_array().unwrap() {
+			let mut event: events::Event = events::Event{ chain : Vec::new() };
+			for o in i["chain"].as_array().unwrap() {
+				let chain: events::EventChain;
+				match o.as_array().unwrap()[0].as_str().unwrap() {
+					"warp" => chain = events::EventChain::Warp{
+						entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+						position:	[
+							o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
+							o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
+							o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
+							],
+						direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
+						doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
+					},
+					"move" => chain = events::EventChain::Move {
+						entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+						direction:	overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
+						times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
+					},
+					"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+					_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+				}
+				event.chain.push(chain);
+			}
+			self.eventList.insert(i["id"].as_str().unwrap().to_string(), event);
+		}
+	}
+
+	/// Loads trigger data from input file to hasmap indexed by position.
+	pub fn load_triggers( &mut self, mapName : &str ) {
+		//* Attempt to load entities file */
+		let fileResult_evt = read_to_string("data/world/".to_string() + mapName + "/events.json" );
+		if fileResult_evt.is_err() {
+			debug::log("[ERROR] - Failed to load map file.\n");
+			return;
+		}
+
+		//* Convert to JSON and read */
+		let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
+		for i in jsonFile_evt["triggers"].as_array().unwrap() {
+			let pos = [
+				i["location"].as_array().unwrap()[0].as_i64().unwrap() as i32,
+				i["location"].as_array().unwrap()[1].as_i64().unwrap() as i32,
+				i["location"].as_array().unwrap()[2].as_i64().unwrap() as i32,
+			];
+			self.triggerMap.insert(pos, i["event"].as_str().unwrap().to_string());
+		}
+	}
+
+	//
+
+}
+
 /// Creates an empty worlddata structure.
 pub fn init_empty() -> World {
 	return World{
@@ -58,164 +205,6 @@ pub fn init_empty() -> World {
 
 		eventHandler	: events::event_handler::create(),
 	}
-}
-
-/// Load tile data from input file to Hashmap indexed by their position.
-pub fn load_world( mapName : String ) -> HashMap<[i32;3], Tile> {
-	let mut output = HashMap::new();
-
-	//* Attempt to load map file */
-	let fileResult_map = read_to_string("data/world/".to_string() + &mapName + "/map.json" );
-	if fileResult_map.is_err() {
-		debug::log("[ERROR] - Failed to load map file.\n");
-		return output;
-	}
-
-	//* Convert to JSON and read */
-	let jsonFile_map: serde_json::Value = serde_json::from_str(&fileResult_map.unwrap()).unwrap();
-	for i in jsonFile_map["tiles"].as_array().unwrap() {
-		let tile = Tile {
-			model: i["tile"].as_str().unwrap().to_string(),
-			solid: solid_tag_to_bool(i["tags"].as_array().unwrap()[0].as_array().unwrap()),
-			water: i["tags"].as_array().unwrap()[1].as_bool().unwrap(),
-			trnsp: i["tags"].as_array().unwrap()[2].as_bool().unwrap(),
-		};
-		let position = [
-			i["position"].as_array().unwrap()[0].as_f64().unwrap() as i32,
-			i["position"].as_array().unwrap()[1].as_f64().unwrap() as i32,
-			i["position"].as_array().unwrap()[2].as_f64().unwrap() as i32,
-		];
-		output.insert(position, tile);
-	}
-
-	return output;
-}
-
-/// Loads entity data from input file to Hashmap indexed by their ID.
-pub fn load_entities( mapName : String ) -> HashMap<String, overworld::Unit> {
-	let mut output = HashMap::new();
-
-	//* Attempt to load entities file */
-	let fileResult_ent = read_to_string("data/world/".to_string() + &mapName + "/entities.json" );
-	if fileResult_ent.is_err() {
-		debug::log("[ERROR] - Failed to load map file.\n");
-		return output;
-	}
-
-	//* Convert to JSON and read */
-	let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
-	let arr = jsonFile_ent["entities"].as_array().unwrap();
-	for i in 0..arr.len() {
-		let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
-
-		//* Set entity direction and position */
-		unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
-		unit.position = raylib_ffi::Vector3{
-			x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
-			y: arr[i]["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
-			z: arr[i]["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
-		};
-		unit.posTarget = unit.position;
-
-		//* Set entity events */
-		for o in arr[i]["events"].as_array().unwrap() {
-			let mut conds: HashMap<String, events::conditionals::Condition> = HashMap::new();
-			for e in o["conditions"].as_array().unwrap() {
-				let str = e.as_array().unwrap()[0].as_str().unwrap().to_string();
-				let arr2: &serde_json::Value = &e.as_array().unwrap()[1];
-				match arr2 {
-					serde_json::Value::Bool(_)		=> _ = conds.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
-					serde_json::Value::Number(_)	=> _ = conds.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
-					_ => continue,
-				}
-			}
-			unit.events.insert(o["id"].as_str().unwrap().to_string(), conds);
-		}
-
-		//* Set entity appearance conditions */
-		for o in arr[i]["conditions"].as_array().unwrap() {
-			let str = o.as_array().unwrap()[0].as_str().unwrap().to_string();
-			let arr2: &serde_json::Value = &o.as_array().unwrap()[1];
-			match arr2 {
-				serde_json::Value::Bool(_)		=> _ = unit.conditions.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
-				serde_json::Value::Number(_)	=> _ = unit.conditions.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
-				_ => continue,
-			}
-		}
-
-		output.insert(arr[i]["id"].as_str().unwrap().to_string(), unit);
-	}
-
-	return output;
-}
-
-/// Loads event data from input file to Hashmap indexed by their ID.
-pub fn load_events( mapName : String ) -> HashMap<String, events::Event> {
-	let mut output = HashMap::new();
-
-	//* Attempt to load entities file */
-	let fileResult_evt = read_to_string("data/world/".to_string() + &mapName + "/events.json" );
-	if fileResult_evt.is_err() {
-		debug::log("[ERROR] - Failed to load map file.\n");
-		return output;
-	}
-
-	//* Convert to JSON and read */
-	let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
-	for i in jsonFile_evt["events"].as_array().unwrap() {
-		let mut event: events::Event = events::Event{ chain : Vec::new() };
-		for o in i["chain"].as_array().unwrap() {
-			let chain: events::EventChain;
-			match o.as_array().unwrap()[0].as_str().unwrap() {
-				"warp" => chain = events::EventChain::Warp{
-					entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
-					position:	[
-						o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
-						o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
-						o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
-						],
-					direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
-					doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
-				},
-				"move" => chain = events::EventChain::Move {
-					entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
-					direction:	overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
-					times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
-				},
-				"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
-				_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
-			}
-			event.chain.push(chain);
-		}
-		output.insert(i["id"].as_str().unwrap().to_string(), event);
-	}
-
-	return output;
-}
-
-/// Loads trigger data from input file to hasmap indexed by position.
-pub fn load_triggers( mapName : String ) -> HashMap<[i32;3], String> {
-	let mut output = HashMap::new();
-
-	//* Attempt to load entities file */
-	let fileResult_evt = read_to_string("data/world/".to_string() + &mapName + "/events.json" );
-	if fileResult_evt.is_err() {
-		debug::log("[ERROR] - Failed to load map file.\n");
-		return output;
-	}
-
-	//* Convert to JSON and read */
-	let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
-	for i in jsonFile_evt["triggers"].as_array().unwrap() {
-		let pos = [
-			i["location"].as_array().unwrap()[0].as_i64().unwrap() as i32,
-			i["location"].as_array().unwrap()[1].as_i64().unwrap() as i32,
-			i["location"].as_array().unwrap()[2].as_i64().unwrap() as i32,
-		];
-		output.insert(pos, i["event"].as_str().unwrap().to_string());
-	}
-
-	return output;
 }
 
 /// Converts input JSON value into an array of 4 bools representing a collision box.
@@ -350,7 +339,7 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.animations,
 							gamestate.models["unit"],
@@ -413,7 +402,7 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.animations,
 							gamestate.models["unit"],
@@ -476,9 +465,7 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					let pos = raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32};
-					//if math::equal_v3(unit.position, pos) && overworld::exists(&gamestate.eventHandler, &unit) {
-					if math::equal_v3(unit.position, pos) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.animations,
 							gamestate.models["unit"],

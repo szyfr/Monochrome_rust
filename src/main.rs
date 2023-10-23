@@ -7,13 +7,13 @@ use monorust::{raylib, data, graphics, camera, player, overworld, world, events}
 //= Main
 fn main() {
 	//* Create Initial gamestate */
-	let mut gamestate = data::init();
 	unsafe { data::SETTINGS.load(); }
+	let mut gamestate = data::init();
 
 	//* Raylib */
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
-	raylib::set_target_fps(gamestate.settings.screenFps);
+	raylib::set_target_fps(data::get_screenfps());
 	
 	//* Graphics */
 	gamestate.fonts		= graphics::load_fonts();
@@ -24,10 +24,10 @@ fn main() {
 	//* Camera / Player */
 
 	// ! TEMP
-	gamestate.worldData.currentMap = world::load_world("newbark".to_string());
-	gamestate.worldData.unitMap    = world::load_entities("newbark".to_string());
-	gamestate.worldData.triggerMap = world::load_triggers("newbark".to_string());
-	gamestate.worldData.eventList  = world::load_events("newbark".to_string());
+	gamestate.worldData.load_world("newbark");
+	gamestate.worldData.load_entities("newbark");
+	gamestate.worldData.load_triggers("newbark");
+	gamestate.worldData.load_events("newbark");
 
 	while !raylib::window_should_close() {
 		//* Update */

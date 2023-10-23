@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{raylib, utilities::math, settings, data};
+use crate::{raylib, utilities::math, data};
 use raylib_ffi::Vector3;
 
 
@@ -55,12 +55,8 @@ impl Camera {
 			}
 	
 			//* Controls */
-			unsafe {
-				if data::SETTINGS.key_down("rotate_right") { self.rotTarget -= 90.0; }
-				if data::SETTINGS.key_down("rotate_left")  { self.rotTarget += 90.0; }
-			}
-			//if settings::button_down("rotate_right", &gamestate.settings) { self.rotTarget -= 90.0; }
-			//if settings::button_down("rotate_left",  &gamestate.settings) { self.rotTarget += 90.0; }
+			if data::key_down("rotate_right") { self.rotTarget -= 90.0; }
+			if data::key_down("rotate_left")  { self.rotTarget += 90.0; }
 		}
 	
 		//* Calculate rotation */

@@ -15,7 +15,6 @@ use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, world, ev
 /// Unit facing direction.
 #[derive(Copy, Clone, PartialEq)]
 pub enum Direction {
-	Null,
 	North,
 	South,
 	East,
@@ -25,7 +24,6 @@ impl FromStr for Direction {
 	type Err = ();
 	fn from_str( input : &str ) -> Result<Direction, Self::Err> {
 		match input {
-			"null"	=> Ok(Direction::Null),
 			"north"	=> Ok(Direction::North),
 			"south"	=> Ok(Direction::South),
 			"east"	=> Ok(Direction::East),
@@ -37,7 +35,6 @@ impl FromStr for Direction {
 impl Display for Direction {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match *self {
-			Direction::Null		=> write!(f, "null"),
 			Direction::North	=> write!(f, "north"),
 			Direction::South	=> write!(f, "south"),
 			Direction::East		=> write!(f, "east"),
@@ -188,7 +185,6 @@ pub fn set_animation( unit : &mut Unit, animation : String ) {
 pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
 	//* Leave if still moving or current direction is Null */
 	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
-	if unit.direction == Direction::Null { return; }
 
 	//* Calculate new position */
 	let mut newPos = unit.position;
@@ -197,7 +193,6 @@ pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMa
 		Direction::South => newPos.z +=  1.0,
 		Direction::East  => newPos.x += -1.0,
 		Direction::West  => newPos.x +=  1.0,
-		_ => newPos = unit.position,
 	}
 
 	//* Check Tiles existance */
@@ -288,7 +283,6 @@ fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {
 		Direction::South => return collisionInfo[2],
 		Direction::East  => return collisionInfo[3],
 		Direction::West  => return collisionInfo[1],
-		_ => return true,
 	}
 }
 

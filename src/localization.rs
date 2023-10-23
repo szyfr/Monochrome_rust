@@ -7,17 +7,19 @@
 //= Imports
 use std::collections::HashMap;
 use std::fs::read_to_string;
-use crate::settings;
+use crate::{data, settings};
 use crate::utilities::debug;
 
 
 //= Procedures
 
 /// Loads all language strings into Hashmap using input language
-pub fn load( language : &settings::Language ) -> HashMap<String, String> {
+pub fn load() -> HashMap<String, String> {
 	let mut output : HashMap<String, String> = HashMap::new();
 
 	//* Attempt to open file */
+	let language: settings::Language;
+	unsafe{ language = data::SETTINGS.language; }
 	let fileResult = read_to_string(format!("data/localization/{}.json", language));
 	if fileResult.is_err() {
 		debug::log("[ERROR] - Failed to load localization file.");

@@ -7,7 +7,7 @@
 
 //= Imports
 use std::fmt::Display;
-use crate::{data, raylib, settings};
+use crate::{data, raylib};
 use super::EventChain;
 
 
@@ -128,7 +128,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 				gamestate.worldData.eventHandler.textbox.currentText = str.to_string();
 			}
 
-			if settings::button_pressed("confirm", &gamestate.settings) {
+			if data::key_pressed("confirm") {
 				let str = &mut gamestate.localization[&text.to_string()].to_string();
 				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
 					gamestate.worldData.eventHandler.textbox.position = str.len() as i32;
@@ -157,8 +157,8 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 /// Draw textbox
 //TODO Apply screen scaling
 pub fn draw( gamestate : &mut data::Gamestate ) {
-	let widthOffset = gamestate.settings.screenWidth as f32 / 8.0;
-	let heightOffset = gamestate.settings.screenHeight as f32 / 1.5;
+	let widthOffset = data::get_screenwidth() as f32 / 8.0;
+	let heightOffset = data::get_screenheight() as f32 / 1.5;
 
 	if gamestate.worldData.eventHandler.textbox.state != TextboxState::Inactive {
 		raylib::draw_texture_npatch(
@@ -166,8 +166,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			raylib_ffi::Rectangle {
 				x: widthOffset,
 				y: heightOffset,
-				width: gamestate.settings.screenWidth as f32 - (widthOffset * 2.0),
-				height: gamestate.settings.screenHeight as f32 - heightOffset,
+				width: data::get_screenwidth() as f32 - (widthOffset * 2.0),
+				height: data::get_screenheight() as f32 - heightOffset,
 			},
 			raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 			0.0,

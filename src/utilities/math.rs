@@ -119,7 +119,6 @@ pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Di
 			Direction::South => return Direction::South,
 			Direction::East  => return Direction::East,
 			Direction::West  => return Direction::West,
-			_ => return Direction::Null,
 		}
 	}
 	if (rotation >  45.0 && rotation <= 135.0) || (rotation > 405.0 && rotation <= 495.0) {
@@ -128,7 +127,6 @@ pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Di
 			Direction::South => return Direction::West,
 			Direction::East  => return Direction::South,
 			Direction::West  => return Direction::North,
-			_ => return Direction::Null,
 		}
 	}
 	if rotation > 135.0 && rotation <= 225.0 {
@@ -137,7 +135,6 @@ pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Di
 			Direction::South => return Direction::North,
 			Direction::East  => return Direction::West,
 			Direction::West  => return Direction::East,
-			_ => return Direction::Null,
 		}
 	}
 	if (rotation > 225.0 && rotation <= 315.0) || (rotation > -135.0 && rotation <= -45.0) {
@@ -146,9 +143,8 @@ pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Di
 			Direction::South => return Direction::East,
 			Direction::East  => return Direction::North,
 			Direction::West  => return Direction::South,
-			_ => return Direction::Null,
 		}
 	}
 
-	return Direction::Null;
+	return Direction::South;
 }

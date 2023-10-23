@@ -14,5 +14,3 @@ pub mod events;
 pub mod raylib;
 
 pub mod utilities;
-
-pub mod gSettings;

@@ -54,8 +54,8 @@ pub fn set_trace_log_level( logLevel : raylib_ffi::enums::TraceLogLevel ) {
 pub fn init_window( gamestate : &data::Gamestate ) {
 	unsafe {
 		raylib_ffi::InitWindow(
-			gamestate.settings.screenWidth,
-			gamestate.settings.screenHeight,
+			data::SETTINGS.screenWidth,
+			data::SETTINGS.screenHeight,
 			raylib_ffi::rl_str!(gamestate.localization["title"]),
 		);
 	}

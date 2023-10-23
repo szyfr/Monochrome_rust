@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib, utilities::math, settings, events};
+use crate::{overworld::{self, Direction}, data, raylib, utilities::math, events};
 
 
 //= Constants
@@ -64,13 +64,12 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 			//* Check for interaction */
 			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
-			if settings::button_pressed("confirm", &gamestate.settings) {
+			if data::key_pressed("confirm") {
 				match gamestate.player.unit.direction {
 					Direction::North => position[2] = position[2] - 1,
 					Direction::South => position[2] = position[2] + 1,
 					Direction::East  => position[0] = position[0] - 1,
 					Direction::West  => position[0] = position[0] + 1,
-					_ => return,
 				}
 
 				//* The last event in the loop that the conditions are met for is done. */
@@ -87,10 +86,10 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			}
 
 			//* Gather inputs */
-			let up	= settings::button_down("up", &gamestate.settings);
-			let down	= settings::button_down("down", &gamestate.settings);
-			let left	= settings::button_down("left", &gamestate.settings);
-			let right	= settings::button_down("right", &gamestate.settings);
+			let up	= data::key_down("up");
+			let down	= data::key_down("down");
+			let left	= data::key_down("left");
+			let right	= data::key_down("right");
 
 			let curRot = gamestate.camera.rotation;
 			let mut dir = gamestate.player.unit.direction;
@@ -174,7 +173,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 				overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.worldData.eventHandler, &mut gamestate.player.unit, dir);
 			} else {
-				if gamestate.player.unit.direction != Direction::Null { overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() ); }
+				overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 			}
 		}
 	}
