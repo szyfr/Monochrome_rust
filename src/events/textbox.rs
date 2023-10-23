@@ -263,7 +263,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				gamestate.textures["ui_pointer_general"],
 				raylib_ffi::Rectangle{ x:0.0,y:0.0, width:8.0,height:8.0 },
 				raylib_ffi::Rectangle{
-					x: choiceWidthOffset + (widthOffset / 3.0) - (12.0 * ratio),
+					x: choiceWidthOffset + (widthOffset / 3.0) - (8.0 * ratio),
 					y: height,
 					width: 32.0,
 					height: 32.0,
