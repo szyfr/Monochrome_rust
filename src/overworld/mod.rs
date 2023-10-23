@@ -181,7 +181,6 @@ pub fn set_animation( unit : &mut Unit, animation : String ) {
 }
 
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
-//pub fn move_unit( worldData : &world::World, unit : &mut Unit, direction : Direction ) {
 pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
 	//* Leave if still moving or current direction is Null */
 	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }

@@ -70,6 +70,7 @@ impl Textbox {
 pub struct Choice{
 	pub text:  String,
 	pub event: String,
+	pub position: i32,
 }
 
 
@@ -112,11 +113,8 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 		},
 		TextboxState::Active => {
 			//* Increase timer */
-			// TODO timer amount
 			gamestate.worldData.eventHandler.textbox.timer += 1;
-			print!("fuck1\n");
-			if gamestate.worldData.eventHandler.textbox.timer >= 5 {
-				print!("fuck2\n");
+			if gamestate.worldData.eventHandler.textbox.timer >= data::get_textspeed() {
 				gamestate.worldData.eventHandler.textbox.timer = 0;
 				gamestate.worldData.eventHandler.textbox.position += 1;
 
@@ -128,23 +126,58 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 				gamestate.worldData.eventHandler.textbox.currentText = str.to_string();
 			}
 
+			if gamestate.worldData.eventHandler.textbox.hasChoice {
+				if data::key_pressed("up") {
+					if gamestate.worldData.eventHandler.textbox.curPosition == 0 { gamestate.worldData.eventHandler.textbox.curPosition = gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1; }
+					else { gamestate.worldData.eventHandler.textbox.curPosition -= 1; }
+				}
+				if data::key_pressed("down") {
+					if gamestate.worldData.eventHandler.textbox.curPosition > gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1 { gamestate.worldData.eventHandler.textbox.curPosition = 0; }
+					else { gamestate.worldData.eventHandler.textbox.curPosition += 1; }
+				}
+			}
+
 			if data::key_pressed("confirm") {
 				let str = &mut gamestate.localization[&text.to_string()].to_string();
 				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
 					gamestate.worldData.eventHandler.textbox.position = str.len() as i32;
 				} else {
-					let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
-					if chPos >= gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain.len() { gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive; return true; }
-					let chain = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain[chPos];
-					match chain {
-						EventChain::Text {..} => {
-
-						},
-						_ => {
+					if gamestate.worldData.eventHandler.textbox.hasChoice {
+						let choice = &gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize];
+						if choice.event == "" {
 							gamestate.worldData.eventHandler.textbox.reset();
-						},
+							return true;
+						}
+						if choice.event == gamestate.worldData.eventHandler.currentEvent {
+							gamestate.worldData.eventHandler.currentChain = choice.position;
+							gamestate.worldData.eventHandler.textbox.reset();
+							return false;
+						}
+						if gamestate.worldData.eventList.contains_key(&choice.event) {
+							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
+							gamestate.worldData.eventHandler.currentChain = choice.position;
+							gamestate.worldData.eventHandler.textbox.reset();
+							return false;
+						}
+					} else {
+						let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
+						if chPos >= gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain.len() { gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive; return true; }
+						let chain = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain[chPos];
+						match chain {
+							EventChain::Text {..} => {
+								gamestate.worldData.eventHandler.textbox.timer = 0;
+								gamestate.worldData.eventHandler.textbox.position = 0;
+							},
+							EventChain::Choice {..} => {
+								gamestate.worldData.eventHandler.textbox.timer = 0;
+								gamestate.worldData.eventHandler.textbox.position = 0;
+							},
+							_ => {
+								gamestate.worldData.eventHandler.textbox.reset();
+							},
+						}
+						return true;
 					}
-					return true;
 				}
 			}
 		},
@@ -155,10 +188,9 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 }
 
 /// Draw textbox
-//TODO Apply screen scaling
 pub fn draw( gamestate : &mut data::Gamestate ) {
-	let widthOffset = data::get_screenwidth() as f32 / 8.0;
-	let heightOffset = data::get_screenheight() as f32 / 1.5;
+	let widthOffset = 160.0 * data::get_screenratio();
+	let heightOffset = 480.0 * data::get_screenratio();
 
 	if gamestate.worldData.eventHandler.textbox.state != TextboxState::Inactive {
 		raylib::draw_texture_npatch(
@@ -173,16 +205,73 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			0.0,
 			raylib_ffi::colors::WHITE,
 		);
-	
+
+		let ratio = data::get_screenratio();
+		let mut fontSize = 24.0;
+		if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0) as i32) as f32 * 8.0 }
 		raylib::draw_text_pro(
 			gamestate.fonts["default"],
 			&gamestate.worldData.eventHandler.textbox.currentText,
-			raylib_ffi::Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (widthOffset / 2.75)},
+			raylib_ffi::Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (heightOffset / 8.0)},
 			raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 			0.0,
-			24.0,
-			5.0,
+			fontSize,
+			5.0 * ratio,
 			raylib_ffi::Color{r:57,g:57,b:57,a:255},
 		);
+
+		//* Draw options */
+		if gamestate.worldData.eventHandler.textbox.hasChoice {
+			let choiceWidthOffset = data::get_screenwidth() as f32 - (widthOffset * 2.0);
+			let choiceHeightOffset = heightOffset - fontSize;
+			raylib::draw_texture_npatch(
+				gamestate.textures["ui_textbox_general"],
+				raylib_ffi::Rectangle {
+					x: choiceWidthOffset,
+					y: choiceHeightOffset,
+					width: widthOffset * 1.5,
+					height: data::get_screenheight() as f32 - heightOffset,
+				},
+				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+				0.0,
+				raylib_ffi::colors::WHITE,
+			);
+			let mut choiceOffset = 0.0;
+			for i in &gamestate.worldData.eventHandler.textbox.choiceList {
+				if i.text != "" {
+					raylib::draw_text_pro(
+						gamestate.fonts["default"],
+						&gamestate.localization[&i.text],
+						raylib_ffi::Vector2 {x: choiceWidthOffset + (widthOffset / 3.0) + (12.0 * ratio), y: choiceHeightOffset + (heightOffset / 8.0) + (choiceOffset * (fontSize + (12.0 * ratio)))},
+						raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+						0.0,
+						fontSize,
+						5.0 * ratio,
+						raylib_ffi::Color{r:57,g:57,b:57,a:255},
+					);
+				}
+				choiceOffset += 1.0;
+			}
+			let mut height = choiceHeightOffset + (heightOffset / 8.0);
+			match gamestate.worldData.eventHandler.textbox.curPosition {
+				1 => height += fontSize + (12.0 * ratio),
+				2 => height += 2.0 * (fontSize + (12.0 * ratio)),
+				3 => height += 3.0 * (fontSize + (12.0 * ratio)),
+				_ => {},
+			}
+			raylib::draw_texture_pro(
+				gamestate.textures["ui_pointer_general"],
+				raylib_ffi::Rectangle{ x:0.0,y:0.0, width:8.0,height:8.0 },
+				raylib_ffi::Rectangle{
+					x: choiceWidthOffset + (widthOffset / 3.0) - (12.0 * ratio),
+					y: height,
+					width: 32.0,
+					height: 32.0,
+				},
+				raylib_ffi::Vector2{x: 0.0, y: 0.0},
+				0.0,
+				raylib_ffi::colors::WHITE,
+			);
+		}
 	}
 }

@@ -75,6 +75,9 @@ pub struct Settings {
 	pub screenWidth : i32,
 	pub screenHeight : i32,
 	pub screenFps : i32,
+	pub screenRatio: f32,
+
+	pub text_speed: i32,
 
 	pub keybindings : Option<HashMap<String, Keybinding>>,
 
@@ -110,7 +113,10 @@ impl Settings {
 		self.screenWidth	= jsonFile["screen_width"].as_i64().unwrap() as i32;
 		self.screenHeight	= jsonFile["screen_height"].as_i64().unwrap() as i32;
 		self.screenFps		= jsonFile["screen_fps"].as_i64().unwrap() as i32;
+		self.screenRatio	= self.screenHeight as f32 / 720.0;
 		self.language		= Language::from_str(jsonFile["language"].as_str().unwrap()).unwrap();
+
+		self.text_speed		= jsonFile["text_speed"].as_i64().unwrap() as i32;
 
 		self.keybindings = Some(HashMap::new());
 		for val in jsonFile["keybindings"].as_array().unwrap() {
@@ -132,6 +138,7 @@ impl Settings {
 		self.screenFps 		=   80;
 		self.keybindings 	= Some(HashMap::new());
 		self.language 		= Language::English;
+		self.text_speed		=    5;
 
 		self.keybindings.as_mut().unwrap().insert("up".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 87 });
 		self.keybindings.as_mut().unwrap().insert("down".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 83 });
@@ -154,6 +161,7 @@ impl Settings {
 		newSettingsFile.push_str(format!("\t\"screen_height\": {},\n", self.screenHeight).as_str());
 		newSettingsFile.push_str(format!("\t\"screen_fps\": {},\n", self.screenFps).as_str());
 		newSettingsFile.push_str(format!("\t\"language\": \"{}\",\n", self.language).as_str());
+		newSettingsFile.push_str(format!("\t\"text_speed\": {},\n", self.text_speed).as_str());
 		newSettingsFile.push_str("\t\"keybindings\": [\n");
 		for (str, key) in self.keybindings.as_ref().unwrap() {
 			if counter == self.keybindings.as_ref().unwrap().len()-1 {

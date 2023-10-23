@@ -102,6 +102,9 @@ pub fn load_texture_from_image( img : raylib_ffi::Image ) -> raylib_ffi::Texture
 pub fn draw_texture( texture : raylib_ffi::Texture, posX : i32, posY : i32, tint : raylib_ffi::Color ) {
 	unsafe { raylib_ffi::DrawTexture(texture, posX, posY, tint) }
 }
+pub fn draw_texture_pro( texture : raylib_ffi::Texture, source : raylib_ffi::Rectangle, dest : raylib_ffi::Rectangle, origin : raylib_ffi::Vector2, rotation : f32, tint : raylib_ffi::Color ) {
+	unsafe { raylib_ffi::DrawTexturePro(texture, source, dest, origin, rotation, tint); }
+}
 pub fn draw_texture_npatch( texture : raylib_ffi::Texture, dest : raylib_ffi::Rectangle, origin : raylib_ffi::Vector2, rotation : f32, tint : raylib_ffi::Color ) {
 	let nPatchInfo = raylib_ffi::NPatchInfo {
 		source: raylib_ffi::Rectangle {

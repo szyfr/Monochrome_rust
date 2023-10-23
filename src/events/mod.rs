@@ -22,7 +22,10 @@ pub enum EventChain{
 	/// Textbox display
 	Text{ text: String },
 	/// Textbox choice display
-	//Choice{ text: String },
+	Choice{
+		text: String,
+		choices: [textbox::Choice;4],
+	},
 
 	/// Teleport unit
 	Warp{
@@ -69,13 +72,25 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 	let chain = &event.chain[chPos];
 	match chain {
 		EventChain::Test{ text } => {
-				print!("TEXT: {}\n",text);
+				print!("TEST: {}\n",text);
 				gamestate.worldData.eventHandler.currentChain += 1;
 			},
-			EventChain::Text { text } => {
+		EventChain::Text { text } => {
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
 			},
-			EventChain::Warp { entityID, position, direction, doMove } => {
+		EventChain::Choice { text, choices } => {
+				if !gamestate.worldData.eventHandler.textbox.hasChoice {
+					gamestate.worldData.eventHandler.textbox.hasChoice = true;
+					for i in choices {
+						let copy = textbox::Choice{text: i.text.to_string(), event: i.event.to_string(), position: i.position};
+						gamestate.worldData.eventHandler.textbox.choiceList.push(copy);
+					}
+				}
+				
+				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
+				//if textbox::run_choices(gamestate, text.to_string(), choices) { gamestate.worldData.eventHandler.currentChain += 1; }
+			},
+		EventChain::Warp { entityID, position, direction, doMove } => {
 				let unit: &mut overworld::Unit;
 				let unitMap = gamestate.worldData.unitMap.clone();
 				//* Check if target is player */
@@ -94,7 +109,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				
 				gamestate.worldData.eventHandler.currentChain += 1;
 			},
-			EventChain::Move { entityID, direction, times } => {
+		EventChain::Move { entityID, direction, times } => {
 				let unit: &mut overworld::Unit;
 				let unitMap = gamestate.worldData.unitMap.clone();
 				//* Check if target is player */

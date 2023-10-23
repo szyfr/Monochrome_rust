@@ -33,6 +33,8 @@ pub static mut SETTINGS : settings::Settings = settings::Settings{
 	screenWidth: 1280,
 	screenHeight: 720,
 	screenFps: 80,
+	screenRatio: 1.0,
+	text_speed: 5,
 	keybindings: None,
 	language: settings::Language::English,
 };
@@ -81,4 +83,10 @@ pub fn get_screenfps() -> i32 {
 }
 pub fn get_language() -> settings::Language {
 	unsafe { return SETTINGS.language; }
+}
+pub fn get_screenratio() -> f32 {
+	unsafe { return SETTINGS.screenRatio; }
+}
+pub fn get_textspeed() -> i32 {
+	unsafe { return SETTINGS.text_speed; }
 }

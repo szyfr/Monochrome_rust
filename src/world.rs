@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::Condition}};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::Condition, textbox}};
 
 
 //= Constants
@@ -160,6 +160,30 @@ impl World {
 						times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
 					},
 					"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+					"choice" => {
+						let mut choices = [
+							textbox::Choice{text: "".to_string(), event: "".to_string(), position: 0},
+							textbox::Choice{text: "".to_string(), event: "".to_string(), position: 0},
+							textbox::Choice{text: "".to_string(), event: "".to_string(), position: 0},
+							textbox::Choice{text: "".to_string(), event: "".to_string(), position: 0},
+						];
+
+						let mut val = 0;
+						for i in o.as_array().unwrap()[2].as_array().unwrap() {
+							choices[val] = textbox::Choice{
+								text: i.as_array().unwrap()[0].as_str().unwrap().to_string(),
+								event: i.as_array().unwrap()[1].as_str().unwrap().to_string(),
+								position: 0,
+							};
+							if i.as_array().unwrap().get(2) != None { choices[val].position = i.as_array().unwrap()[2].as_i64().unwrap() as i32; }
+							val += 1;
+						}
+
+						chain = events::EventChain::Choice {
+							text: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							choices,
+						};
+					},
 					_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
 				}
 				event.chain.push(chain);
