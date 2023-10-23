@@ -80,6 +80,17 @@ pub struct Animation {
 
 //= Procedures
 
+impl Direction {
+	pub fn reverse(&self) -> Direction {
+		match self {
+			Direction::North => return Direction::South,
+			Direction::South => return Direction::North,
+			Direction::East => return Direction::West,
+			Direction::West => return Direction::East,
+		}
+	}
+}
+
 /// Creates a new Unit.<br>
 /// If the Raylib window is ready, input filename will be loaded as the texture. It will be dropped otherwise.
 pub fn create_unit( filename : &str ) -> Unit {

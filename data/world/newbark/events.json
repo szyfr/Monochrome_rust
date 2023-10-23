@@ -12,8 +12,15 @@
 			"id":"newbarktown_mom_talk1_1",
 			"chain": [
 				["text","newbarktown_mom_event1_1"],
-				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test"],["no","newbarktown_mom_talk1_1"],["no","newbarktown_mom_talk1_1",1]]],
+				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test2"],["no","newbarktown_mom_talk1_1"],["no","newbarktown_mom_talk1_1",1]]],
 				["warp","player",[ 6,0,3 ],true,"south"]
+			]},
+		{
+			"id": "test2",
+			"chain": [
+				["rotate_camera",360, true],
+				["wait",200],
+				["reset_camera"]
 			]},
 		{
 			"id": "warp_elmlab_in",

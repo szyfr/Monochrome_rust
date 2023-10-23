@@ -9,7 +9,7 @@
 pub mod conditionals;
 pub mod event_handler;
 pub mod textbox;
-use crate::{overworld::{Direction, self}, data};
+use crate::{overworld::{Direction, self}, data, utilities::math};
 
 
 //= Enumerations
@@ -41,6 +41,32 @@ pub enum EventChain{
 		direction: Direction,
 		times: i32,
 	},
+	/// Turn unit
+	Turn{
+		entityID: String,
+		direction: Direction,
+	},
+
+	/// Wait
+	Wait{
+		time: i32,
+	},
+
+	/// Reset camera to player
+	ResetCamera,
+	/// Move camera to position
+	SetCamera{
+		position: [i32;3],
+	},
+	MoveCamera{
+		position: [i32;3],
+		wait: bool,
+	},
+	RotateCamera{
+		rotation: f32,
+		wait: bool,
+	},
+	// TODO Rotate Camera / etc.
 }
 
 
@@ -86,9 +112,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 						gamestate.worldData.eventHandler.textbox.choiceList.push(copy);
 					}
 				}
-				
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
-				//if textbox::run_choices(gamestate, text.to_string(), choices) { gamestate.worldData.eventHandler.currentChain += 1; }
 			},
 		EventChain::Warp { entityID, position, direction, doMove } => {
 				let unit: &mut overworld::Unit;
@@ -120,8 +144,49 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.worldData.eventHandler, unit, *direction);
 				
 				gamestate.worldData.eventHandler.internal += 1;
-				if gamestate.worldData.eventHandler.internal >= *times { gamestate.worldData.eventHandler.currentChain += 1; }
+				if gamestate.worldData.eventHandler.internal >= *times {
+					gamestate.worldData.eventHandler.internal = 0;
+					gamestate.worldData.eventHandler.currentChain += 1;
+				}
 			},
+		EventChain::Turn { entityID, direction } => {
+				let unit: &mut overworld::Unit;
+				if entityID == "player" { unit = &mut gamestate.player.unit; }
+				else if !gamestate.worldData.unitMap.contains_key(entityID) { gamestate.worldData.eventHandler.currentChain += 1; return false; }
+				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
+
+				unit.direction = *direction;
+				gamestate.worldData.eventHandler.currentChain += 1;
+			},
+
+		EventChain::Wait { time } => {
+				gamestate.worldData.eventHandler.internal += 1;
+				if gamestate.worldData.eventHandler.internal >= *time {
+					gamestate.worldData.eventHandler.internal = 0;
+					gamestate.worldData.eventHandler.currentChain += 1;
+				}
+			},
+
+		EventChain::ResetCamera => {
+				gamestate.camera.onPlayer = true;
+				gamestate.worldData.eventHandler.currentChain += 1;
+			},
+		EventChain::SetCamera { position } => {
+				gamestate.camera.onPlayer = false;
+				gamestate.camera.position = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				gamestate.camera.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
+		EventChain::MoveCamera { position, wait } => {
+				gamestate.camera.onPlayer = false;
+				gamestate.camera.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				if !*wait || math::equal_v3(gamestate.camera.posTarget, gamestate.camera.position) { gamestate.worldData.eventHandler.currentChain += 1; }
+			}
+		EventChain::RotateCamera { rotation, wait } => {
+				gamestate.camera.onPlayer = false;
+				gamestate.camera.rotTarget = *rotation;
+				if !*wait || gamestate.camera.rotTarget == gamestate.camera.rotation { gamestate.worldData.eventHandler.currentChain += 1; }
+			}
 			//_ => return,
 	}
 	return true;

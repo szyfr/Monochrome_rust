@@ -252,7 +252,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				}
 				choiceOffset += 1.0;
 			}
-			let mut height = choiceHeightOffset + (heightOffset / 8.0);
+			let mut height = choiceHeightOffset + (heightOffset / 8.0) - (8.0 * ratio);
 			match gamestate.worldData.eventHandler.textbox.curPosition {
 				1 => height += fontSize + (12.0 * ratio),
 				2 => height += 2.0 * (fontSize + (12.0 * ratio)),
@@ -263,10 +263,10 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				gamestate.textures["ui_pointer_general"],
 				raylib_ffi::Rectangle{ x:0.0,y:0.0, width:8.0,height:8.0 },
 				raylib_ffi::Rectangle{
-					x: choiceWidthOffset + (widthOffset / 3.0) - (8.0 * ratio),
+					x: choiceWidthOffset + (widthOffset / 3.0) - (24.0 * ratio),
 					y: height,
-					width: 32.0,
-					height: 32.0,
+					width: 32.0 * ratio,
+					height: 32.0 * ratio,
 				},
 				raylib_ffi::Vector2{x: 0.0, y: 0.0},
 				0.0,

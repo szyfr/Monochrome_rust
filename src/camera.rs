@@ -31,7 +31,7 @@ pub struct Camera {
 	pub camPosition	: Vector3,
 	pub fovy		: f32,
 
-	onPlayer		: bool,
+	pub onPlayer	: bool,
 }
 impl Camera {
 	fn update_rotation(&mut self) {
@@ -92,6 +92,7 @@ pub fn update( gamestate : &mut data::Gamestate ) {
 		//* Have camera's movements match player */
 		gamestate.camera.position = math::add_v3(gamestate.player.unit.position, Vector3{x:0.0,y:1.0,z:0.0});
 		gamestate.camera.position.y = gamestate.camera.position.y / 2.0;
+		gamestate.camera.posTarget = gamestate.camera.position;
 	} else {
 		//* Update Position */
 		if !math::close_enough_v3(gamestate.camera.position, gamestate.camera.posTarget, 0.5) {
@@ -100,28 +101,4 @@ pub fn update( gamestate : &mut data::Gamestate ) {
 		} else { gamestate.camera.position = gamestate.camera.posTarget; }
 	}
 	gamestate.camera.update_rotation();
-	////* Update rotation */
-	//if !math::close_enough_f32(gamestate.camera.rotation, gamestate.camera.rotTarget, 5.0) {
-	//	let dir = math::get_direction_f32(gamestate.camera.rotation, gamestate.camera.rotTarget);
-	//	gamestate.camera.rotation += dir * (CMSPEED * ft);
-	//} else {
-	//	gamestate.camera.rotation = gamestate.camera.rotTarget;
-//
-	//	//* Bounds checking */
-	//	if gamestate.camera.rotation < 0.0 {
-	//		gamestate.camera.rotation += 360.0;
-	//		gamestate.camera.rotTarget += 360.0;
-	//	}
-	//	if gamestate.camera.rotation > 360.0 {
-	//		gamestate.camera.rotation -= 360.0;
-	//		gamestate.camera.rotTarget -= 360.0;
-	//	}
-//
-	//	//* Controls */
-	//	if settings::button_down("rotate_right", &gamestate.settings) { gamestate.camera.rotTarget -= 90.0; }
-	//	if settings::button_down("rotate_left",  &gamestate.settings) { gamestate.camera.rotTarget += 90.0; }
-	//}
-//
-	////* Calculate rotation */
-	//gamestate.camera.camPosition = math::rotate(gamestate.camera.position, gamestate.camera.rotation);
 }

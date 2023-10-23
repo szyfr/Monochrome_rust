@@ -75,6 +75,8 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				//* The last event in the loop that the conditions are met for is done. */
 				let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
 				if unitCheck.0 && overworld::exists(&gamestate.worldData.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
+					let unit = gamestate.worldData.unitMap.get_mut(&unitCheck.1).unwrap();
+					unit.direction = gamestate.player.unit.direction.reverse();
 					if gamestate.worldData.unitMap.contains_key(&unitCheck.1) {
 						for (str, event) in &gamestate.worldData.unitMap[&unitCheck.1].events {
 							if overworld::check_conditions(&gamestate.worldData.eventHandler, &event) {
