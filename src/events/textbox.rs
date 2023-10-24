@@ -47,6 +47,9 @@ pub struct Textbox{
 	pub hasChoice: bool,
 	pub choiceList: Vec<Choice>,
 	pub curPosition: i32,
+
+	pub isInput: bool,
+	pub input: String,
 }
 impl Textbox {
 	/// Resets the textbox to it's default state.
@@ -63,6 +66,9 @@ impl Textbox {
 		self.hasChoice = false;
 		self.choiceList = Vec::new();
 		self.curPosition = 0;
+
+		self.isInput = false;
+		self.input = "".to_string();
 	}
 }
 
@@ -91,6 +97,9 @@ pub fn init() -> Textbox {
 		hasChoice: false,
 		choiceList: Vec::new(),
 		curPosition: 0,
+
+		isInput: false,
+		input: "".to_string(),
 	}
 }
 
@@ -126,15 +135,28 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 				gamestate.worldData.eventHandler.textbox.currentText = str.to_string();
 			}
 
+			//* If it's a choice box, move cursor on button press */
 			if gamestate.worldData.eventHandler.textbox.hasChoice {
 				if data::key_pressed("up") {
-					if gamestate.worldData.eventHandler.textbox.curPosition == 0 { gamestate.worldData.eventHandler.textbox.curPosition = gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1; }
-					else { gamestate.worldData.eventHandler.textbox.curPosition -= 1; }
+					if gamestate.worldData.eventHandler.textbox.curPosition == 0 {
+						gamestate.worldData.eventHandler.textbox.curPosition = 3;
+						for i in 0..4 { if gamestate.worldData.eventHandler.textbox.choiceList[i as usize].text == "" { gamestate.worldData.eventHandler.textbox.curPosition -= 1; } }
+					} else { gamestate.worldData.eventHandler.textbox.curPosition -= 1; }
 				}
 				if data::key_pressed("down") {
-					if gamestate.worldData.eventHandler.textbox.curPosition > gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1 { gamestate.worldData.eventHandler.textbox.curPosition = 0; }
+					if gamestate.worldData.eventHandler.textbox.curPosition >= gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1 || gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize + 1].text == "" { gamestate.worldData.eventHandler.textbox.curPosition = 0; }
 					else { gamestate.worldData.eventHandler.textbox.curPosition += 1; }
 				}
+			}
+
+			//* If it's an input box, accept all keys */
+			// TODO Decide if i want string max length to be 16...
+			// TODO Also decide if i want space to still be confirm for input or do i want to change it to Enter to allow spaces
+			if gamestate.worldData.eventHandler.textbox.isInput {
+				let input = raylib::get_key_pressed();
+				if input == ".".to_string() && gamestate.worldData.eventHandler.textbox.input.len() > 0 {
+					gamestate.worldData.eventHandler.textbox.input.truncate(gamestate.worldData.eventHandler.textbox.input.len()-1);
+				} else if gamestate.worldData.eventHandler.textbox.input.len() < 16 && input != ".".to_string() { gamestate.worldData.eventHandler.textbox.input += &input; }
 			}
 
 			if data::key_pressed("confirm") {
@@ -158,6 +180,11 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							gamestate.worldData.eventHandler.currentChain = choice.position;
 							gamestate.worldData.eventHandler.textbox.reset();
 							return false;
+						}
+					} else if gamestate.worldData.eventHandler.textbox.isInput {
+						if gamestate.worldData.eventHandler.textbox.input.len() > 0 {
+							gamestate.worldData.eventHandler.textbox.reset();
+							return true;
 						}
 					} else {
 						let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
@@ -271,6 +298,35 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				raylib_ffi::Vector2{x: 0.0, y: 0.0},
 				0.0,
 				raylib_ffi::colors::WHITE,
+			);
+		}
+
+		//* Draw input */
+		if gamestate.worldData.eventHandler.textbox.isInput {
+			let inputWidthOffset = 320.0 * data::get_screenratio();
+			let inputHeightOffset = heightOffset - (fontSize * 2.0);
+			raylib::draw_texture_npatch(
+				gamestate.textures["ui_textbox_general"],
+				raylib_ffi::Rectangle {
+					x: inputWidthOffset,
+					y: inputHeightOffset,
+					width: data::get_screenwidth() as f32 - (inputWidthOffset * 2.0),
+					height: (fontSize * 4.0),
+				},
+				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+				0.0,
+				raylib_ffi::colors::WHITE,
+			);
+
+			raylib::draw_text_pro(
+				gamestate.fonts["default"],
+				&gamestate.worldData.eventHandler.textbox.input,
+				raylib_ffi::Vector2 {x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio), y: inputHeightOffset + (heightOffset / 10.5)},
+				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
 		}
 	}

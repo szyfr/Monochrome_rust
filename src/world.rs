@@ -107,6 +107,7 @@ impl World {
 					match arr2 {
 						serde_json::Value::Bool(_)		=> _ = conds.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
 						serde_json::Value::Number(_)	=> _ = conds.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+						serde_json::Value::String(_)	=> _ = conds.insert(str, Condition::String(  arr2.as_str().unwrap().to_string()) ),
 						_ => continue,
 					}
 				}
@@ -120,6 +121,7 @@ impl World {
 				match arr2 {
 					serde_json::Value::Bool(_)		=> _ = unit.conditions.insert(str, Condition::Boolean( arr2.as_bool().unwrap()) ),
 					serde_json::Value::Number(_)	=> _ = unit.conditions.insert(str, Condition::Integer( arr2.as_i64().unwrap() as i32) ),
+					serde_json::Value::String(_)	=> _ = unit.conditions.insert(str, Condition::String(  arr2.as_str().unwrap().to_string()) ),
 					_ => continue,
 				}
 			}
@@ -185,6 +187,12 @@ impl World {
 							choices,
 						};
 					},
+					"input" => {
+						chain = events::EventChain::Input {
+							text: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							variable: o.as_array().unwrap()[2].as_str().unwrap().to_string(),
+						}
+					}
 					"wait" => chain = events::EventChain::Wait { time: o.as_array().unwrap()[1].as_i64().unwrap() as i32 },
 					"reset_camera" => chain = events::EventChain::ResetCamera,
 					"set_camera" => chain = events::EventChain::SetCamera {
@@ -194,14 +202,14 @@ impl World {
 							o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
 						],
 					},
-					"move_camera" => {chain = events::EventChain::MoveCamera {
+					"move_camera" => chain = events::EventChain::MoveCamera {
 						position: [
 							o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() as i32,
 							o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32,
 							o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
 						],
 						wait: o.as_array().unwrap()[2].as_bool().unwrap(),
-					}; print!("fuck\n")},
+					},
 					"rotate_camera" => chain = events::EventChain::RotateCamera {
 						rotation: o.as_array().unwrap()[1].as_i64().unwrap() as f32,
 						wait: o.as_array().unwrap()[2].as_bool().unwrap(),

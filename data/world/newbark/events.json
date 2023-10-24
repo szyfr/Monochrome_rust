@@ -12,7 +12,8 @@
 			"id":"newbarktown_mom_talk1_1",
 			"chain": [
 				["text","newbarktown_mom_event1_1"],
-				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test2"],["no","newbarktown_mom_talk1_1"],["no","newbarktown_mom_talk1_1",1]]],
+				["input","newbarktown_mom_event1_2","test_value"],
+				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test2"]]],
 				["warp","player",[ 6,0,3 ],true,"south"]
 			]},
 		{

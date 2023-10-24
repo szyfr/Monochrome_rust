@@ -34,7 +34,7 @@ pub struct Camera {
 	pub onPlayer	: bool,
 }
 impl Camera {
-	fn update_rotation(&mut self) {
+	fn update_rotation(&mut self, control: bool) {
 		let ft = raylib::get_frame_time();
 
 		//* Update rotation */
@@ -55,8 +55,10 @@ impl Camera {
 			}
 	
 			//* Controls */
-			if data::key_down("rotate_right") { self.rotTarget -= 90.0; }
-			if data::key_down("rotate_left")  { self.rotTarget += 90.0; }
+			if control {
+				if data::key_down("rotate_right") { self.rotTarget -= 90.0; }
+				if data::key_down("rotate_left")  { self.rotTarget += 90.0; }
+			}
 		}
 	
 		//* Calculate rotation */
@@ -100,5 +102,5 @@ pub fn update( gamestate : &mut data::Gamestate ) {
 			gamestate.camera.position = math::add_v3(gamestate.camera.position, math::mul_v3(dir, MVSPEED * ft));
 		} else { gamestate.camera.position = gamestate.camera.posTarget; }
 	}
-	gamestate.camera.update_rotation();
+	gamestate.camera.update_rotation(gamestate.worldData.eventHandler.currentEvent == "".to_string());
 }

@@ -26,6 +26,10 @@ pub enum EventChain{
 		text: String,
 		choices: [textbox::Choice;4],
 	},
+	Input{
+		text: String,
+		variable: String,
+	},
 
 	/// Teleport unit
 	Warp{
@@ -101,6 +105,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				print!("TEST: {}\n",text);
 				gamestate.worldData.eventHandler.currentChain += 1;
 			},
+
 		EventChain::Text { text } => {
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
 			},
@@ -114,6 +119,19 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				}
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
 			},
+		EventChain::Input { text, variable } => {
+				let variableStr = variable.to_string();
+				let inputStr = conditionals::Condition::String(gamestate.worldData.eventHandler.textbox.input.to_string());
+				
+				if !gamestate.worldData.eventHandler.textbox.isInput {
+					gamestate.worldData.eventHandler.textbox.isInput = true;
+				}
+				if textbox::run(gamestate, text.to_string()) {
+					gamestate.worldData.eventHandler.currentChain += 1;
+					gamestate.worldData.eventHandler.eventVariables.insert(variableStr, inputStr);
+				}
+			},
+
 		EventChain::Warp { entityID, position, direction, doMove } => {
 				let unit: &mut overworld::Unit;
 				let unitMap = gamestate.worldData.unitMap.clone();

@@ -189,6 +189,42 @@ pub fn button_released( key : i32 ) -> bool {
 pub fn button_up( key : i32 ) -> bool {
 	unsafe { return raylib_ffi::IsKeyUp(key); }
 }
+pub fn get_key_pressed() -> String {
+	unsafe {
+		let keyAsI32 = raylib_ffi::GetKeyPressed();
+
+		match keyAsI32 {
+			65 => return "A".to_string(),
+			66 => return "B".to_string(),
+			67 => return "C".to_string(),
+			68 => return "D".to_string(),
+			69 => return "E".to_string(),
+			70 => return "F".to_string(),
+			71 => return "G".to_string(),
+			72 => return "H".to_string(),
+			73 => return "I".to_string(),
+			74 => return "J".to_string(),
+			75 => return "K".to_string(),
+			76 => return "L".to_string(),
+			77 => return "M".to_string(),
+			78 => return "N".to_string(),
+			79 => return "O".to_string(),
+			80 => return "P".to_string(),
+			81 => return "Q".to_string(),
+			82 => return "R".to_string(),
+			83 => return "S".to_string(),
+			84 => return "T".to_string(),
+			85 => return "U".to_string(),
+			86 => return "V".to_string(),
+			87 => return "W".to_string(),
+			88 => return "X".to_string(),
+			89 => return "Y".to_string(),
+			90 => return "Z".to_string(),
+			259 => return ".".to_string(),
+			_ => return "".to_string(),
+		}
+	}
+}
 
 pub fn mouse_button_pressed( key : i32 ) -> bool {
 	unsafe { return raylib_ffi::IsMouseButtonPressed(key); }

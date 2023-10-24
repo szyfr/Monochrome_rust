@@ -262,6 +262,12 @@ pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) ->
 				} else {
 					if *cond != Condition::Boolean(false) { result = false; }
 				},
+			Condition::String(_) => 
+				if handler.eventVariables.contains_key(str) {
+					if handler.eventVariables[str] != *cond { result = false; }
+				} else {
+					if *cond != Condition::String("".to_string()) { result = false; }
+				},
 		}
 	}
 	return result;
