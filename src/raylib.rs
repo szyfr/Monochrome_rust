@@ -194,32 +194,111 @@ pub fn get_key_pressed() -> String {
 		let keyAsI32 = raylib_ffi::GetKeyPressed();
 
 		match keyAsI32 {
-			65 => return "A".to_string(),
-			66 => return "B".to_string(),
-			67 => return "C".to_string(),
-			68 => return "D".to_string(),
-			69 => return "E".to_string(),
-			70 => return "F".to_string(),
-			71 => return "G".to_string(),
-			72 => return "H".to_string(),
-			73 => return "I".to_string(),
-			74 => return "J".to_string(),
-			75 => return "K".to_string(),
-			76 => return "L".to_string(),
-			77 => return "M".to_string(),
-			78 => return "N".to_string(),
-			79 => return "O".to_string(),
-			80 => return "P".to_string(),
-			81 => return "Q".to_string(),
-			82 => return "R".to_string(),
-			83 => return "S".to_string(),
-			84 => return "T".to_string(),
-			85 => return "U".to_string(),
-			86 => return "V".to_string(),
-			87 => return "W".to_string(),
-			88 => return "X".to_string(),
-			89 => return "Y".to_string(),
-			90 => return "Z".to_string(),
+			65 => {
+				if !button_down(340) && !button_down(344) { return "a".to_string(); }
+				else { return "A".to_string(); }
+			},
+			66 => {
+				if !button_down(340) && !button_down(344) { return "b".to_string(); }
+				else { return "B".to_string(); }
+			},
+			67 => {
+				if !button_down(340) && !button_down(344) { return "c".to_string(); }
+				else { return "C".to_string(); }
+			},
+			68 => {
+				if !button_down(340) && !button_down(344) { return "d".to_string(); }
+				else { return "D".to_string(); }
+			},
+			69 => {
+				if !button_down(340) && !button_down(344) { return "e".to_string(); }
+				else { return "E".to_string(); }
+			},
+			70 => {
+				if !button_down(340) && !button_down(344) { return "f".to_string(); }
+				else { return "F".to_string(); }
+			},
+			71 => {
+				if !button_down(340) && !button_down(344) { return "g".to_string(); }
+				else { return "G".to_string(); }
+			},
+			72 => {
+				if !button_down(340) && !button_down(344) { return "h".to_string(); }
+				else { return "H".to_string(); }
+			},
+			73 => {
+				if !button_down(340) && !button_down(344) { return "i".to_string(); }
+				else { return "I".to_string(); }
+			},
+			74 => {
+				if !button_down(340) && !button_down(344) { return "j".to_string(); }
+				else { return "J".to_string(); }
+			},
+			75 => {
+				if !button_down(340) && !button_down(344) { return "k".to_string(); }
+				else { return "K".to_string(); }
+			},
+			76 => {
+				if !button_down(340) && !button_down(344) { return "l".to_string(); }
+				else { return "L".to_string(); }
+			},
+			77 => {
+				if !button_down(340) && !button_down(344) { return "m".to_string(); }
+				else { return "M".to_string(); }
+			},
+			78 => {
+				if !button_down(340) && !button_down(344) { return "n".to_string(); }
+				else { return "N".to_string(); }
+			},
+			79 => {
+				if !button_down(340) && !button_down(344) { return "o".to_string(); }
+				else { return "O".to_string(); }
+			},
+			80 => {
+				if !button_down(340) && !button_down(344) { return "p".to_string(); }
+				else { return "P".to_string(); }
+			},
+			81 => {
+				if !button_down(340) && !button_down(344) { return "q".to_string(); }
+				else { return "Q".to_string(); }
+			},
+			82 => {
+				if !button_down(340) && !button_down(344) { return "r".to_string(); }
+				else { return "R".to_string(); }
+			},
+			83 => {
+				if !button_down(340) && !button_down(344) { return "s".to_string(); }
+				else { return "S".to_string(); }
+			},
+			84 => {
+				if !button_down(340) && !button_down(344) { return "t".to_string(); }
+				else { return "T".to_string(); }
+			},
+			85 => {
+				if !button_down(340) && !button_down(344) { return "u".to_string(); }
+				else { return "U".to_string(); }
+			},
+			86 => {
+				if !button_down(340) && !button_down(344) { return "v".to_string(); }
+				else { return "V".to_string(); }
+			},
+			87 => {
+				if !button_down(340) && !button_down(344) { return "w".to_string(); }
+				else { return "W".to_string(); }
+			},
+			88 => {
+				if !button_down(340) && !button_down(344) { return "x".to_string(); }
+				else { return "X".to_string(); }
+			},
+			89 => {
+				if !button_down(340) && !button_down(344) { return "y".to_string(); }
+				else { return "Y".to_string(); }
+			},
+			90 => {
+				if !button_down(340) && !button_down(344) { return "z".to_string(); }
+				else { return "Z".to_string(); }
+			},
+			32 => return " ".to_string(),
 			259 => return ".".to_string(),
 			_ => return "".to_string(),
 		}

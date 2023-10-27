@@ -110,13 +110,28 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			//* If the Textbox is currently inactive, start it up */
 			gamestate.worldData.eventHandler.textbox.state = TextboxState::Active;
 			gamestate.worldData.eventHandler.textbox.currentText = "".to_string();
-			gamestate.worldData.eventHandler.textbox.targetText = gamestate.localization[&text.to_string()].to_string();
 			gamestate.worldData.eventHandler.textbox.timer = 0;
 			gamestate.worldData.eventHandler.textbox.pause = 0;
 			gamestate.worldData.eventHandler.textbox.position = 1;
 			gamestate.worldData.eventHandler.textbox.hasChoice = false;
 			gamestate.worldData.eventHandler.textbox.choiceList = Vec::new();
 			gamestate.worldData.eventHandler.textbox.curPosition = 0;
+
+			//* Check text for replacements */
+			let mut str = gamestate.localization[&text.to_string()].to_string();
+
+			str = str.replace("{PLAYER_NAME}", &gamestate.worldData.eventHandler.playerName);
+			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.worldData.eventHandler.playerPronouns[0]);
+			str = str.replace("{PLAYER_PRO_OBJECT}", &gamestate.worldData.eventHandler.playerPronouns[1]);
+			str = str.replace("{PLAYER_PRO_POSSESIVE}", &gamestate.worldData.eventHandler.playerPronouns[2]);
+			str = str.replace("{RIVAL_NAME}", &gamestate.worldData.eventHandler.rivalName);
+			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.worldData.eventHandler.playerPronouns[0]);
+			for (variable, cond) in &gamestate.worldData.eventHandler.eventVariables {
+				let varStr = "{".to_string() + &variable.to_string() + "}";
+				str = str.replace(&varStr, &cond.to_string());
+			}
+
+			gamestate.worldData.eventHandler.textbox.targetText = str;
 
 			return false;
 		},
@@ -127,7 +142,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 				gamestate.worldData.eventHandler.textbox.timer = 0;
 				gamestate.worldData.eventHandler.textbox.position += 1;
 
-				let str = &mut gamestate.localization[&text.to_string()].to_string();
+				let str = &mut gamestate.worldData.eventHandler.textbox.targetText.to_string();
 
 				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
 					let _ = str.split_off(gamestate.worldData.eventHandler.textbox.position as usize);
@@ -151,12 +166,17 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 
 			//* If it's an input box, accept all keys */
 			// TODO Decide if i want string max length to be 16...
-			// TODO Also decide if i want space to still be confirm for input or do i want to change it to Enter to allow spaces
 			if gamestate.worldData.eventHandler.textbox.isInput {
 				let input = raylib::get_key_pressed();
 				if input == ".".to_string() && gamestate.worldData.eventHandler.textbox.input.len() > 0 {
 					gamestate.worldData.eventHandler.textbox.input.truncate(gamestate.worldData.eventHandler.textbox.input.len()-1);
 				} else if gamestate.worldData.eventHandler.textbox.input.len() < 16 && input != ".".to_string() { gamestate.worldData.eventHandler.textbox.input += &input; }
+				if data::key_pressed("enter") {
+					if gamestate.worldData.eventHandler.textbox.input.len() > 0 {
+						gamestate.worldData.eventHandler.textbox.reset();
+						return true;
+					}
+				}
 			}
 
 			if data::key_pressed("confirm") {
@@ -182,10 +202,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							return false;
 						}
 					} else if gamestate.worldData.eventHandler.textbox.isInput {
-						if gamestate.worldData.eventHandler.textbox.input.len() > 0 {
-							gamestate.worldData.eventHandler.textbox.reset();
-							return true;
-						}
+						
 					} else {
 						let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
 						if chPos >= gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain.len() { gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive; return true; }
@@ -328,6 +345,25 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				5.0 * ratio,
 				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
+
+			raylib::draw_texture_pro(
+				gamestate.textures["ui_input_general"],
+				raylib_ffi::Rectangle{
+					x: 0.0,
+					y: 0.0,
+					width: 8.0,
+					height: 8.0,
+				},
+				raylib_ffi::Rectangle{
+					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.worldData.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
+					y: inputHeightOffset + (heightOffset / 12.0),
+					width: 32.0 * ratio,
+					height: 32.0 * ratio,
+				},
+				raylib_ffi::Vector2{x: 0.0, y: 0.0},
+				0.0,
+				raylib_ffi::colors::WHITE,
+			)
 		}
 	}
 }

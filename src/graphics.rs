@@ -20,6 +20,7 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	raylib::image_resize_nn(&mut img, 4);
 	output.insert("ui_textbox_general".to_string(), raylib::load_texture_from_image(img));
 	output.insert("ui_pointer_general".to_string(), raylib::load_texture("data/sprites/ui/pointer.png"));
+	output.insert("ui_input_general".to_string(), raylib::load_texture("data/sprites/ui/input.png"));
 
 	return output;
 }
