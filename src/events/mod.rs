@@ -9,6 +9,7 @@
 pub mod conditionals;
 pub mod event_handler;
 pub mod textbox;
+
 use crate::{overworld::{Direction, self}, data, utilities::math};
 
 
@@ -16,9 +17,8 @@ use crate::{overworld::{Direction, self}, data, utilities::math};
 
 /// Event types
 pub enum EventChain{
-	/// Test / Debug
-	Test{ text: String },
-	
+
+	//= Text controls
 	/// Textbox display
 	Text{ text: String },
 	/// Textbox choice display
@@ -31,6 +31,7 @@ pub enum EventChain{
 		variable: String,
 	},
 
+	//= Unit controls
 	/// Teleport unit
 	Warp{
 		entityID:	String,
@@ -56,6 +57,7 @@ pub enum EventChain{
 		time: i32,
 	},
 
+	//= Camera controls
 	/// Reset camera to player
 	ResetCamera,
 	/// Move camera to position
@@ -66,11 +68,23 @@ pub enum EventChain{
 		position: [i32;3],
 		wait: bool,
 	},
+	/// Rotate camera to position
 	RotateCamera{
 		rotation: f32,
 		wait: bool,
 	},
-	// TODO Rotate Camera / etc.
+
+	//= Variables
+	//SetVariable{
+	//	variable: String,
+	//	value: conditionals::Condition,
+	//},
+
+	//= DEBUG
+	/// Default value
+	Test{ text: String },
+	/// Print all variables and their values
+	DEBUGPrintVariables,
 }
 
 
@@ -205,6 +219,18 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				gamestate.camera.rotTarget = *rotation;
 				if !*wait || gamestate.camera.rotTarget == gamestate.camera.rotation { gamestate.worldData.eventHandler.currentChain += 1; }
 			}
+		
+		EventChain::DEBUGPrintVariables => {
+				print!("Playername: {}\n",gamestate.worldData.eventHandler.playerName);
+				print!("Playerpronoun_Subject: {}\n",gamestate.worldData.eventHandler.playerPronouns[0]);
+				print!("Playerpronoun_Object: {}\n",gamestate.worldData.eventHandler.playerPronouns[1]);
+				print!("Playerpronoun_Possesive: {}\n",gamestate.worldData.eventHandler.playerPronouns[2]);
+				print!("Rivalname: {}\n",gamestate.worldData.eventHandler.rivalName);
+				for (variable, value) in gamestate.worldData.eventHandler.eventVariables.iter_mut() {
+					print!("{}: {}\n",variable, value.to_string());
+				}
+				gamestate.worldData.eventHandler.currentChain += 1;
+			},
 			//_ => return,
 	}
 	return true;

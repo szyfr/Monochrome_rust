@@ -126,10 +126,10 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			str = str.replace("{PLAYER_PRO_POSSESIVE}", &gamestate.worldData.eventHandler.playerPronouns[2]);
 			str = str.replace("{RIVAL_NAME}", &gamestate.worldData.eventHandler.rivalName);
 			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.worldData.eventHandler.playerPronouns[0]);
-			for (variable, cond) in &gamestate.worldData.eventHandler.eventVariables {
-				let varStr = "{".to_string() + &variable.to_string() + "}";
-				str = str.replace(&varStr, &cond.to_string());
-			}
+			//for (variable, cond) in &gamestate.worldData.eventHandler.eventVariables {
+			//	let varStr = "{".to_string() + &variable.to_string() + "}";
+			//	str = str.replace(&varStr, &cond.to_string());
+			//} TODO Figure out why this doesn't work
 
 			gamestate.worldData.eventHandler.textbox.targetText = str;
 

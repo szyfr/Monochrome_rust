@@ -47,6 +47,14 @@ pub struct Tile{
 //= Procedures
 
 impl World {
+	/// Load all
+	pub fn load_all( &mut self, mapName : &str ) {
+		self.load_world(mapName);
+		self.load_entities(mapName);
+		self.load_events(mapName);
+		self.load_triggers(mapName);
+	}
+
 	/// Load tile data from input file to Hashmap indexed by their position.
 	pub fn load_world( &mut self, mapName : &str ) {
 		//* Attempt to load map file */
@@ -214,6 +222,8 @@ impl World {
 						rotation: o.as_array().unwrap()[1].as_i64().unwrap() as f32,
 						wait: o.as_array().unwrap()[2].as_bool().unwrap(),
 					},
+
+					"DEBUG_print_variables" => chain = events::EventChain::DEBUGPrintVariables,
 					_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
 				}
 				event.chain.push(chain);
@@ -242,9 +252,6 @@ impl World {
 			self.triggerMap.insert(pos, i["event"].as_str().unwrap().to_string());
 		}
 	}
-
-	//
-
 }
 
 /// Creates an empty worlddata structure.

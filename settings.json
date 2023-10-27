@@ -3,13 +3,15 @@
 	"screen_height": 720,
 	"screen_fps": 80,
 	"language": "english",
+	"text_speed": 5,
 	"keybindings": [
+		["left", ["keyboard",0,65]],
+		["confirm", ["keyboard",0,32]],
+		["enter", ["keyboard",0,257]],
 		["rotate_right", ["keyboard",0,69]],
-		["confirm", ["keyboard",0,65]],
 		["up", ["keyboard",0,87]],
-		["right", ["keyboard",0,68]],
+		["down", ["keyboard",0,83]],
 		["rotate_left", ["keyboard",0,81]],
-		["left", ["keyboard",0,67]],
-		["down", ["keyboard",0,83]]
+		["right", ["keyboard",0,68]]
 	]
 }

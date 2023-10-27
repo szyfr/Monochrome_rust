@@ -3,6 +3,7 @@
 		{
 			"id": "test",
 			"chain": [
+				["DEBUG_print_variables"],
 				["sound","inside",1],
 				["animation","flash",23,8,[0,1,2],true],
 				["warp","player",[ 6,0,3 ],true,"south"],

@@ -24,15 +24,11 @@ fn main() {
 	//* Camera / Player */
 
 	// ! TEMP
-	gamestate.worldData.load_world("newbark");
-	gamestate.worldData.load_entities("newbark");
-	gamestate.worldData.load_triggers("newbark");
-	gamestate.worldData.load_events("newbark");
+	gamestate.worldData.load_all("newbark");
 
 	while !raylib::window_should_close() {
 		//* Update */
 		camera::update(&mut gamestate);
-		//events
 		player::controls(&mut gamestate);
 
 		//* Draw */
