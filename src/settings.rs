@@ -72,16 +72,24 @@ impl Display for Origin {
 
 /// Storage for all settings
 pub struct Settings {
-	pub screenWidth : i32,
-	pub screenHeight : i32,
-	pub screenFps : i32,
+
+	//* Screen */
+	pub screenWidth: i32,
+	pub screenHeight: i32,
+	pub screenFps: i32,
 	pub screenRatio: f32,
 
+	//* Game text */
 	pub text_speed: i32,
+	pub language: Language,
 
-	pub keybindings : Option<HashMap<String, Keybinding>>,
+	//* Keybindings */
+	pub keybindings: Option<HashMap<String, Keybinding>>,
 
-	pub language : Language,
+	//* Audio */
+	pub masterVolume: f32,
+	pub musicVolume: f32,
+	pub sfxVolume: f32,
 }
 
 /// Storage for individual keybindings
@@ -118,6 +126,10 @@ impl Settings {
 
 		self.text_speed		= jsonFile["text_speed"].as_i64().unwrap() as i32;
 
+		self.masterVolume	= jsonFile["master"].as_f64().unwrap() as f32;
+		self.musicVolume	= jsonFile["music"].as_f64().unwrap() as f32;
+		self.sfxVolume		= jsonFile["sound"].as_f64().unwrap() as f32;
+
 		self.keybindings = Some(HashMap::new());
 		for val in jsonFile["keybindings"].as_array().unwrap() {
 			let name = val.as_array().unwrap()[0].as_str().unwrap();
@@ -136,9 +148,11 @@ impl Settings {
 		self.screenWidth	= 1280;
 		self.screenHeight 	=  720;
 		self.screenFps 		=   80;
-		self.keybindings 	= Some(HashMap::new());
-		self.language 		= Language::English;
+
 		self.text_speed		=    5;
+		self.language 		= Language::English;
+
+		self.keybindings 	= Some(HashMap::new());
 
 		self.keybindings.as_mut().unwrap().insert("up".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 87 });
 		self.keybindings.as_mut().unwrap().insert("down".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 83 });
@@ -148,6 +162,10 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("rotate_right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
 		self.keybindings.as_mut().unwrap().insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 32 });
 		self.keybindings.as_mut().unwrap().insert("enter".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 257 });
+
+		self.masterVolume = 0.25;
+		self.musicVolume = 0.25;
+		self.sfxVolume = 0.25;
 
 		self.save();
 	}
@@ -161,8 +179,11 @@ impl Settings {
 		newSettingsFile.push_str(format!("\t\"screen_width\": {},\n", self.screenWidth).as_str());
 		newSettingsFile.push_str(format!("\t\"screen_height\": {},\n", self.screenHeight).as_str());
 		newSettingsFile.push_str(format!("\t\"screen_fps\": {},\n", self.screenFps).as_str());
-		newSettingsFile.push_str(format!("\t\"language\": \"{}\",\n", self.language).as_str());
 		newSettingsFile.push_str(format!("\t\"text_speed\": {},\n", self.text_speed).as_str());
+		newSettingsFile.push_str(format!("\t\"language\": \"{}\",\n", self.language).as_str());
+		newSettingsFile.push_str(format!("\t\"master\": {},\n", self.masterVolume).as_str());
+		newSettingsFile.push_str(format!("\t\"music\": {},\n", self.musicVolume).as_str());
+		newSettingsFile.push_str(format!("\t\"sound\": {},\n", self.sfxVolume).as_str());
 		newSettingsFile.push_str("\t\"keybindings\": [\n");
 		for (str, key) in self.keybindings.as_ref().unwrap() {
 			if counter == self.keybindings.as_ref().unwrap().len()-1 {

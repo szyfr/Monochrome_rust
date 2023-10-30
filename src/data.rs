@@ -7,7 +7,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use crate::{settings, camera, player, overworld, world, graphics, localization};
+use crate::{settings, camera, player, overworld, world, graphics, localization, audio};
 
 
 //= Structs
@@ -20,6 +20,8 @@ pub struct Gamestate {
 	pub textures	: HashMap<String, raylib_ffi::Texture>,
 	pub models		: HashMap<String, raylib_ffi::Model>,
 	pub animations	: HashMap<String, overworld::Animation>,
+
+	pub audio		: audio::AudioHandler,
 
 	pub worldData	: world::World,
 
@@ -34,9 +36,15 @@ pub static mut SETTINGS : settings::Settings = settings::Settings{
 	screenHeight: 720,
 	screenFps: 80,
 	screenRatio: 1.0,
+
 	text_speed: 5,
-	keybindings: None,
 	language: settings::Language::English,
+
+	keybindings: None,
+
+	masterVolume: 0.5,
+	musicVolume: 1.0,
+	sfxVolume: 1.0,
 };
 
 
@@ -50,6 +58,7 @@ pub fn init() -> Gamestate {
 		textures		: HashMap::new(),
 		models			: HashMap::new(),
 		animations		: graphics::load_animations(),
+		audio			: audio::init(),
 		worldData		: world::init_empty(),
 		camera			: camera::init(),
 		player			: player::init(),
@@ -89,4 +98,13 @@ pub fn get_screenratio() -> f32 {
 }
 pub fn get_textspeed() -> i32 {
 	unsafe { return SETTINGS.text_speed; }
+}
+pub fn get_master_volume() -> f32 {
+	unsafe { return SETTINGS.masterVolume }
+}
+pub fn get_music_volume() -> f32 {
+	unsafe { return SETTINGS.musicVolume }
+}
+pub fn get_sfx_volume() -> f32 {
+	unsafe { return SETTINGS.sfxVolume }
 }

@@ -334,3 +334,65 @@ pub fn gamepad_button_up( gamepad : i32, key : i32 ) -> bool {
 	unsafe { return raylib_ffi::IsGamepadButtonUp(gamepad, key); }
 }
 
+pub fn init_audio_device() {
+	unsafe { raylib_ffi::InitAudioDevice() }
+}
+pub fn close_audio_device() {
+	unsafe { raylib_ffi::CloseAudioDevice() }
+}
+
+pub fn play_sound( sound: raylib_ffi::Sound ) {
+	unsafe { raylib_ffi::PlaySound(sound) }
+}
+pub fn stop_sound( sound: raylib_ffi::Sound ) {
+	unsafe { raylib_ffi::StopSound(sound) }
+}
+pub fn pause_sound( sound: raylib_ffi::Sound ) {
+	unsafe { raylib_ffi::PauseSound(sound) }
+}
+pub fn resume_sound( sound: raylib_ffi::Sound ) {
+	unsafe { raylib_ffi::ResumeSound(sound) }
+}
+pub fn is_sound_playing( sound: raylib_ffi::Sound ) -> bool {
+	unsafe { return raylib_ffi::IsSoundPlaying(sound) }
+}
+pub fn set_sound_volume( sound: raylib_ffi::Sound, volume: f32 ) {
+	unsafe { raylib_ffi::SetSoundVolume(sound, volume) }
+}
+pub fn load_sound( fileName: &str ) -> raylib_ffi::Sound {
+	unsafe { return raylib_ffi::LoadSound(raylib_ffi::rl_str!(fileName)) }
+}
+pub fn unload_sound( sound: raylib_ffi::Sound ) {
+	unsafe { raylib_ffi::UnloadSound(sound) }
+}
+
+pub fn play_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::PlayMusicStream(music) }
+}
+pub fn stop_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::StopMusicStream(music) }
+}
+pub fn pause_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::PauseMusicStream(music) }
+}
+pub fn resume_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::ResumeMusicStream(music) }
+}
+pub fn is_music_playing( music: raylib_ffi::Music ) -> bool {
+	unsafe { return raylib_ffi::IsMusicStreamPlaying(music) }
+}
+pub fn set_music_volume( music: raylib_ffi::Music, volume: f32 ) {
+	unsafe { raylib_ffi::SetMusicVolume(music, volume) }
+}
+pub fn load_music( fileName: &str ) -> raylib_ffi::Music {
+	unsafe { return raylib_ffi::LoadMusicStream(raylib_ffi::rl_str!(fileName)) }
+}
+pub fn unload_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::UnloadMusicStream(music) }
+}
+pub fn is_music_ready( music: raylib_ffi::Music ) -> bool {
+	unsafe { return raylib_ffi::IsMusicReady(music) }
+}
+pub fn update_music( music: raylib_ffi::Music ) {
+	unsafe { raylib_ffi::UpdateMusicStream(music) }
+}

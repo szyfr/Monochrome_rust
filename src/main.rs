@@ -14,6 +14,7 @@ fn main() {
 	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
 	raylib::set_target_fps(data::get_screenfps());
+	raylib::init_audio_device();
 	
 	//* Graphics */
 	gamestate.fonts		= graphics::load_fonts();
@@ -25,11 +26,13 @@ fn main() {
 
 	// ! TEMP
 	gamestate.worldData.load_all("newbark");
+	gamestate.audio.play_music("new_bark_town".to_string());
 
 	while !raylib::window_should_close() {
 		//* Update */
 		camera::update(&mut gamestate);
 		player::controls(&mut gamestate);
+		gamestate.audio.update();
 
 		//* Draw */
 		raylib::begin_drawing();
@@ -51,4 +54,5 @@ fn main() {
 
 	//* Raylib */
 	raylib::close_window();
+	raylib::close_audio_device();
 }
