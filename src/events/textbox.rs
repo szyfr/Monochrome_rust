@@ -116,6 +116,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			gamestate.worldData.eventHandler.textbox.hasChoice = false;
 			gamestate.worldData.eventHandler.textbox.choiceList = Vec::new();
 			gamestate.worldData.eventHandler.textbox.curPosition = 0;
+			gamestate.audio.play_sound("button".to_string());
 
 			//* Check text for replacements */
 			let mut str = gamestate.localization[&text.to_string()].to_string();
@@ -174,6 +175,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 				if data::key_pressed("enter") {
 					if gamestate.worldData.eventHandler.textbox.input.len() > 0 {
 						gamestate.worldData.eventHandler.textbox.reset();
+						gamestate.audio.play_sound("button".to_string());
 						return true;
 					}
 				}
@@ -188,17 +190,20 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 						let choice = &gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize];
 						if choice.event == "" {
 							gamestate.worldData.eventHandler.textbox.reset();
+							gamestate.audio.play_sound("button".to_string());
 							return true;
 						}
 						if choice.event == gamestate.worldData.eventHandler.currentEvent {
 							gamestate.worldData.eventHandler.currentChain = choice.position;
 							gamestate.worldData.eventHandler.textbox.reset();
+							gamestate.audio.play_sound("button".to_string());
 							return false;
 						}
 						if gamestate.worldData.eventList.contains_key(&choice.event) {
 							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
 							gamestate.worldData.eventHandler.currentChain = choice.position;
 							gamestate.worldData.eventHandler.textbox.reset();
+							gamestate.audio.play_sound("button".to_string());
 							return false;
 						}
 					} else if gamestate.worldData.eventHandler.textbox.isInput {
@@ -218,6 +223,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							},
 							_ => {
 								gamestate.worldData.eventHandler.textbox.reset();
+								gamestate.audio.play_sound("button".to_string());
 							},
 						}
 						return true;

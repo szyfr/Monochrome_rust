@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}};
+use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}, data};
 
 
 //= Enumerations
@@ -193,7 +193,7 @@ pub fn set_animation( unit : &mut Unit, animation : String ) {
 
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
 pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
-	//* Leave if still moving or current direction is Null */
+	//* Leave if still moving */
 	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
 
 	//* Calculate new position */
@@ -225,7 +225,10 @@ pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMa
 			tileDwColli = !check_collision(direction, tileDw.solid);
 			if tileDwColli { newPos.y -= 1.0; }
 		}
-		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) { return; }
+		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) {
+			//gamestate.audio.play_sound("collision".to_string());
+			return;
+		}
 	}
 	let tile = &currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
 
@@ -241,6 +244,79 @@ pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMa
 }
 
 ///
+//pub fn move_unit_test( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
+//pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : &mut Unit, direction : Direction ) {
+pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction : Direction ) {
+	//* Get unit */
+	let mut unitMove: Unit;
+	if unit == "player" { unitMove = gamestate.player.unit.clone(); }
+	else { unitMove = gamestate.worldData.unitMap.get(&unit).unwrap().clone(); }
+
+	//* Leave if still moving */
+	if !close_enough_v3(unitMove.position, unitMove.posTarget, 0.05) { return; }
+
+	//* Calculate new position */
+	let mut newPos = unitMove.position;
+	match direction {
+		Direction::North => newPos.z += -1.0,
+		Direction::South => newPos.z +=  1.0,
+		Direction::East  => newPos.x += -1.0,
+		Direction::West  => newPos.x +=  1.0,
+	}
+
+	//* Check Tiles existance */
+	let tileExists = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
+	if !tileExists {
+		//TODO If the reverse movement would not be allowed, jump
+		//* Checking for tile up */
+		let tileExistsUp = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
+		let mut tileUpColli = false;
+		if tileExistsUp {
+			let tileUp = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
+			tileUpColli = !check_collision(direction, tileUp.solid);
+			if tileUpColli { newPos.y += 1.0; }
+		}
+		//* Checking for tile down */
+		let tileExistsDw = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
+		let mut tileDwColli = false;
+		if tileExistsDw {
+			let tileDw = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
+			tileDwColli = !check_collision(direction, tileDw.solid);
+			if tileDwColli { newPos.y -= 1.0; }
+		}
+		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) {
+			gamestate.audio.play_sound("collision".to_string());
+			return;
+		}
+	}
+	let tile = &gamestate.worldData.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
+
+	//* Check if Solid */
+	if check_collision(direction, tile.solid) {
+		gamestate.audio.play_sound("collision".to_string());
+		return;
+	}
+
+	//* Check for entities */
+	for (_, unit) in gamestate.worldData.unitMap.iter() {
+		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.worldData.eventHandler, unit) {
+			gamestate.audio.play_sound("collision".to_string());
+			return;
+		}
+	}
+
+	unitMove.posTarget = newPos;
+	if unit == "player" { gamestate.player.unit = unitMove; }
+	else { gamestate.worldData.unitMap.insert(unit, unitMove); }
+}
+
+//
+pub fn check_unit_collision( unitMap: &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, newPos: raylib_ffi::Vector3 ) -> bool {
+	for (_,  unit) in unitMap.iter() {
+		if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return false; }
+	}
+	return true;
+}
 
 /// Returns whether the Unit should exist.
 pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) -> bool {

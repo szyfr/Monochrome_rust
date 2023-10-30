@@ -173,7 +173,8 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			gamestate.player.unit.direction = dir;
 			if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
 				overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
-				overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.worldData.eventHandler, &mut gamestate.player.unit, dir);
+				//overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.worldData.eventHandler, &mut gamestate.player.unit, dir);
+				overworld::move_unit_test(gamestate, "player".to_string(), dir);
 			} else {
 				overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 			}

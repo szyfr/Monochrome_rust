@@ -43,8 +43,6 @@ impl AudioHandler {
 	pub fn play_music(&mut self, music: String ) {
 		if music == self.currentMusicName { return }
 
-		print!("{}\n","data/audio/music/".to_string() + &music + ".wav");
-
 		if self.currentMusic.is_some() {
 			raylib::stop_music(self.currentMusic.unwrap());
 			raylib::unload_music(self.currentMusic.unwrap());
@@ -57,6 +55,11 @@ impl AudioHandler {
 	/// Update music
 	pub fn update(&mut self) {
 		if self.currentMusic.is_some() { raylib::update_music(self.currentMusic.unwrap()); }
+		if self.currentSoundName != "" && !raylib::is_sound_playing(self.currentSound.unwrap()) {
+			self.currentSoundName = "".to_string();
+			raylib::unload_sound(self.currentSound.unwrap());
+			self.currentSound = None;
+		}
 	}
 }
 
