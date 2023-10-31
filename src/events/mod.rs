@@ -9,6 +9,7 @@
 pub mod conditionals;
 pub mod event_handler;
 pub mod textbox;
+pub mod animation;
 
 use crate::{overworld::{Direction, self}, data, utilities::math};
 
@@ -95,6 +96,15 @@ pub enum EventChain{
 
 		event: String,
 		position: i32,
+	},
+
+	//= Animation
+	/// Play animation
+	PlayAnimation{
+		animation: String,
+		order: Vec<i32>,
+		ticks: i32,
+		hold: bool,
 	},
 
 	//= DEBUG
@@ -267,6 +277,19 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 			} else {
 				gamestate.worldData.eventHandler.currentChain += 1;
 			}
+		}
+
+		//= Animation events
+		EventChain::PlayAnimation { animation, order, ticks, hold } => {
+			let animation = animation::Animation{
+				currentAnimation: animation.to_string(),
+				order: order.clone(),
+				ticksPerFrame: *ticks,
+				hold: *hold,
+				frame: 0,
+				ticks: 0,
+			};
+			if animation::run(gamestate, animation) { gamestate.worldData.eventHandler.currentChain += 1; }
 		}
 
 		//= Debug events

@@ -19,8 +19,40 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	let mut img = raylib::load_image("data/sprites/ui/textbox.png");
 	raylib::image_resize_nn(&mut img, 4);
 	output.insert("ui_textbox_general".to_string(), raylib::load_texture_from_image(img));
+	raylib::unload_image(img);
+
 	output.insert("ui_pointer_general".to_string(), raylib::load_texture("data/sprites/ui/pointer.png"));
 	output.insert("ui_input_general".to_string(), raylib::load_texture("data/sprites/ui/input.png"));
+
+	img = raylib::load_image("data/sprites/animations/flash.png");
+	for i in 0..3 {
+		let subImg = raylib::image_from_image(
+			img,
+			raylib_ffi::Rectangle{
+				x: (i * img.width/3) as f32,
+				y: 0.0,
+				width: (img.width/3) as f32,
+				height: img.height as f32,
+			}
+		);
+		output.insert("ui_animation_flash_".to_string() + &i.to_string(), raylib::load_texture_from_image(subImg));
+	}
+	raylib::unload_image(img);
+
+	img = raylib::load_image("data/sprites/animations/trainer_battle_1.png");
+	for i in 0..3 {
+		let subImg = raylib::image_from_image(
+			img,
+			raylib_ffi::Rectangle{
+				x: (i * img.width/3) as f32,
+				y: 0.0,
+				width: (img.width/3) as f32,
+				height: img.height as f32,
+			}
+		);
+		output.insert("ui_animation_trainer_battle_1_".to_string() + &i.to_string(), raylib::load_texture_from_image(subImg));
+	}
+	raylib::unload_image(img);
 
 	return output;
 }

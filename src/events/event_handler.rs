@@ -11,7 +11,7 @@
 //= Enumerations
 use std::collections::HashMap;
 use super::conditionals::Condition;
-use super::textbox;
+use super::{textbox, animation};
 
 
 
@@ -25,6 +25,8 @@ pub struct EventHandler{
 	pub textbox: textbox::Textbox,
 
 	pub eventVariables: HashMap<String, Condition>,
+
+	pub animation: Option<animation::Animation>,
 
 	pub playerName: String,
 	pub playerPronouns: [String; 3],
@@ -45,6 +47,8 @@ pub fn create() -> EventHandler {
 		textbox: 		textbox::init(),
 
 		eventVariables: HashMap::new(),
+
+		animation:		None,
 
 		playerName:		"Mono".to_string(),
 		playerPronouns: ["they".to_string(), "them".to_string(), "theirs".to_string()],

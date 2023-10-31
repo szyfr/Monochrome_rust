@@ -318,6 +318,21 @@ impl World {
 						}
 					}
 
+					//= Animation events
+					"animation" => {
+						let mut animOrder: Vec<i32> = Vec::new();
+						for i in o.as_array().unwrap()[4].as_array().unwrap() {
+							animOrder.push(i.as_i64().unwrap() as i32);
+						}
+
+						chain = events::EventChain::PlayAnimation {
+							animation: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							order: animOrder,
+							ticks: o.as_array().unwrap()[3].as_i64().unwrap() as i32,
+							hold: o.as_array().unwrap()[5].as_bool().unwrap(),
+						}
+					}
+
 					//= DEBUG
 					"DEBUG_print_variables" => {
 						chain = events::EventChain::DEBUGPrintVariables;

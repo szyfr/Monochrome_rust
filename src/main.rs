@@ -46,6 +46,7 @@ fn main() {
 			raylib::end_3d_mode();
 
 			events::textbox::draw(&mut gamestate);
+			events::animation::draw(&mut gamestate);
 
 			raylib::draw_fps(0,0);
 		}
