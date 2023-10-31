@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::Condition, textbox}};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::{Condition, self}, textbox}};
 
 
 //= Constants
@@ -252,8 +252,70 @@ impl World {
 					"music" => {
 						chain = events::EventChain::Music { music: o.as_array().unwrap()[1].as_str().unwrap().to_string() };
 					}
+					"pause_music" => {
+						chain = events::EventChain::PauseMusic;
+					}
 					"sound" => {
 						chain = events::EventChain::Sound { sound: o.as_array().unwrap()[1].as_str().unwrap().to_string() };
+					}
+
+					//= Variable events
+					"set_variable" => {
+						let mut condition: conditionals::Condition = conditionals::Condition::Boolean(false);
+						let mut real = true;
+						match &o.as_array().unwrap()[2] {
+							serde_json::value::Value::String {..} => {
+								condition = conditionals::Condition::String(o.as_array().unwrap()[2].as_str().unwrap().to_string())
+							}
+							serde_json::value::Value::Bool {..} => {
+								condition = conditionals::Condition::Boolean(o.as_array().unwrap()[2].as_bool().unwrap())
+							}
+							serde_json::value::Value::Number {..} => {
+								condition = conditionals::Condition::Integer(o.as_array().unwrap()[2].as_i64().unwrap() as i32)
+							}
+							_ => {
+								debug::log("[ERROR] - Attempted to put illegal value into a variable.");
+								real = false;
+							}
+						}
+						if real {
+							chain = events::EventChain::SetVariable {
+								variable: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+								value: condition,
+							}
+						} else {
+							chain = events::EventChain::Test { text: o.as_array().unwrap()[0].as_str().unwrap().to_string() };
+						}
+					}
+					"test_variable" => {
+						let mut condition: conditionals::Condition = conditionals::Condition::Boolean(false);
+						let mut real = true;
+						match o.as_array().unwrap()[1].as_array().unwrap()[1] {
+							serde_json::value::Value::String {..} => {
+								condition = conditionals::Condition::String(o.as_array().unwrap()[1].as_array().unwrap()[1].as_str().unwrap().to_string())
+							}
+							serde_json::value::Value::Bool {..} => {
+								condition = conditionals::Condition::Boolean(o.as_array().unwrap()[1].as_array().unwrap()[1].as_bool().unwrap())
+							}
+							serde_json::value::Value::Number {..} => {
+								condition = conditionals::Condition::Integer(o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32)
+							}
+							_ => {
+								debug::log("[ERROR] - Attempted to put illegal value into a variable.");
+								real = false;
+							}
+						}
+
+						if real {
+							chain = events::EventChain::TestVariable {
+								variable: o.as_array().unwrap()[1].as_array().unwrap()[0].as_str().unwrap().to_string(),
+								value: condition,
+								event: o.as_array().unwrap()[2].as_array().unwrap()[0].as_str().unwrap().to_string(),
+								position: o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
+							}
+						} else {
+							chain = events::EventChain::Test { text: o.as_array().unwrap()[0].as_str().unwrap().to_string() };
+						}
 					}
 
 					//= DEBUG

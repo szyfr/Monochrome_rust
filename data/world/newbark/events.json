@@ -13,15 +13,19 @@
 			"id":"newbarktown_mom_talk1_1",
 			"chain": [
 				["text","newbarktown_mom_event1_1"],
+				["test_variable",["test",true],["",5]],
 				["input","newbarktown_mom_event1_2","test_value"],
 				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test2"]]],
+				["set_variable","test",true],
 				["warp","player",[ 6,0,3 ],true,"south"]
 			]},
 		{
 			"id": "test2",
 			"chain": [
+				["pause_music"],
 				["rotate_camera",360, true],
 				["wait",200],
+				["pause_music"],
 				["reset_camera"]
 			]},
 		{

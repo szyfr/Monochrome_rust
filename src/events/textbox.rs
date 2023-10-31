@@ -184,31 +184,33 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			if data::key_pressed("confirm") {
 				let str = &mut gamestate.localization[&text.to_string()].to_string();
 				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
+					gamestate.audio.play_sound("button".to_string());
 					gamestate.worldData.eventHandler.textbox.position = str.len() as i32;
 				} else {
 					if gamestate.worldData.eventHandler.textbox.hasChoice {
+						gamestate.audio.play_sound("button".to_string());
+
 						let choice = &gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize];
 						if choice.event == "" {
 							gamestate.worldData.eventHandler.textbox.reset();
-							gamestate.audio.play_sound("button".to_string());
 							return true;
 						}
 						if choice.event == gamestate.worldData.eventHandler.currentEvent {
 							gamestate.worldData.eventHandler.currentChain = choice.position;
 							gamestate.worldData.eventHandler.textbox.reset();
-							gamestate.audio.play_sound("button".to_string());
 							return false;
 						}
 						if gamestate.worldData.eventList.contains_key(&choice.event) {
 							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
 							gamestate.worldData.eventHandler.currentChain = choice.position;
 							gamestate.worldData.eventHandler.textbox.reset();
-							gamestate.audio.play_sound("button".to_string());
 							return false;
 						}
 					} else if gamestate.worldData.eventHandler.textbox.isInput {
 						
 					} else {
+						gamestate.audio.play_sound("button".to_string());
+
 						let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
 						if chPos >= gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain.len() { gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive; return true; }
 						let chain = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain[chPos];
@@ -223,7 +225,6 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							},
 							_ => {
 								gamestate.worldData.eventHandler.textbox.reset();
-								gamestate.audio.play_sound("button".to_string());
 							},
 						}
 						return true;

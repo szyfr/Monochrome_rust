@@ -77,14 +77,25 @@ pub enum EventChain{
 	//= Audio controls
 	/// Change Music
 	Music{ music: String },
+	/// Stop music
+	PauseMusic,
 	/// Play Sound
 	Sound{ sound: String },
 
 	//= Variables
-	//SetVariable{
-	//	variable: String,
-	//	value: conditionals::Condition,
-	//},
+	/// Set variable
+	SetVariable{
+		variable: String,
+		value: conditionals::Condition,
+	},
+	/// Test variable
+	TestVariable{
+		variable: String,
+		value: conditionals::Condition,
+
+		event: String,
+		position: i32,
+	},
 
 	//= DEBUG
 	/// Default value
@@ -235,10 +246,28 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				gamestate.audio.play_music(music.to_string());
 				gamestate.worldData.eventHandler.currentChain += 1;
 			}
+		EventChain::PauseMusic => {
+				gamestate.audio.pause_music();
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
 		EventChain::Sound { sound } => {
 				gamestate.audio.play_sound(sound.to_string());
 				gamestate.worldData.eventHandler.currentChain += 1;
 			}
+
+		//= Variable events
+		EventChain::SetVariable { variable, value } => {
+			gamestate.worldData.eventHandler.eventVariables.insert(variable.to_string(), value.clone());
+			gamestate.worldData.eventHandler.currentChain += 1;
+		}
+		EventChain::TestVariable { variable, value, event, position } => {
+			if gamestate.worldData.eventHandler.eventVariables.get(variable) == Some(value) {
+				if event != "" { gamestate.worldData.eventHandler.currentEvent = event.to_string(); }
+				gamestate.worldData.eventHandler.currentChain = *position;
+			} else {
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
+		}
 
 		//= Debug events
 		EventChain::DEBUGPrintVariables => {

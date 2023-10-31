@@ -27,7 +27,7 @@ pub struct AudioHandler{
 
 impl AudioHandler {
 	/// Play sound
-	pub fn play_sound(&mut self, sound: String ) {
+	pub fn play_sound( &mut self, sound: String ) {
 		if sound == self.currentSoundName { return }
 
 		if self.currentSound.is_some() {
@@ -40,7 +40,7 @@ impl AudioHandler {
 		raylib::play_sound(self.currentSound.unwrap());
 	}
 	/// Play music
-	pub fn play_music(&mut self, music: String ) {
+	pub fn play_music( &mut self, music: String ) {
 		if music == self.currentMusicName { return }
 
 		if self.currentMusic.is_some() {
@@ -52,8 +52,15 @@ impl AudioHandler {
 		raylib::set_music_volume(self.currentMusic.unwrap(), data::get_master_volume() * data::get_music_volume());
 		raylib::play_music(self.currentMusic.unwrap());
 	}
+	/// Pause / Resume music
+	pub fn pause_music( &self ) {
+		if self.currentMusic.is_some() {
+			if raylib::is_music_playing(self.currentMusic.unwrap()) { raylib::pause_music(self.currentMusic.unwrap()); }
+			else { raylib::play_music(self.currentMusic.unwrap()); }
+		}
+	}
 	/// Update music
-	pub fn update(&mut self) {
+	pub fn update( &mut self ) {
 		if self.currentMusic.is_some() { raylib::update_music(self.currentMusic.unwrap()); }
 		if self.currentSoundName != "" && !raylib::is_sound_playing(self.currentSound.unwrap()) {
 			self.currentSoundName = "".to_string();
