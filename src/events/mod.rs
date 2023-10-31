@@ -74,6 +74,12 @@ pub enum EventChain{
 		wait: bool,
 	},
 
+	//= Audio controls
+	/// Change Music
+	Music{ music: String },
+	/// Play Sound
+	Sound{ sound: String },
+
 	//= Variables
 	//SetVariable{
 	//	variable: String,
@@ -118,11 +124,12 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 		EventChain::Test{ text } => {
 				print!("TEST: {}\n",text);
 				gamestate.worldData.eventHandler.currentChain += 1;
-			},
-
+			}
+		
+		//= Text events
 		EventChain::Text { text } => {
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
-			},
+			}
 		EventChain::Choice { text, choices } => {
 				if !gamestate.worldData.eventHandler.textbox.hasChoice {
 					gamestate.worldData.eventHandler.textbox.hasChoice = true;
@@ -132,7 +139,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					}
 				}
 				if textbox::run(gamestate, text.to_string()) { gamestate.worldData.eventHandler.currentChain += 1; }
-			},
+			}
 		EventChain::Input { text, variable } => {
 				let variableStr = variable.to_string();
 				let inputStr = conditionals::Condition::String(gamestate.worldData.eventHandler.textbox.input.to_string());
@@ -144,8 +151,9 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					gamestate.worldData.eventHandler.currentChain += 1;
 					gamestate.worldData.eventHandler.eventVariables.insert(variableStr, inputStr);
 				}
-			},
+			}
 
+		//= Movement events
 		EventChain::Warp { entityID, position, direction, doMove } => {
 				let unit: &mut overworld::Unit;
 				let unitMap = gamestate.worldData.unitMap.clone();
@@ -164,7 +172,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				else { unit.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32}; }
 				
 				gamestate.worldData.eventHandler.currentChain += 1;
-			},
+			}
 		EventChain::Move { entityID, direction, times } => {
 				let unit: &mut overworld::Unit;
 				let unitMap = gamestate.worldData.unitMap.clone();
@@ -180,7 +188,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					gamestate.worldData.eventHandler.internal = 0;
 					gamestate.worldData.eventHandler.currentChain += 1;
 				}
-			},
+			}
 		EventChain::Turn { entityID, direction } => {
 				let unit: &mut overworld::Unit;
 				if entityID == "player" { unit = &mut gamestate.player.unit; }
@@ -189,20 +197,22 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 
 				unit.direction = *direction;
 				gamestate.worldData.eventHandler.currentChain += 1;
-			},
+			}
 
+		//= Wait
 		EventChain::Wait { time } => {
 				gamestate.worldData.eventHandler.internal += 1;
 				if gamestate.worldData.eventHandler.internal >= *time {
 					gamestate.worldData.eventHandler.internal = 0;
 					gamestate.worldData.eventHandler.currentChain += 1;
 				}
-			},
+			}
 
+		//= Camera events
 		EventChain::ResetCamera => {
 				gamestate.camera.onPlayer = true;
 				gamestate.worldData.eventHandler.currentChain += 1;
-			},
+			}
 		EventChain::SetCamera { position } => {
 				gamestate.camera.onPlayer = false;
 				gamestate.camera.position = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
@@ -220,6 +230,17 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				if !*wait || gamestate.camera.rotTarget == gamestate.camera.rotation { gamestate.worldData.eventHandler.currentChain += 1; }
 			}
 		
+		//= Audio events
+		EventChain::Music { music } => {
+				gamestate.audio.play_music(music.to_string());
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
+		EventChain::Sound { sound } => {
+				gamestate.audio.play_sound(sound.to_string());
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
+
+		//= Debug events
 		EventChain::DEBUGPrintVariables => {
 				print!("Playername: {}\n",gamestate.worldData.eventHandler.playerName);
 				print!("Playerpronoun_Subject: {}\n",gamestate.worldData.eventHandler.playerPronouns[0]);
@@ -230,7 +251,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					print!("{}: {}\n",variable, value.to_string());
 				}
 				gamestate.worldData.eventHandler.currentChain += 1;
-			},
+			}
 			//_ => return,
 	}
 	return true;

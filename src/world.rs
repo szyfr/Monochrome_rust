@@ -154,23 +154,13 @@ impl World {
 			for o in i["chain"].as_array().unwrap() {
 				let chain: events::EventChain;
 				match o.as_array().unwrap()[0].as_str().unwrap() {
-					"warp" => chain = events::EventChain::Warp{
-						entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
-						position:	[
-							o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
-							],
-						direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
-						doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
-					},
-					"move" => chain = events::EventChain::Move {
-						entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
-						direction:	overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
-						times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
-					},
-					"turn" => chain = events::EventChain::Turn { entityID: o.as_array().unwrap()[1].as_str().unwrap().to_string(), direction: overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap() },
-					"text" => chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+					//= Text events
+					"turn" => {
+						chain = events::EventChain::Turn { entityID: o.as_array().unwrap()[1].as_str().unwrap().to_string(), direction: overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap() }
+					}
+					"text" => {
+						chain = events::EventChain::Text { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() }
+					}
 					"choice" => {
 						let mut choices = [
 							textbox::Choice{text: "".to_string(), event: "".to_string(), position: 0},
@@ -194,37 +184,85 @@ impl World {
 							text: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
 							choices,
 						};
-					},
+					}
 					"input" => {
 						chain = events::EventChain::Input {
 							text: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
 							variable: o.as_array().unwrap()[2].as_str().unwrap().to_string(),
 						}
 					}
-					"wait" => chain = events::EventChain::Wait { time: o.as_array().unwrap()[1].as_i64().unwrap() as i32 },
-					"reset_camera" => chain = events::EventChain::ResetCamera,
-					"set_camera" => chain = events::EventChain::SetCamera {
-						position: [
-							o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
-						],
-					},
-					"move_camera" => chain = events::EventChain::MoveCamera {
-						position: [
-							o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32,
-							o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
-						],
-						wait: o.as_array().unwrap()[2].as_bool().unwrap(),
-					},
-					"rotate_camera" => chain = events::EventChain::RotateCamera {
-						rotation: o.as_array().unwrap()[1].as_i64().unwrap() as f32,
-						wait: o.as_array().unwrap()[2].as_bool().unwrap(),
-					},
 
-					"DEBUG_print_variables" => chain = events::EventChain::DEBUGPrintVariables,
-					_ => chain = events::EventChain::Test { text: o.as_array().unwrap()[1].as_str().unwrap().to_string() },
+					//= Movement events
+					"warp" => {
+						chain = events::EventChain::Warp{
+							entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							position:	[
+								o.as_array().unwrap()[2].as_array().unwrap()[0].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[2].as_array().unwrap()[1].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[2].as_array().unwrap()[2].as_i64().unwrap() as i32,
+								],
+							direction:	overworld::Direction::from_str(o.as_array().unwrap()[4].as_str().unwrap()).unwrap(),
+							doMove: o.as_array().unwrap()[3].as_bool().unwrap(),
+						}
+					}
+					"move" => {
+						chain = events::EventChain::Move {
+							entityID:	o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							direction:	overworld::Direction::from_str(o.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
+							times:		o.as_array().unwrap()[3].as_i64().unwrap() as i32,
+						}
+					}
+					
+					//= Wait
+					"wait" => {
+						chain = events::EventChain::Wait { time: o.as_array().unwrap()[1].as_i64().unwrap() as i32 }
+					}
+					
+					//= Camera events
+					"reset_camera" => {
+						chain = events::EventChain::ResetCamera
+					}
+					"set_camera" => {
+						chain = events::EventChain::SetCamera {
+							position: [
+								o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
+							],
+						}
+					}
+					"move_camera" => {
+						chain = events::EventChain::MoveCamera {
+							position: [
+								o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[1].as_array().unwrap()[1].as_i64().unwrap() as i32,
+								o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
+							],
+							wait: o.as_array().unwrap()[2].as_bool().unwrap(),
+						}
+					}
+					"rotate_camera" => {
+						chain = events::EventChain::RotateCamera {
+							rotation: o.as_array().unwrap()[1].as_i64().unwrap() as f32,
+							wait: o.as_array().unwrap()[2].as_bool().unwrap(),
+						}
+					}
+
+					//= Audio events
+					"music" => {
+						chain = events::EventChain::Music { music: o.as_array().unwrap()[1].as_str().unwrap().to_string() };
+					}
+					"sound" => {
+						chain = events::EventChain::Sound { sound: o.as_array().unwrap()[1].as_str().unwrap().to_string() };
+					}
+
+					//= DEBUG
+					"DEBUG_print_variables" => {
+						chain = events::EventChain::DEBUGPrintVariables;
+					}
+					_ => {
+						chain = events::EventChain::Test { text: o.as_array().unwrap()[0].as_str().unwrap().to_string() };
+					}
 				}
 				event.chain.push(chain);
 			}
