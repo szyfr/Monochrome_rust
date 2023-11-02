@@ -17,7 +17,7 @@ const WIDTH  : f32 = 20.0;
 /// Render height (y)
 const HEIGHT : f32 = 10.0;
 /// Render depth (z)
-const DEPTH  : f32 = 20.0;
+const DEPTH  : f32 = 18.0;
 
 
 //= Structures
@@ -419,8 +419,8 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
 	let minY = (playerPosition.y - HEIGHT) as i32;
-	let maxZ = (playerPosition.z + DEPTH) as i32;
-	let minZ = (playerPosition.z - DEPTH) as i32;
+	let maxZ = (playerPosition.z + (DEPTH / 2.0)) as i32;
+	let minZ = (playerPosition.z - (DEPTH + (DEPTH / 2.0))) as i32;
 
 	for z in minZ..maxZ {
 		let mut x = minX;
@@ -476,12 +476,12 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 /// Draws tiles and units from a east-facing persepective.
 fn draw_rot_090( gamestate : &mut Gamestate ){
 	let playerPosition = math::round_v3(gamestate.player.unit.position);
-	let maxX = (playerPosition.x + WIDTH) as i32;
-	let minX = (playerPosition.x - WIDTH) as i32;
+	let maxX = (playerPosition.x + (DEPTH + (DEPTH / 2.0))) as i32;
+	let minX = (playerPosition.x - (DEPTH / 2.0)) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
 	let minY = (playerPosition.y - HEIGHT) as i32;
-	let maxZ = (playerPosition.z + DEPTH) as i32;
-	let minZ = (playerPosition.z - DEPTH) as i32;
+	let maxZ = (playerPosition.z + WIDTH) as i32;
+	let minZ = (playerPosition.z - WIDTH) as i32;
 
 	for x in (minX..maxX).rev() {
 		let mut z = maxZ;

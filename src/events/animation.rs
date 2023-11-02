@@ -75,7 +75,6 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 	animName += &gamestate.worldData.eventHandler.animation.as_mut().unwrap().currentAnimation.to_string();
 	animName += "_";
 	animName += &gamestate.worldData.eventHandler.animation.as_mut().unwrap().order[frame as usize].to_string();
-	print!("{}\n",animName);
 	let texture = *gamestate.textures.get(&animName).unwrap();
 	
 	raylib::draw_texture_pro(

@@ -60,7 +60,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				gamestate.player.unit.posTarget.y as i32,
 				gamestate.player.unit.posTarget.z as i32,
 			];
-			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); }
+			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); return; }
 
 			//* Check for interaction */
 			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
