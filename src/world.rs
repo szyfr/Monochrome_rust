@@ -503,13 +503,13 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
 					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					let mut rot = -360.0;
-					let offset = 0.0;
+					//let offset = 0.0;
 					// TODO experiment with this
 					//if x as f32 > maxX as f32 - (DEPTH / 2.0) { offset = ((x as f32) / (maxX as f32 - (DEPTH / 2.0))) * 1.0; }
 					if tile.trnsp { rot = -90.0; }
 					raylib::draw_model_ex(
 						gamestate.models[tile.model.as_str()],
-						raylib_ffi::Vector3 {x: x as f32, y: (y as f32 / 2.0) - offset, z: z as f32},
+						raylib_ffi::Vector3 {x: x as f32, y: (y as f32 / 2.0), z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
 						raylib_ffi::Vector3 {x: 1.0, y: 1.0, z: 1.0},

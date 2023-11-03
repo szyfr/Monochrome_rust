@@ -79,7 +79,8 @@ pub fn load_models() -> HashMap<String, raylib_ffi::Model> {
 			let mut name = str.to_string();
 			name = name.replace(".obj", "");
 			name = name.replace("data/tiles/", "");
-			output.insert(name, raylib::load_model(str));
+			output.insert(name.to_string(), raylib::load_model(str));
+			print!("{}\n",name.to_string());
 		}
 	}
 

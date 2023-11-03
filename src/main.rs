@@ -11,7 +11,7 @@ fn main() {
 	let mut gamestate = data::init();
 
 	//* Raylib */
-	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
+	//raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
 	raylib::set_target_fps(data::get_screenfps());
 	raylib::init_audio_device();
@@ -37,7 +37,8 @@ fn main() {
 		//* Draw */
 		raylib::begin_drawing();
 		{
-			raylib::clear_background(raylib_ffi::Color{r:57,g:57,b:57,a:255});
+			//raylib::clear_background(raylib_ffi::Color{r:57,g:57,b:57,a:255});
+			raylib::clear_background(raylib_ffi::colors::SKYBLUE);
 
 			raylib::begin_3d_mode(&gamestate.camera);
 
