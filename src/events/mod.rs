@@ -113,6 +113,31 @@ pub enum EventChain{
 	/// Print all variables and their values
 	DEBUGPrintVariables,
 }
+impl Clone for EventChain {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Text { text } => Self::Text { text: text.clone() },
+            Self::Choice { text, choices } => Self::Choice { text: text.clone(), choices: choices.clone() },
+            Self::Input { text, variable } => Self::Input { text: text.clone(), variable: variable.clone() },
+            Self::Warp { entityID, position, direction, doMove } => Self::Warp { entityID: entityID.clone(), position: position.clone(), direction: direction.clone(), doMove: doMove.clone() },
+            Self::Move { entityID, direction, times } => Self::Move { entityID: entityID.clone(), direction: direction.clone(), times: times.clone() },
+            Self::Turn { entityID, direction } => Self::Turn { entityID: entityID.clone(), direction: direction.clone() },
+            Self::Wait { time } => Self::Wait { time: time.clone() },
+            Self::ResetCamera => Self::ResetCamera,
+            Self::SetCamera { position } => Self::SetCamera { position: position.clone() },
+            Self::MoveCamera { position, wait } => Self::MoveCamera { position: position.clone(), wait: wait.clone() },
+            Self::RotateCamera { rotation, wait } => Self::RotateCamera { rotation: rotation.clone(), wait: wait.clone() },
+            Self::Music { music } => Self::Music { music: music.clone() },
+            Self::PauseMusic => Self::PauseMusic,
+            Self::Sound { sound } => Self::Sound { sound: sound.clone() },
+            Self::SetVariable { variable, value } => Self::SetVariable { variable: variable.clone(), value: value.clone() },
+            Self::TestVariable { variable, value, event, position } => Self::TestVariable { variable: variable.clone(), value: value.clone(), event: event.clone(), position: position.clone() },
+            Self::PlayAnimation { animation, order, ticks, hold } => Self::PlayAnimation { animation: animation.clone(), order: order.clone(), ticks: ticks.clone(), hold: hold.clone() },
+            Self::Test { text } => Self::Test { text: text.clone() },
+            Self::DEBUGPrintVariables => Self::DEBUGPrintVariables,
+        }
+    }
+}
 
 
 //= Structures
@@ -124,6 +149,98 @@ pub struct Event{
 
 
 //= Procedures
+
+impl Event {
+	pub fn to_string(&self) -> String {
+		let mut str = "".to_string();
+
+		let mut count = 0;
+		for i in self.chain.clone() {
+			str += &format!("{}: ", count);
+			/*
+			match i {
+				EventChain::Test { text } => {
+					str += &format!("TEST-{}\n", text);
+				}
+				EventChain::Text { text } => {
+					str += &format!("TEXT-{}\n", text);
+				}
+				EventChain::Choice { text, choices } => {
+					str += &format!(
+						"CHOICE-{}-[{}:{}-{},{}:{}-{},{}:{}-{},{}:{}-{}]\n",
+						text,
+						choices[0].text, choices[0].event, choices[0].position,
+						choices[1].text, choices[1].event, choices[1].position,
+						choices[2].text, choices[2].event, choices[2].position,
+						choices[3].text, choices[3].event, choices[3].position,
+					);
+				}
+				EventChain::Input { text, variable } => {
+					str += &format!("INPUT-{}:{}\n", text, variable);
+				}
+				EventChain::Warp { entityID, position, direction, doMove } => {
+					str += &format!(
+						"WARP-{}->[[{},{},{}],{},{}]\n",
+						entityID,
+						position[0], position[1], position[2],
+						direction,
+						doMove,
+					);
+				}
+				EventChain::Move { entityID, direction, times } => {
+					str += &format!(
+						"MOVE-{}->[{},{}]\n",
+						entityID,
+						direction,
+						times,
+					);
+				}
+				EventChain::Turn { entityID, direction } => {
+					str += &format!("TURN-{}->{}\n", entityID, direction);
+				}
+				EventChain::Wait { time } => {
+					str += &format!("WAIT-{}\n", time);
+				}
+				EventChain::ResetCamera => {
+					str += &format!("CAMERA_RESET\n");
+				}
+				EventChain::SetCamera { position } => {
+					str += &format!("CAMERA_SET->[{},{},{}]\n", position[0], position[1], position[2]);
+				}
+				EventChain::MoveCamera { position, wait } => {
+					str += &format!("CAMERA_MOVE->[{},{},{}]:{}\n", position[0], position[1], position[2], wait);
+				}
+				EventChain::RotateCamera { rotation, wait } => {
+					str += &format!("CAMERA_ROTATE->{}:{}\n", rotation, wait);
+				}
+				EventChain::Music { music } => {
+					str += &format!("MUSIC-{}\n", music);
+				}
+				EventChain::PauseMusic => {
+					str += &format!("MUSIC_PAUSE\n");
+				}
+				EventChain::Sound { sound } => {
+					str += &format!("SOUND-{}\n", sound);
+				}
+				EventChain::SetVariable { variable, value } => {
+					str += &format!("VARIABLE_SET-[{}:{}]\n", variable, value);
+				}
+				EventChain::TestVariable { variable, value, event, position } => {
+					str += &format!("VARIABLE_TEST-[{}:{}]->[{}:{}]\n", variable, value, event, position);
+				}
+				EventChain::PlayAnimation { animation, order, ticks, hold } => {
+					str += &format!("ANIMATION-{}:[{:?}]:{}:{}\n", animation, order, ticks, hold);
+				}
+				EventChain::DEBUGPrintVariables => {
+					str += &format!("DEBUG_PRINTVARIABLES\n");
+				}
+			}
+			*/
+			count += 1;
+		}
+		return str;
+	}
+}
 
 /// Parses the current event.
 pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {

@@ -78,6 +78,11 @@ pub struct Choice{
 	pub event: String,
 	pub position: i32,
 }
+impl Clone for Choice {
+    fn clone(&self) -> Self {
+        Self { text: self.text.clone(), event: self.event.clone(), position: self.position.clone() }
+    }
+}
 
 
 //= Procedures
