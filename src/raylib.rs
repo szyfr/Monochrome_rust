@@ -10,7 +10,98 @@ use crate::{data, camera::Camera};
 use raylib_ffi::Vector3;
 
 
-//= Structures
+//= Enumeration
+pub enum ShaderLocationIndex {
+	ShaderLocVertexPosition = 0, // Shader location: vertex attribute: position
+	ShaderLocVertexTexcoord01,   // Shader location: vertex attribute: texcoord01
+	ShaderLocVertexTexcoord02,   // Shader location: vertex attribute: texcoord02
+	ShaderLocVertexNormal,       // Shader location: vertex attribute: normal
+	ShaderLocVertexTangent,      // Shader location: vertex attribute: tangent
+	ShaderLocVertexColor,        // Shader location: vertex attribute: color
+	ShaderLocMatrixMvp,          // Shader location: matrix uniform: model-view-projection
+	ShaderLocMatrixView,         // Shader location: matrix uniform: view (camera transform)
+	ShaderLocMatrixProjection,   // Shader location: matrix uniform: projection
+	ShaderLocMatrixModel,        // Shader location: matrix uniform: model (transform)
+	ShaderLocMatrixNormal,       // Shader location: matrix uniform: normal
+	ShaderLocVectorView,         // Shader location: vector uniform: view
+	ShaderLocColorDiffuse,       // Shader location: vector uniform: diffuse color
+	ShaderLocColorSpecular,      // Shader location: vector uniform: specular color
+	ShaderLocColorAmbient,       // Shader location: vector uniform: ambient color
+	ShaderLocMapAlbedo,          // Shader location: sampler2d texture: albedo (same as: SHADER_LOC_MAP_DIFFUSE)
+	ShaderLocMapMetalness,       // Shader location: sampler2d texture: metalness (same as: SHADER_LOC_MAP_SPECULAR)
+	ShaderLocMapNormal,          // Shader location: sampler2d texture: normal
+	ShaderLocMapRoughness,       // Shader location: sampler2d texture: roughness
+	ShaderLocMapOcclusion,       // Shader location: sampler2d texture: occlusion
+	ShaderLocMapEmission,        // Shader location: sampler2d texture: emission
+	ShaderLocMapHeight,          // Shader location: sampler2d texture: height
+	ShaderLocMapCubemap,         // Shader location: samplerCube texture: cubemap
+	ShaderLocMapIrradiance,      // Shader location: samplerCube texture: irradiance
+	ShaderLocMapPrefilter,       // Shader location: samplerCube texture: prefilter
+	ShaderLocMapBrdf             // Shader location: sampler2d texture: brdf
+}
+
+pub enum ShaderUniformDataType {
+	ShaderUniformFloat = 0,       // Shader uniform type: float
+	ShaderUniformVec2,            // Shader uniform type: vec2 (2 float)
+	ShaderUniformVec3,            // Shader uniform type: vec3 (3 float)
+	ShaderUniformVec4,            // Shader uniform type: vec4 (4 float)
+	ShaderUniformInt,             // Shader uniform type: int
+	ShaderUniformIvec2,           // Shader uniform type: ivec2 (2 int)
+	ShaderUniformIvec3,           // Shader uniform type: ivec3 (3 int)
+	ShaderUniformIvec4,           // Shader uniform type: ivec4 (4 int)
+	ShaderUniformSampler2d        // Shader uniform type: sampler2d
+}
+
+pub enum PixelFormat {
+	PixelformatUncompressedGrayscale = 1,	// 8 bit per pixel (no alpha)
+    PixelformatUncompressedGrayAlpha,		// 8*2 bpp (2 channels)
+    PixelformatUncompressedR5g6b5,			// 16 bpp
+    PixelformatUncompressedR8g8b8,			// 24 bpp
+    PixelformatUncompressedR5g5b5a1,		// 16 bpp (1 bit alpha)
+    PixelformatUncompressedR4g4b4a4,		// 16 bpp (4 bit alpha)
+    PixelformatUncompressedR8g8b8a8,		// 32 bpp
+    PixelformatUncompressedR32,				// 32 bpp (1 channel - float)
+    PixelformatUncompressedR32g32b32,		// 32*3 bpp (3 channels - float)
+    PixelformatUncompressedR32g32b32a32,	// 32*4 bpp (4 channels - float)
+    PixelformatUncompressedR16,				// 16 bpp (1 channel - half float)
+    PixelformatUncompressedR16g16b16,		// 16*3 bpp (3 channels - half float)
+    PixelformatUncompressedR16g16b16a16,	// 16*4 bpp (4 channels - half float)
+    PixelformatCompressedDxt1Rgb,			// 4 bpp (no alpha)
+    PixelformatCompressedDxt1Rgba,			// 4 bpp (1 bit alpha)
+    PixelformatCompressedDxt3Rgba,			// 8 bpp
+    PixelformatCompressedDxt5Rgba,			// 8 bpp
+    PixelformatCompressedEtc1Rgb,			// 4 bpp
+    PixelformatCompressedEtc2Rgb,			// 4 bpp
+    PixelformatCompressedEtc2EacRgba,		// 8 bpp
+    PixelformatCompressedPvrtRgb,			// 4 bpp
+    PixelformatCompressedPvrtRgba,			// 4 bpp
+    PixelformatCompressedAstc4x4Rgba,		// 8 bpp
+    PixelformatCompressedAstc8x8Rgba		// 2 bpp
+}
+
+pub enum RlFramebufferAttachType {
+	RlAttachmentColorChannel0 = 0,	// Framebuffer attachment type: color 0
+	RlAttachmentColorChannel1 = 1,	// Framebuffer attachment type: color 1
+	RlAttachmentColorChannel2 = 2,	// Framebuffer attachment type: color 2
+	RlAttachmentColorChannel3 = 3,	// Framebuffer attachment type: color 3
+	RlAttachmentColorChannel4 = 4,	// Framebuffer attachment type: color 4
+	RlAttachmentColorChannel5 = 5,	// Framebuffer attachment type: color 5
+	RlAttachmentColorChannel6 = 6,	// Framebuffer attachment type: color 6
+	RlAttachmentColorChannel7 = 7,	// Framebuffer attachment type: color 7
+	RlAttachmentDepth = 100,		// Framebuffer attachment type: depth
+	RlAttachmentStencil = 200,		// Framebuffer attachment type: stencil
+}
+
+pub enum RlFramebufferAttachTextureType {
+	RlAttachmentCubemapPositiveX = 0,   // Framebuffer texture attachment type: cubemap, +X side
+    RlAttachmentCubemapNegativeX = 1,   // Framebuffer texture attachment type: cubemap, -X side
+    RlAttachmentCubemapPositiveY = 2,   // Framebuffer texture attachment type: cubemap, +Y side
+    RlAttachmentCubemapNegativeY = 3,   // Framebuffer texture attachment type: cubemap, -Y side
+    RlAttachmentCubemapPositiveZ = 4,   // Framebuffer texture attachment type: cubemap, +Z side
+    RlAttachmentCubemapNegativeZ = 5,   // Framebuffer texture attachment type: cubemap, -Z side
+    RlAttachmentTexture2d = 100,          // Framebuffer texture attachment type: texture2d
+    RlAttachmentRenderbuffer = 200,       // Framebuffer texture attachment type: renderbuffer
+}
 
 
 //= Procedures
@@ -395,4 +486,120 @@ pub fn is_music_ready( music: raylib_ffi::Music ) -> bool {
 }
 pub fn update_music( music: raylib_ffi::Music ) {
 	unsafe { raylib_ffi::UpdateMusicStream(music) }
+}
+
+pub fn load_shader(vsFileName: &str, fsFileName: &str) -> raylib_ffi::Shader {
+	unsafe { return raylib_ffi::LoadShader(raylib_ffi::rl_str!(vsFileName), raylib_ffi::rl_str!(fsFileName)); }
+}
+pub fn get_shader_location(shader: raylib_ffi::Shader, uniformName: &str) -> i32 {
+	unsafe { return raylib_ffi::GetShaderLocation(shader, raylib_ffi::rl_str!(uniformName)); }
+}
+pub fn set_shader_value(shader: raylib_ffi::Shader, locIndex: i32, value: *const std::ffi::c_void, uniformType: ShaderUniformDataType ) {
+	unsafe { raylib_ffi::SetShaderValue(shader, locIndex, value, uniformType as i32) }
+}
+
+pub fn begin_texture_mode(target: raylib_ffi::RenderTexture) {
+	unsafe { raylib_ffi::BeginTextureMode(target) }
+}
+pub fn end_texture_mode() {
+	unsafe { raylib_ffi::EndTextureMode() }
+}
+pub fn draw_texture_rec(texture: raylib_ffi::Texture, source: raylib_ffi::Rectangle , position: raylib_ffi::Vector2 , tint: raylib_ffi::Color) {
+	unsafe { raylib_ffi::DrawTextureRec(texture, source, position, tint); }
+}
+
+pub fn begin_shader_mode(shader: raylib_ffi::Shader) {
+	unsafe { raylib_ffi::BeginShaderMode(shader) }
+}
+pub fn end_shader_mode() {
+	unsafe { raylib_ffi::EndShaderMode(); }
+}
+
+extern "C" {
+	pub fn rlLoadTexture(
+		data: i32,
+		width: i32,
+		height: i32,
+		format: i32,
+		mipmapCount: i32,
+	) -> u32;
+}
+extern "C" {
+	pub fn rlLoadTextureDepth(
+		width: i32,
+		height: i32,
+		useRenderBuffer: bool,
+	) -> u32;
+}
+extern "C" {
+	pub fn rlLoadFramebuffer(
+		width: i32,
+		height: i32,
+	) -> u32;
+}
+extern "C" {
+	pub fn rlEnableFramebuffer(
+		id: u32,
+	);
+}
+extern "C" {
+	pub fn rlFramebufferAttach(
+		fboId: u32,
+		texId: u32,
+		attachType: i32,
+		texType: i32,
+		mipLevel: i32,
+	);
+}
+extern "C" {
+	pub fn rlFramebufferComplete(
+		id: u32,
+	) -> bool;
+}
+extern "C" {
+	pub fn rlDisableFramebuffer();
+}
+pub fn load_render_texture_depth_tex(width: i32, height: i32) -> raylib_ffi::RenderTexture2D {
+	unsafe {
+		let target: raylib_ffi::RenderTexture2D = raylib_ffi::RenderTexture2D{
+			id: rlLoadFramebuffer(width, height),
+			texture: raylib_ffi::Texture {
+				id: rlLoadTexture(0, width, height, PixelFormat::PixelformatUncompressedR8g8b8 as i32, 1),
+				width: width,
+				height: height,
+				mipmaps: 1,
+				format: PixelFormat::PixelformatUncompressedR8g8b8 as i32,
+			},
+			depth: raylib_ffi::Texture {
+				id: rlLoadTextureDepth(width, height, false),
+				width: width,
+				height: height,
+				mipmaps: 1,
+				format: 19,
+			}
+		};
+
+		rlEnableFramebuffer(target.id);
+		rlFramebufferAttach(
+			target.id as u32,
+			target.texture.id as u32,
+			RlFramebufferAttachType::RlAttachmentColorChannel0 as i32,
+			RlFramebufferAttachTextureType::RlAttachmentTexture2d as i32,
+			0,
+		);
+		rlFramebufferAttach(
+			target.id as u32,
+			target.depth.id as u32,
+			RlFramebufferAttachType::RlAttachmentDepth as i32,
+			RlFramebufferAttachTextureType::RlAttachmentTexture2d as i32,
+			0,
+		);
+
+		if rlFramebufferComplete(target.id) { print!("Fucking hell this is hard... But it worked?\n") }
+		else { print!("It fucking failed. Fuck\n"); }
+
+		rlDisableFramebuffer();
+
+		return target;
+	}
 }
