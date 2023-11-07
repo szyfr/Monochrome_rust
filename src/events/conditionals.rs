@@ -18,10 +18,10 @@ pub enum Condition{
 }
 impl Display for Condition {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		match *self {
-			Condition::Integer(_) => write!(f, "Int:{}\n", *self),
-			Condition::Boolean(_) => write!(f, "Bool:{}\n", *self),
-			Condition::String(_)  => write!(f, "String:{}\n", *self),
+		match self {
+			Condition::Integer(i)		=> write!(f, "Int({})", i),
+			Condition::Boolean(b)	=> write!(f, "Bool({})", b),
+			Condition::String(s)	=> write!(f, "String({})",s),
 		}
 	}
 }

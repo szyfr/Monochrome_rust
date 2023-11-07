@@ -21,7 +21,7 @@
 				["warp","player",[ 6,0,3 ],true,"south"]
 			]},
 		{
-			"id": "test2",
+			"id": "test_2",
 			"chain": [
 				["pause_music"],
 				["rotate_camera",360, true],

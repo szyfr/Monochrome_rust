@@ -157,7 +157,6 @@ impl Event {
 		let mut count = 0;
 		for i in self.chain.clone() {
 			str += &format!("{}: ", count);
-			/*
 			match i {
 				EventChain::Test { text } => {
 					str += &format!("TEST-{}\n", text);
@@ -235,7 +234,6 @@ impl Event {
 					str += &format!("DEBUG_PRINTVARIABLES\n");
 				}
 			}
-			*/
 			count += 1;
 		}
 		return str;

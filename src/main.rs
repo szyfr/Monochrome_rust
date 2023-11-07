@@ -39,9 +39,9 @@ fn main() {
 		player::controls(&mut gamestate);
 		gamestate.audio.update();
 
-		//if data::key_pressed("debug") && gamestate.worldData.eventHandler.currentEvent != "" {
-		//	print!("{}\n", gamestate.worldData.eventList.get(&gamestate.worldData.eventHandler.currentEvent).unwrap().to_string());
-		//}
+		if data::key_pressed("confirm") && gamestate.worldData.eventHandler.currentEvent != "" {
+			print!("{}\n", gamestate.worldData.eventList.get(&gamestate.worldData.eventHandler.currentEvent).unwrap().to_string());
+		}
 
 		raylib::begin_drawing();
 		{
