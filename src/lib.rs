@@ -11,6 +11,7 @@ pub mod overworld;
 pub mod world;
 pub mod events;
 pub mod audio;
+pub mod monsters;
 
 pub mod raylib;
 

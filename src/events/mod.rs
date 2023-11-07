@@ -419,7 +419,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				}
 				gamestate.worldData.eventHandler.currentChain += 1;
 			}
-			//_ => return,
+		
 	}
 	return true;
 }
