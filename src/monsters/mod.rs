@@ -6,12 +6,15 @@
 
 
 //= Imports
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
+
+use crate::utilities::debug;
 
 
 //= Enumerations
 
 /// The monster's species.
+#[derive(Clone)]
 pub enum MonsterSpecies {
 	Mon152, //* Grass starter */
 	Mon155, //* Fire starter */
@@ -26,8 +29,20 @@ impl Display for MonsterSpecies {
 		}
     }
 }
+impl FromStr for MonsterSpecies {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+			"mon152" => Ok(MonsterSpecies::Mon152),
+			"mon155" => Ok(MonsterSpecies::Mon155),
+			"mon158" => Ok(MonsterSpecies::Mon158),
+			_ => Err(()),
+		}
+    }
+}
 
 /// The elemental typing of a monster.
+#[derive(Clone)]
 pub enum MonsterTypes {
 	None,
 	Normal,
@@ -48,6 +63,7 @@ impl Display for MonsterTypes {
 }
 
 /// The attacks a monster can use in battle.
+#[derive(Clone)]
 pub enum MonsterAttacks {
 	None,
 
@@ -101,7 +117,28 @@ pub enum MonsterGrowthRate {
 
 //= Structures
 
+/// The structure of a monster team.
+pub struct MonsterTeam(pub [Option<Monster>;4]);
+impl Display for MonsterTeam {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		let mut monsters = ["".to_string(),"".to_string(),"".to_string(),"".to_string()];
+		
+		for i in 0..4 {
+			if self.0[i].is_some() { monsters[i] = self.0[i].clone().unwrap().to_string() }
+		}
+		return write!(
+			f,
+			"[{}, {}, {}, {}]\n",
+			monsters[0],
+			monsters[1],
+			monsters[2],
+			monsters[3],
+		);
+    }
+}
+
 /// The structure of a monster.
+#[derive(Clone)]
 pub struct Monster {
 	species: MonsterSpecies,
 	types: [MonsterTypes; 2],
@@ -127,23 +164,65 @@ pub struct Monster {
 	attacks: [MonsterAttacks;4],
 }
 impl Display for Monster {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        return write!(
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		return write!(
 			f,
-			"{}-{} [{},{}]\n{}\t{}\n{}\t{}\n{}\n[{},{},{},{}]",
+			"{}-{}",
 			self.species,
 			self.nickname,
-			self.types[0],self.types[1],
-			self.physicalAttack,self.specialAttack,
-			self.physicalDefense,self.specialDefense,
-			self.speed,
-			self.attacks[0],self.attacks[1],self.attacks[2],self.attacks[3],
 		);
+		//	"{}-{} [{},{}]\n{}\t{}\n{}\t{}\n{}\n[{},{},{},{}]",
+		//	self.species,
+		//	self.nickname,
+		//	self.types[0],self.types[1],
+		//	self.physicalAttack,self.specialAttack,
+		//	self.physicalDefense,self.specialDefense,
+		//	self.speed,
+		//	self.attacks[0],self.attacks[1],self.attacks[2],self.attacks[3],
+		//);
     }
 }
 
 
 //= Procedures
+
+impl MonsterTeam {
+	/// Removes member by index
+	pub fn remove_member_index(&mut self, index: usize) -> Option<Monster> {
+		if self.0[index].is_none() {
+			debug::log("[ERROR] - Attempted to remove monster that doesn't exist.");
+			return None;
+		}
+		
+		let monster = self.0[index].clone();
+		self.shift_down(index);
+		return monster;
+	}
+
+	/// Add member to team
+	pub fn add_member(&mut self, monster: Monster) -> bool {
+		for i in 0..4 {
+			if self.0[i].is_none() {
+				self.0[i] = Some(monster);
+				return true;
+			}
+		}
+		//* */ Can't add member
+		return false;
+	}
+
+	/// Shifts everything down
+	pub fn shift_down(&mut self, index: usize) {
+		if index != 3 {
+			if self.0[index+1].is_some() {
+				self.0[index] = self.0[index+1].clone();
+				self.0[index+1] = None;
+			}
+
+			return self.shift_down(index+1)
+		}
+	}
+}
 
 impl Monster {
 	/// Generate monster stats from a clean monster.
@@ -294,6 +373,7 @@ pub fn new(species: MonsterSpecies, level: i32) -> Monster {
 		level,
 		growthRate: MonsterGrowthRate::Fast,
 
+		//TODO Generate attacks from their attack list and level.
 		attacks: [MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None],
 	};
 

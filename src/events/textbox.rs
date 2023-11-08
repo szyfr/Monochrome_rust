@@ -197,17 +197,19 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 
 						let choice = &gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize];
 						if choice.event == "" {
+							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
 							gamestate.worldData.eventHandler.textbox.reset();
 							return true;
 						}
 						if choice.event == gamestate.worldData.eventHandler.currentEvent {
-							gamestate.worldData.eventHandler.currentChain = choice.position;
+							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
 							gamestate.worldData.eventHandler.textbox.reset();
 							return false;
 						}
 						if gamestate.worldData.eventList.contains_key(&choice.event) {
+							print!("{}:{}\n",choice.event,choice.position);
 							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
-							gamestate.worldData.eventHandler.currentChain = choice.position;
+							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
 							gamestate.worldData.eventHandler.textbox.reset();
 							return false;
 						}

@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::{Condition, self}, textbox}};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib, events::{self, conditionals::{Condition, self}, textbox}, monsters};
 
 
 //= Constants
@@ -174,7 +174,7 @@ impl World {
 							choices[val] = textbox::Choice{
 								text: i.as_array().unwrap()[0].as_str().unwrap().to_string(),
 								event: i.as_array().unwrap()[1].as_str().unwrap().to_string(),
-								position: 0,
+								position: i.as_array().unwrap()[2].is_i64() as i32,
 							};
 							if i.as_array().unwrap().get(2) != None { choices[val].position = i.as_array().unwrap()[2].as_i64().unwrap() as i32; }
 							val += 1;
@@ -216,6 +216,26 @@ impl World {
 					//= Wait
 					"wait" => {
 						chain = events::EventChain::Wait { time: o.as_array().unwrap()[1].as_i64().unwrap() as i32 }
+					}
+
+					//= Monster events
+					"give_monster" => {
+						match o.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() {
+							_ => {
+								chain = events::EventChain::GiveMonster {
+									monster: monsters::new(
+										monsters::MonsterSpecies::from_str(o.as_array().unwrap()[1].as_array().unwrap()[1].as_str().unwrap()).unwrap(),
+										o.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
+									),
+								}
+							}
+						}
+					}
+					"give_experience" => {
+						chain = events::EventChain::GiveExperience {
+							monsterPosition: o.as_array().unwrap()[1].as_i64().unwrap() as usize,
+							amount: o.as_array().unwrap()[2].as_i64().unwrap() as i32,
+						}
 					}
 					
 					//= Camera events

@@ -19,7 +19,7 @@ const MVSPEED : f32 = 3.0;
 pub struct Player {
 	pub unit : overworld::Unit,
 
-	pub monsters: [Option<monsters::Monster>;4],
+	pub monsters: monsters::MonsterTeam,
 
 	pub canMove : bool,
 }
@@ -31,12 +31,10 @@ pub struct Player {
 pub fn init() -> Player {
 	let mut player = Player{
 		unit:		overworld::create_unit("player_1"),
-		monsters:	[Some(monsters::new(monsters::MonsterSpecies::Mon152, 10)), None, None, None],
+		monsters:	monsters::MonsterTeam([None, None, None, None]),
 		canMove:	true,
 	};
-	for i in player.monsters.iter() {
-		if i.is_some() { print!("{}\n", i.as_ref().unwrap().to_string()); }
-	}
+	
 	player.unit.position = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
 	player.unit.posTarget = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
 

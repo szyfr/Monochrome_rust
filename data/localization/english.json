@@ -83,6 +83,9 @@
 	"newbarktown_lab_assistant2_2_2":"Huh? did something happen?\n",
 	"newbarktown_lab_assistant2_2_3":"WHAT!?",
 
+	"newbarktown_TEST_1":"Do you want a Pokemon?",
+	"newbarktown_TEST_2":"You recieved a Chikorita!",
+
 
 	"trainer_battle_win_1":"You've beaten\n\n{ENEMY_TRAINER}!",
 	"trainer_battle_win_2":"{MONSTER_0_NAME} gained\n\n{EXPERIENCE} experience!",

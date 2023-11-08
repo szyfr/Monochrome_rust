@@ -8,6 +8,7 @@
 				["animation","flash",23,8,[0,1,2],true],
 				["warp","player",[ 6,0,3 ],false,"south"],
 				["animation","flash",23,8,[2,1,0],false],
+				["move","TEST","south",1],
 				["move","player","south",1]
 			]},
 		{
@@ -16,18 +17,18 @@
 				["text","newbarktown_mom_event1_1"],
 				["test_variable",["test",true],["",5]],
 				["input","newbarktown_mom_event1_2","test_value"],
-				["choice","newbarktown_mom_event1_3",[["yes",""],["no","test2"]]],
+				["choice","newbarktown_mom_event1_3",[["yes","",-1],["no","test_2",0]]],
 				["set_variable","test",true],
 				["warp","player",[ 6,0,3 ],true,"south"]
 			]},
 		{
 			"id": "test_2",
 			"chain": [
-				["pause_music"],
-				["rotate_camera",360, true],
-				["wait",200],
-				["pause_music"],
-				["reset_camera"]
+				["choice","newbarktown_TEST_1",[["yes","",-1],["no","",2]]],
+				["give_monster",[0,"mon152",5]],
+				["give_experience",0,1000],
+				["text","newbarktown_TEST_2"],
+				["wait",1]
 			]},
 		{
 			"id": "warp_elmlab_in",

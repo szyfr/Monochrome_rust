@@ -11,12 +11,13 @@ pub mod event_handler;
 pub mod textbox;
 pub mod animation;
 
-use crate::{overworld::{Direction, self}, data, utilities::math};
+use crate::{overworld::{Direction, self}, data, utilities::math, monsters};
 
 
 //= Enumerations
 
 /// Event types
+#[derive(Clone)]
 pub enum EventChain{
 
 	//= Text controls
@@ -57,6 +58,17 @@ pub enum EventChain{
 	Wait{
 		time: i32,
 	},
+
+	//= Monsters
+	/// Give monster to player
+	GiveMonster{ monster: monsters::Monster },
+	/// Give experience to player's monster
+	GiveExperience{
+		monsterPosition: usize,
+		amount: i32,
+	},
+	/// Show level up stat changes for monster
+	//ShowStats{},
 
 	//= Camera controls
 	/// Reset camera to player
@@ -112,31 +124,6 @@ pub enum EventChain{
 	Test{ text: String },
 	/// Print all variables and their values
 	DEBUGPrintVariables,
-}
-impl Clone for EventChain {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Text { text } => Self::Text { text: text.clone() },
-            Self::Choice { text, choices } => Self::Choice { text: text.clone(), choices: choices.clone() },
-            Self::Input { text, variable } => Self::Input { text: text.clone(), variable: variable.clone() },
-            Self::Warp { entityID, position, direction, doMove } => Self::Warp { entityID: entityID.clone(), position: position.clone(), direction: direction.clone(), doMove: doMove.clone() },
-            Self::Move { entityID, direction, times } => Self::Move { entityID: entityID.clone(), direction: direction.clone(), times: times.clone() },
-            Self::Turn { entityID, direction } => Self::Turn { entityID: entityID.clone(), direction: direction.clone() },
-            Self::Wait { time } => Self::Wait { time: time.clone() },
-            Self::ResetCamera => Self::ResetCamera,
-            Self::SetCamera { position } => Self::SetCamera { position: position.clone() },
-            Self::MoveCamera { position, wait } => Self::MoveCamera { position: position.clone(), wait: wait.clone() },
-            Self::RotateCamera { rotation, wait } => Self::RotateCamera { rotation: rotation.clone(), wait: wait.clone() },
-            Self::Music { music } => Self::Music { music: music.clone() },
-            Self::PauseMusic => Self::PauseMusic,
-            Self::Sound { sound } => Self::Sound { sound: sound.clone() },
-            Self::SetVariable { variable, value } => Self::SetVariable { variable: variable.clone(), value: value.clone() },
-            Self::TestVariable { variable, value, event, position } => Self::TestVariable { variable: variable.clone(), value: value.clone(), event: event.clone(), position: position.clone() },
-            Self::PlayAnimation { animation, order, ticks, hold } => Self::PlayAnimation { animation: animation.clone(), order: order.clone(), ticks: ticks.clone(), hold: hold.clone() },
-            Self::Test { text } => Self::Test { text: text.clone() },
-            Self::DEBUGPrintVariables => Self::DEBUGPrintVariables,
-        }
-    }
 }
 
 
@@ -199,6 +186,12 @@ impl Event {
 				}
 				EventChain::Wait { time } => {
 					str += &format!("WAIT-{}\n", time);
+				}
+				EventChain::GiveMonster { monster } => {
+					str += &format!("GIVE_MONSTER-{}\n",monster);
+				}
+				EventChain::GiveExperience { monsterPosition, amount } => {
+					str += &format!("GIVE_EXPERIENCE-[{}->{}]\n",amount,monsterPosition);
 				}
 				EventChain::ResetCamera => {
 					str += &format!("CAMERA_RESET\n");
@@ -342,6 +335,19 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					gamestate.worldData.eventHandler.internal = 0;
 					gamestate.worldData.eventHandler.currentChain += 1;
 				}
+			}
+
+		//= Monster events
+		EventChain::GiveMonster { monster } => {
+				gamestate.player.monsters.add_member(monster.clone());
+				gamestate.worldData.eventHandler.currentChain += 1;
+			}
+		EventChain::GiveExperience { monsterPosition, amount } => {
+				gamestate.audio.play_sound("experience".to_string());
+				gamestate.worldData.eventHandler.internal += 1;
+				if gamestate.worldData.eventHandler.internal < *amount {
+					gamestate.player.monsters.0[*monsterPosition].as_mut().unwrap().give_experience(1);
+				} else { gamestate.worldData.eventHandler.currentChain += 1; }
 			}
 
 		//= Camera events
