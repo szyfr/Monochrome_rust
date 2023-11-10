@@ -24,6 +24,31 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	output.insert("ui_pointer_general".to_string(), raylib::load_texture("data/sprites/ui/pointer.png"));
 	output.insert("ui_input_general".to_string(), raylib::load_texture("data/sprites/ui/input.png"));
 
+	//* Emotes */
+	img = raylib::load_image("data/sprites/ui/emotes.png");
+	// Shock
+	let mut subImg_emote = raylib::image_from_image(
+		img,
+		raylib_ffi::Rectangle{ x: 0.0, y: 0.0, width: 16.0, height: 16.0 }
+	);
+	output.insert("emote_shock".to_string(), raylib::load_texture_from_image(subImg_emote));
+	raylib::unload_image(subImg_emote);
+	// Confusion
+	subImg_emote = raylib::image_from_image(
+		img,
+		raylib_ffi::Rectangle{ x: 16.0, y: 0.0, width: 16.0, height: 16.0 }
+	);
+	output.insert("emote_confusion".to_string(), raylib::load_texture_from_image(subImg_emote));
+	raylib::unload_image(subImg_emote);
+	// Sad
+	subImg_emote = raylib::image_from_image(
+		img,
+		raylib_ffi::Rectangle{ x: 32.0, y: 0.0, width: 16.0, height: 16.0 }
+	);
+	output.insert("emote_sad".to_string(), raylib::load_texture_from_image(subImg_emote));
+	raylib::unload_image(subImg_emote);
+
+	//* Flash Animation */
 	img = raylib::load_image("data/sprites/animations/flash.png");
 	for i in 0..3 {
 		let subImg = raylib::image_from_image(
@@ -39,6 +64,7 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 	}
 	raylib::unload_image(img);
 
+	//* trainer_battle_1 animation */
 	img = raylib::load_image("data/sprites/animations/trainer_battle_1.png");
 	for i in 0..3 {
 		let subImg = raylib::image_from_image(

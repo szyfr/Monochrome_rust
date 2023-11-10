@@ -118,6 +118,11 @@ pub enum EventChain{
 		ticks: i32,
 		hold: bool,
 	},
+	PlayEmote{
+		emote: String,
+		unit: String,
+		wait: bool,
+	},
 
 	//= DEBUG
 	/// Default value
@@ -222,6 +227,9 @@ impl Event {
 				}
 				EventChain::PlayAnimation { animation, order, ticks, hold } => {
 					str += &format!("ANIMATION-{}:[{:?}]:{}:{}\n", animation, order, ticks, hold);
+				}
+				EventChain::PlayEmote { emote, unit, wait } => {
+					str += &format!("EMOTE-{}->{}:{}\n", emote, unit, wait);
 				}
 				EventChain::DEBUGPrintVariables => {
 					str += &format!("DEBUG_PRINTVARIABLES\n");
@@ -347,7 +355,10 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				gamestate.worldData.eventHandler.internal += 1;
 				if gamestate.worldData.eventHandler.internal < *amount {
 					gamestate.player.monsters.0[*monsterPosition].as_mut().unwrap().give_experience(1);
-				} else { gamestate.worldData.eventHandler.currentChain += 1; }
+				} else {
+					gamestate.worldData.eventHandler.currentChain += 1;
+					gamestate.worldData.eventHandler.internal = 0;
+				}
 			}
 
 		//= Camera events
@@ -411,6 +422,29 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				ticks: 0,
 			};
 			if animation::run(gamestate, animation) { gamestate.worldData.eventHandler.currentChain += 1; }
+		}
+		EventChain::PlayEmote { emote, unit, wait } => {
+			if gamestate.worldData.eventHandler.internal == 0 {
+				gamestate.worldData.eventHandler.emotes.push(
+					animation::EmoteAnimation {
+						emote: emote.to_string(),
+						unitID: unit.to_string(),
+						duration: 200,
+						ticks: 0,
+					}
+				);
+			}
+			if *wait {
+				gamestate.worldData.eventHandler.internal += 1;
+				if gamestate.worldData.eventHandler.internal >= 200 {
+					gamestate.worldData.eventHandler.currentChain += 1;
+					gamestate.worldData.eventHandler.internal = 0;
+				}
+			} else {
+				gamestate.worldData.eventHandler.currentChain += 1;
+				gamestate.worldData.eventHandler.internal = 0;
+			}
+			
 		}
 
 		//= Debug events

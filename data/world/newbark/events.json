@@ -24,11 +24,10 @@
 		{
 			"id": "test_2",
 			"chain": [
-				["choice","newbarktown_TEST_1",[["yes","",-1],["no","",2]]],
+				["choice","newbarktown_TEST_1",[["yes","",-1],["no","",3]]],
 				["give_monster",[0,"mon152",5]],
-				["give_experience",0,1000],
 				["text","newbarktown_TEST_2"],
-				["wait",1]
+				["emote","sad","player",true]
 			]},
 		{
 			"id": "warp_elmlab_in",

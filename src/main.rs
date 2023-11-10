@@ -47,6 +47,7 @@ fn main() {
 			raylib::begin_3d_mode(&gamestate.camera);
 
 			world::draw_world(&mut gamestate);
+			events::animation::draw_emotes(&mut gamestate);
 
 			raylib::end_3d_mode();
 

@@ -207,7 +207,6 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							return false;
 						}
 						if gamestate.worldData.eventList.contains_key(&choice.event) {
-							print!("{}:{}\n",choice.event,choice.position);
 							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
 							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
 							gamestate.worldData.eventHandler.textbox.reset();

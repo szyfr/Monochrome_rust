@@ -27,6 +27,7 @@ pub struct EventHandler{
 	pub eventVariables: HashMap<String, Condition>,
 
 	pub animation: Option<animation::Animation>,
+	pub emotes: Vec<animation::EmoteAnimation>,
 
 	pub playerName: String,
 	pub playerPronouns: [String; 3],
@@ -49,6 +50,7 @@ pub fn create() -> EventHandler {
 		eventVariables: HashMap::new(),
 
 		animation:		None,
+		emotes:			Vec::new(),
 
 		playerName:		"Mono".to_string(),
 		playerPronouns: ["they".to_string(), "them".to_string(), "theirs".to_string()],

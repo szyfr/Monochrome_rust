@@ -167,7 +167,7 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 	//* Update material */
 	let index = unit.animator.frame as usize;
 	let frame = animation.frames[index] as usize;
-	unsafe { (*(*model.materials).maps).texture = unit.animator.textures[frame]; }
+	raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, unit.animator.textures[frame]);
 
 	//* Draw */
 	raylib::draw_model_ex(

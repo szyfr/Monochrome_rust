@@ -352,6 +352,13 @@ impl World {
 							hold: o.as_array().unwrap()[5].as_bool().unwrap(),
 						}
 					}
+					"emote" => {
+						chain = events::EventChain::PlayEmote {
+							emote: o.as_array().unwrap()[1].as_str().unwrap().to_string(),
+							unit: o.as_array().unwrap()[2].as_str().unwrap().to_string(),
+							wait: o.as_array().unwrap()[3].as_bool().unwrap(),
+						}
+					}
 
 					//= DEBUG
 					"DEBUG_print_variables" => {

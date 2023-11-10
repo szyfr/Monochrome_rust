@@ -216,7 +216,7 @@ pub fn image_resize_nn( image : &mut raylib_ffi::Image, scale : i32 ) {
 	unsafe { raylib_ffi::ImageResizeNN(image, image.width * scale, image.height * scale); }
 }
 
-pub fn set_material_texture( material : &mut raylib_ffi::Material, mapType : raylib_ffi::enums::MaterialMapIndex, texture : raylib_ffi::Texture ) {
+pub fn set_material_texture( material : *mut raylib_ffi::Material, mapType : raylib_ffi::enums::MaterialMapIndex, texture : raylib_ffi::Texture ) {
 	unsafe { raylib_ffi::SetMaterialTexture(material, mapType as i32, texture) }
 }
 
