@@ -23,6 +23,7 @@ pub fn load_textures() -> HashMap<String, raylib_ffi::Texture> {
 
 	output.insert("ui_pointer_general".to_string(), raylib::load_texture("data/sprites/ui/pointer.png"));
 	output.insert("ui_input_general".to_string(), raylib::load_texture("data/sprites/ui/input.png"));
+	output.insert("bg_forest_day".to_string(), raylib::load_texture("data/sprites/overworld/background_forest.png"));
 
 	//* Emotes */
 	img = raylib::load_image("data/sprites/ui/emotes.png");

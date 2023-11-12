@@ -17,7 +17,7 @@ const WIDTH  : f32 = 20.0;
 /// Render height (y)
 const HEIGHT : f32 = 10.0;
 /// Render depth (z)
-const DEPTH  : f32 = 18.0;
+const DEPTH  : f32 = 12.0;
 
 
 //= Structures
@@ -573,8 +573,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
 	let minY = (playerPosition.y - HEIGHT) as i32;
-	let maxZ = (playerPosition.z + DEPTH) as i32;
-	let minZ = (playerPosition.z - DEPTH) as i32;
+	let maxZ = (playerPosition.z + (DEPTH + (DEPTH / 2.0))) as i32;
+	let minZ = (playerPosition.z - (DEPTH / 2.0)) as i32;
 
 	for z in (minZ..maxZ).rev() {
 		let mut x = maxX;
@@ -592,6 +592,19 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 
 		for _ in minX..maxX {
 			for y in minY..maxY {
+				//* Check if start of line */
+				if z == maxZ-1 && y as f32 == gamestate.player.unit.position.y - 1.0 {
+					let model = gamestate.models["unit"];
+					raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.textures["bg_forest_day"]);
+					raylib::draw_model_ex(
+						model,
+						raylib_ffi::Vector3 { x: x as f32, y: y as f32, z: z as f32 + 1.0 },
+						raylib_ffi::Vector3 { x: 0.0, y: 1.0, z: 0.0 },
+						180.0,
+						raylib_ffi::Vector3 { x: 1.0, y: 4.0, z: 1.0 },
+						raylib_ffi::colors::WHITE,
+					);
+				}
 				//* Check if tile exists */
 				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
 					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
