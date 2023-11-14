@@ -17,18 +17,20 @@ const WIDTH  : f32 = 20.0;
 /// Render height (y)
 const HEIGHT : f32 = 10.0;
 /// Render depth (z)
-const DEPTH  : f32 = 12.0;
+const DEPTH  : f32 = 14.0;
 
 
 //= Structures
 
 /// World data storage
 pub struct World{
-	pub currentMap	: HashMap<[i32;3], Tile>,
+	pub currentMap:	HashMap<[i32;3], Tile>,
 
-	pub unitMap		: HashMap<String, overworld::Unit>,
-	pub triggerMap	: HashMap<[i32;3], String>,
-	pub eventList	: HashMap<String, events::Event>,
+	pub unitMap:	HashMap<String, overworld::Unit>,
+	pub triggerMap:	HashMap<[i32;3], String>,
+	pub eventList:	HashMap<String, events::Event>,
+
+	pub time:		f32,
 }
 
 /// Tile storage structure
@@ -175,19 +177,33 @@ impl World {
 			self.triggerMap.insert(pos, i["event"].as_str().unwrap().to_string());
 		}
 	}
+
+	/// Update time tick
+	pub fn time_tick(&mut self) {
+		self.time += 0.001;
+		if self.time >= 1.6 { self.time = 0.4; }
+	}
+
+	/// Get the hour of the day
+	pub fn get_time(&self) -> i32 {
+		let mut time = (((self.time - 0.4) * 100.0) * 0.2) as i32;
+		if time > 12 { time -= 12; }
+		print!("{}\n",time);
+		return time;
+	}
 }
 
 /// Creates an empty worlddata structure.
 pub fn init_empty() -> World {
 	return World{
-		currentMap		: HashMap::new(),
+		currentMap:	HashMap::new(),
 
-		unitMap			: HashMap::new(),
+		unitMap:	HashMap::new(),
 
-		triggerMap		: HashMap::new(),
-		eventList		: HashMap::new(),
+		triggerMap:	HashMap::new(),
+		eventList:	HashMap::new(),
 
-		//eventHandler	: events::event_handler::create(),
+		time:		0.4,
 	}
 }
 
@@ -213,6 +229,24 @@ pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 /// Draws the world.
 pub fn draw_world( gamestate : &mut Gamestate ) {
 	let rotation = gamestate.camera.rotation;
+	raylib::set_shader_value(
+		gamestate.graphics.shader.unwrap(),
+		gamestate.graphics.timeLoc,
+		[gamestate.worldData.time].as_ptr().cast(),
+		raylib::ShaderUniformDataType::ShaderUniformFloat,
+	);
+	//unsafe {
+	//	let model = gamestate.graphics.models["tree_1"];
+	//	raylib::set_shader_value(
+	//		gamestate.graphics.shader.unwrap(),
+	//		gamestate.graphics.sizeLoc,
+	//		[
+	//			(*(*model.materials).maps).texture.width,
+	//			(*(*model.materials).maps).texture.height,
+	//		].as_ptr().cast(),
+	//		raylib::ShaderUniformDataType::ShaderUniformVec2,
+	//	);
+	//}
 
 	if (rotation > -45.0 && rotation <=  45.0) || (rotation > 315.0 && rotation <= 405.0)	{ return draw_rot_000(gamestate); }
 	if (rotation >  45.0 && rotation <= 135.0) || (rotation > 405.0 && rotation <= 495.0)	{ return draw_rot_090(gamestate); }
@@ -249,14 +283,26 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				//* Check if tile exists */
 				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
 					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
+					let model = gamestate.graphics.models[tile.model.as_str()];
+					unsafe {
+						raylib::set_shader_value(
+							gamestate.graphics.shader.unwrap(),
+							gamestate.graphics.sizeLoc,
+							[
+								(*(*model.materials).maps).texture.width,
+								(*(*model.materials).maps).texture.height,
+							].as_ptr().cast(),
+							raylib::ShaderUniformDataType::ShaderUniformVec2,
+						);
+					}
 					raylib::draw_model_ex(
-						gamestate.graphics.models[tile.model.as_str()],
+						model,
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						-360.0,
 						raylib_ffi::Vector3 {x: 1.0, y: 1.0, z: 1.0},
 						raylib_ffi::colors::WHITE,
-					)
+					);
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
@@ -373,19 +419,6 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 
 		for _ in minX..maxX {
 			for y in minY..maxY {
-				//* Check if start of line */
-				if z == maxZ-1 && y as f32 == gamestate.player.unit.position.y - 1.0 {
-					let model = gamestate.graphics.models["unit"];
-					raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures["bg_forest_day"]);
-					raylib::draw_model_ex(
-						model,
-						raylib_ffi::Vector3 { x: x as f32, y: y as f32, z: z as f32 + 1.0 },
-						raylib_ffi::Vector3 { x: 0.0, y: 1.0, z: 0.0 },
-						180.0,
-						raylib_ffi::Vector3 { x: 1.0, y: 4.0, z: 1.0 },
-						raylib_ffi::colors::WHITE,
-					);
-				}
 				//* Check if tile exists */
 				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
 					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
@@ -426,12 +459,12 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 /// Draws tiles and units from a west-facing persepective.
 fn draw_rot_270( gamestate : &mut Gamestate ) {
 	let playerPosition = math::round_v3(gamestate.player.unit.position);
-	let maxX = (playerPosition.x + WIDTH) as i32;
-	let minX = (playerPosition.x - WIDTH) as i32;
+	let maxX = (playerPosition.x + (DEPTH / 2.0)) as i32;
+	let minX = (playerPosition.x - (DEPTH + (DEPTH / 2.0))) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
 	let minY = (playerPosition.y - HEIGHT) as i32;
-	let maxZ = (playerPosition.z + DEPTH) as i32;
-	let minZ = (playerPosition.z - DEPTH) as i32;
+	let maxZ = (playerPosition.z + WIDTH) as i32;
+	let minZ = (playerPosition.z - WIDTH) as i32;
 
 	for x in minX..maxX {
 		let mut z = minZ;

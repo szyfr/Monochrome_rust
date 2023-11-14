@@ -6,7 +6,7 @@
 
 
 //= Imports
-use monorust::{raylib, data, camera, player, overworld, world, events};
+use monorust::{raylib, data, player, overworld, world, events};
 
 
 //= Main
@@ -33,14 +33,19 @@ fn main() {
 
 	while !raylib::window_should_close() {
 		//* Update */
-		camera::update(&mut gamestate);
+		gamestate.camera.update(
+			gamestate.player.unit.position,
+			gamestate.eventHandler.currentEvent == "".to_string(),
+		);
 		player::controls(&mut gamestate);
+		//gamestate.worldData.time_tick();
+		//gamestate.worldData.get_time();
 		gamestate.audio.update();
 
 		raylib::begin_drawing();
 		{
-			//raylib::clear_background(raylib_ffi::Color{r:57,g:57,b:57,a:255});
-			raylib::clear_background(raylib_ffi::colors::SKYBLUE);
+			raylib::clear_background(raylib_ffi::Color{r:57,g:57,b:57,a:255});
+			//raylib::clear_background(raylib_ffi::colors::SKYBLUE);
 
 			raylib::begin_3d_mode(&gamestate.camera);
 

@@ -33,9 +33,28 @@ pub struct Camera {
 
 	pub onPlayer	: bool,
 }
+
+
+//= Procedures
+
 impl Camera {
-	fn update_rotation(&mut self, control: bool) {
+	/// Update camera
+	pub fn update(&mut self, playerPos: raylib_ffi::Vector3, control: bool) {
 		let ft = raylib::get_frame_time();
+
+		//* Check if targetting a unit, and update position accordingly */
+		if self.onPlayer {
+			//* Have camera's movements match player */
+			self.position = math::add_v3(playerPos, Vector3{x:0.0,y:1.0,z:0.0});
+			self.position.y = self.position.y / 2.0;
+			self.posTarget = self.position;
+		} else {
+			//* Update Position */
+			if !math::close_enough_v3(self.position, self.posTarget, 0.5) {
+				let dir = math::get_direction_v3(self.position, self.posTarget);
+				self.position = math::add_v3(self.position, math::mul_v3(dir, MVSPEED * ft));
+			} else { self.position = self.posTarget; }
+		}
 
 		//* Update rotation */
 		if !math::close_enough_f32(self.rotation, self.rotTarget, 5.0) {
@@ -66,9 +85,6 @@ impl Camera {
 	}
 }
 
-
-//= Procedures
-
 /// Initializes a new Camera structure.
 pub fn init() -> Camera {
 	return Camera{
@@ -83,24 +99,4 @@ pub fn init() -> Camera {
 
 		onPlayer:		true,
 	};
-}
-
-/// Updates Camera position and rotation.
-pub fn update( gamestate : &mut data::Gamestate ) {
-	let ft = raylib::get_frame_time();
-
-	//* Check if targetting a unit */
-	if gamestate.camera.onPlayer {
-		//* Have camera's movements match player */
-		gamestate.camera.position = math::add_v3(gamestate.player.unit.position, Vector3{x:0.0,y:1.0,z:0.0});
-		gamestate.camera.position.y = gamestate.camera.position.y / 2.0;
-		gamestate.camera.posTarget = gamestate.camera.position;
-	} else {
-		//* Update Position */
-		if !math::close_enough_v3(gamestate.camera.position, gamestate.camera.posTarget, 0.5) {
-			let dir = math::get_direction_v3(gamestate.camera.position, gamestate.camera.posTarget);
-			gamestate.camera.position = math::add_v3(gamestate.camera.position, math::mul_v3(dir, MVSPEED * ft));
-		} else { gamestate.camera.position = gamestate.camera.posTarget; }
-	}
-	gamestate.camera.update_rotation(gamestate.eventHandler.currentEvent == "".to_string());
 }

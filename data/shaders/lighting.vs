@@ -18,10 +18,12 @@ out vec4 fragColor;
 out vec3 fragNormal;
 
 // NOTE: Add here your custom variables
+in float time;
 
-void main()
-{
+void main() {
     // Send vertex attributes to fragment shader
+	vec4 modded = vec4(1f,1f,1f,1f)
+
     fragPosition = vec3(matModel*vec4(vertexPosition, 1.0));
     fragTexCoord = vertexTexCoord;
     fragColor = vertexColor;

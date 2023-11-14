@@ -27,6 +27,10 @@ pub struct Player {
 
 //= Procedures
 
+impl Player {
+	
+}
+
 /// Initialize player data
 pub fn init() -> Player {
 	let mut player = Player{
@@ -97,81 +101,101 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			let left	= data::key_down("left");
 			let right	= data::key_down("right");
 
-			let curRot = gamestate.camera.rotation;
+			let curRot = gamestate.camera.rotation as i32;
 			let mut dir = gamestate.player.unit.direction;
 
-			if (curRot > -45.0 && curRot <=  45.0) || (curRot > 315.0 && curRot <= 405.0) {
-			if up {
-				dir = Direction::North;
-				newpos.z -= 1.0;
+			match curRot {
+				-46..= 45 |  316..=405 => {
+					if up {
+						dir = Direction::North;
+						newpos.z -= 1.0;
+					}
+					if down {
+						dir = Direction::South;
+						newpos.z += 1.0;
+					}
+					if left {
+						dir = Direction::East;
+						newpos.x -= 1.0;
+					}
+					if right {
+						dir = Direction::West;
+						newpos.x += 1.0;
+					}
+				}
+				 46..=135 |  406..=495 => {
+					if up {
+						dir = Direction::West;
+						newpos.x += 1.0;
+					}
+					if down {
+						dir = Direction::East;
+						newpos.x -= 1.0;
+					}
+					if left {
+						dir = Direction::North;
+						newpos.z -= 1.0;
+					}
+					if right {
+						dir = Direction::South;
+						newpos.z += 1.0;
+					}
+				}
+				136..=225 => {
+					if up {
+						dir = Direction::South;
+						newpos.z += 1.0;
+					}
+					if down {
+						dir = Direction::North;
+						newpos.z -= 1.0;
+					}
+					if left {
+						dir = Direction::West;
+						newpos.x += 1.0;
+					}
+					if right {
+						dir = Direction::East;
+						newpos.x -= 1.0;
+					}
+				}
+				226..=315 | -134..=-45 => {
+					if up {
+						dir = Direction::East;
+						newpos.x -= 1.0;
+					}
+					if down {
+						dir = Direction::West;
+						newpos.x += 1.0;
+					}
+					if left {
+						dir = Direction::South;
+						newpos.z += 1.0;
+					}
+					if right {
+						dir = Direction::North;
+						newpos.z -= 1.0;
+					}
+				}
+				_ => {
+					if up {
+						dir = Direction::North;
+						newpos.z -= 1.0;
+					}
+					if down {
+						dir = Direction::South;
+						newpos.z += 1.0;
+					}
+					if left {
+						dir = Direction::East;
+						newpos.x -= 1.0;
+					}
+					if right {
+						dir = Direction::West;
+						newpos.x += 1.0;
+					}
+				}
 			}
-			if down {
-				dir = Direction::South;
-				newpos.z += 1.0;
-			}
-			if left {
-				dir = Direction::East;
-				newpos.x -= 1.0;
-			}
-			if right {
-				dir = Direction::West;
-				newpos.x += 1.0;
-			}
-		}
-			if (curRot >  45.0 && curRot <= 135.0) || (curRot > 405.0 && curRot <= 495.0) {
-			if up {
-				dir = Direction::West;
-				newpos.x += 1.0;
-			}
-			if down {
-				dir = Direction::East;
-				newpos.x -= 1.0;
-			}
-			if left {
-				dir = Direction::North;
-				newpos.z -= 1.0;
-			}
-			if right {
-				dir = Direction::South;
-				newpos.z += 1.0;
-			}
-		}
-			if curRot > 135.0 && curRot <= 225.0 {
-			if up {
-				dir = Direction::South;
-				newpos.z += 1.0;
-			}
-			if down {
-				dir = Direction::North;
-				newpos.z -= 1.0;
-			}
-			if left {
-				dir = Direction::West;
-				newpos.x += 1.0;
-			}
-			if right {
-				dir = Direction::East;
-				newpos.x -= 1.0;
-			}
-		}
-			if (curRot > 225.0 && curRot <= 315.0) || (curRot > -135.0 && curRot <= -45.0) {
-			if up {
-				dir = Direction::East;
-				newpos.x -= 1.0;
-			}
-			if down {
-				dir = Direction::West;
-				newpos.x += 1.0;
-			}
-			if left {
-				dir = Direction::South;
-				newpos.z += 1.0;
-			}
-			if right {
-				dir = Direction::North;
-				newpos.z -= 1.0;
-			}
-		}
 
 			//* If the player is moving */
 			gamestate.player.unit.direction = dir;

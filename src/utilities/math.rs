@@ -13,7 +13,7 @@ use crate::overworld::Direction;
 /// X Distance for camera
 const XDIST : f32 = 0.0;
 /// Y Distance for camera
-const YDIST : f32 = 5.0;
+const YDIST : f32 = 6.0;
 /// Z Distance for camera
 const ZDIST : f32 = 5.0;
 

@@ -14,7 +14,7 @@ use crate::{settings, camera, player, world, graphics, audio, localization, even
 
 /// Structure containing all current information on the games state.
 pub struct Gamestate {
-	pub localization : HashMap<String, String>,
+	pub localization:	HashMap<String, String>,
 
 	pub graphics:		graphics::Graphics,
 	pub audio:			audio::Audio,
@@ -22,26 +22,26 @@ pub struct Gamestate {
 	pub worldData	: world::World,
 	pub eventHandler:	events::event_handler::EventHandler,
 
-	pub camera		: camera::Camera,
-	pub player		: player::Player,
+	pub camera:			camera::Camera,
+	pub player:			player::Player,
 }
 
 
 //= Globals
 pub static mut SETTINGS : settings::Settings = settings::Settings{
-	screenWidth: 1280,
-	screenHeight: 720,
-	screenFps: 80,
-	screenRatio: 1.0,
+	screenWidth:	1280,
+	screenHeight:	720,
+	screenFps:		80,
+	screenRatio:	1.0,
 
-	text_speed: 5,
-	language: settings::Language::English,
+	text_speed:		5,
+	language:		settings::Language::English,
 
-	keybindings: None,
+	keybindings:	None,
 
-	masterVolume: 0.5,
-	musicVolume: 1.0,
-	sfxVolume: 1.0,
+	masterVolume:	0.5,
+	musicVolume:	1.0,
+	sfxVolume:		1.0,
 };
 
 
