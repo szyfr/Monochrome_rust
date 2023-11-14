@@ -10,6 +10,7 @@ pub mod conditionals;
 pub mod event_handler;
 pub mod textbox;
 pub mod animation;
+pub mod parser;
 
 use crate::{overworld::{Direction, self}, data, utilities::math, monsters};
 

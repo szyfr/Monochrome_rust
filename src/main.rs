@@ -22,6 +22,7 @@ fn main() {
 	raylib::init_audio_device();
 
 	//* Graphics */
+	let mut _graphicsHandler = graphics::init();
 	gamestate.fonts		= graphics::load_fonts();
 	gamestate.textures	= graphics::load_textures();
 	gamestate.models	= graphics::load_models();
@@ -44,26 +45,7 @@ fn main() {
 			//raylib::clear_background(raylib_ffi::Color{r:57,g:57,b:57,a:255});
 			raylib::clear_background(raylib_ffi::colors::SKYBLUE);
 
-			//let texture = gamestate.textures["bg_forest_day"];
-			//raylib::draw_texture_rec(
-			//	texture,
-			//	raylib_ffi::Rectangle { x: 0.0, y: 0.0, width: texture.width as f32, height: texture.height as f32 },
-			//	raylib_ffi::Vector2 { x: 0.0, y: 0.0 },
-			//	raylib_ffi::colors::WHITE,
-			//);
-
 			raylib::begin_3d_mode(&gamestate.camera);
-
-			//let model = gamestate.models["unit"];
-			//raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.textures["bg_forest_day"]);
-			//raylib::draw_model_ex(
-			//	model,
-			//	raylib_ffi::Vector3 { x: gamestate.player.unit.position.x, y: gamestate.player.unit.position.y + 1.0, z: gamestate.player.unit.position.z - 8.0 },
-			//	raylib_ffi::Vector3 { x: 0.0, y: 1.0, z: 0.0 },
-			//	0.0,
-			//	raylib_ffi::Vector3 { x: 4.0, y: 8.0, z: 4.0 },
-			//	raylib_ffi::colors::WHITE,
-			//);
 
 			world::draw_world(&mut gamestate);
 			events::animation::draw_emotes(&mut gamestate);
