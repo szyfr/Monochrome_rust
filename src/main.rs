@@ -6,7 +6,7 @@
 
 
 //= Imports
-use monorust::{raylib, data, graphics, camera, player, overworld, world, events};
+use monorust::{raylib, data, camera, player, overworld, world, events};
 
 
 //= Main
@@ -22,10 +22,7 @@ fn main() {
 	raylib::init_audio_device();
 
 	//* Graphics */
-	let mut _graphicsHandler = graphics::init();
-	gamestate.fonts		= graphics::load_fonts();
-	gamestate.textures	= graphics::load_textures();
-	gamestate.models	= graphics::load_models();
+	gamestate.graphics.load();
 	gamestate.player.unit.animator.textures = overworld::load_unit_textures("player_1");
 
 	//* Camera / Player */

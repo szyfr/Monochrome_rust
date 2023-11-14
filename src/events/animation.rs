@@ -51,26 +51,26 @@ pub struct EmoteAnimation {
 
 /// Logic for animation
 pub fn run( gamestate: &mut data::Gamestate, animation: Animation ) -> bool {
-	if gamestate.worldData.eventHandler.animation.is_some() {
-		if !same_anim(gamestate.worldData.eventHandler.animation.as_ref().unwrap().clone(), animation.clone()) {
-			gamestate.worldData.eventHandler.animation = None;
+	if gamestate.eventHandler.animation.is_some() {
+		if !same_anim(gamestate.eventHandler.animation.as_ref().unwrap().clone(), animation.clone()) {
+			gamestate.eventHandler.animation = None;
 			run(gamestate, animation);
 			return false;
 		}
-		gamestate.worldData.eventHandler.animation.as_mut().unwrap().ticks += 1;
-		if gamestate.worldData.eventHandler.animation.as_mut().unwrap().ticks >= gamestate.worldData.eventHandler.animation.as_mut().unwrap().ticksPerFrame {
-			gamestate.worldData.eventHandler.animation.as_mut().unwrap().ticks = 0;
-			gamestate.worldData.eventHandler.animation.as_mut().unwrap().frame += 1;
-			if gamestate.worldData.eventHandler.animation.as_mut().unwrap().frame >= gamestate.worldData.eventHandler.animation.as_mut().unwrap().order.len() as i32 {
-				gamestate.worldData.eventHandler.animation.as_mut().unwrap().frame -= 1;
-				if !gamestate.worldData.eventHandler.animation.as_mut().unwrap().hold {
-					gamestate.worldData.eventHandler.animation = None;
+		gamestate.eventHandler.animation.as_mut().unwrap().ticks += 1;
+		if gamestate.eventHandler.animation.as_mut().unwrap().ticks >= gamestate.eventHandler.animation.as_mut().unwrap().ticksPerFrame {
+			gamestate.eventHandler.animation.as_mut().unwrap().ticks = 0;
+			gamestate.eventHandler.animation.as_mut().unwrap().frame += 1;
+			if gamestate.eventHandler.animation.as_mut().unwrap().frame >= gamestate.eventHandler.animation.as_mut().unwrap().order.len() as i32 {
+				gamestate.eventHandler.animation.as_mut().unwrap().frame -= 1;
+				if !gamestate.eventHandler.animation.as_mut().unwrap().hold {
+					gamestate.eventHandler.animation = None;
 				}
 				return true;
 			}
 		}
 	} else {
-		gamestate.worldData.eventHandler.animation = Some(animation);
+		gamestate.eventHandler.animation = Some(animation);
 	}
 
 	return false
@@ -78,15 +78,15 @@ pub fn run( gamestate: &mut data::Gamestate, animation: Animation ) -> bool {
 
 /// Draw animations
 pub fn draw( gamestate : &mut data::Gamestate ) {
-	if gamestate.worldData.eventHandler.animation.is_none() { return }
+	if gamestate.eventHandler.animation.is_none() { return }
 
-	let frame = gamestate.worldData.eventHandler.animation.as_ref().unwrap().frame;
+	let frame = gamestate.eventHandler.animation.as_ref().unwrap().frame;
 
 	let mut animName = "ui_animation_".to_string();
-	animName += &gamestate.worldData.eventHandler.animation.as_mut().unwrap().currentAnimation.to_string();
+	animName += &gamestate.eventHandler.animation.as_mut().unwrap().currentAnimation.to_string();
 	animName += "_";
-	animName += &gamestate.worldData.eventHandler.animation.as_mut().unwrap().order[frame as usize].to_string();
-	let texture = *gamestate.textures.get(&animName).unwrap();
+	animName += &gamestate.eventHandler.animation.as_mut().unwrap().order[frame as usize].to_string();
+	let texture = *gamestate.graphics.textures.get(&animName).unwrap();
 	
 	raylib::draw_texture_pro(
 		texture, 
@@ -102,26 +102,26 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 	let mut remove: Vec<usize> = Vec::new();
 	
-	for i in 0..gamestate.worldData.eventHandler.emotes.len() {
-		gamestate.worldData.eventHandler.emotes[i].ticks += 1;
-		if gamestate.worldData.eventHandler.emotes[i].ticks >= gamestate.worldData.eventHandler.emotes[i].duration {
+	for i in 0..gamestate.eventHandler.emotes.len() {
+		gamestate.eventHandler.emotes[i].ticks += 1;
+		if gamestate.eventHandler.emotes[i].ticks >= gamestate.eventHandler.emotes[i].duration {
 			remove.push(i);
 		} else {
-			print!("{}\n",gamestate.worldData.eventHandler.emotes[i].ticks);
+			print!("{}\n",gamestate.eventHandler.emotes[i].ticks);
 			//* Get model and skin it */
-			let model = gamestate.models["unit"];
-			let textureName = &("emote_".to_string() + &gamestate.worldData.eventHandler.emotes[i].emote);
-			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.textures[textureName]);
+			let model = gamestate.graphics.models["unit"];
+			let textureName = &("emote_".to_string() + &gamestate.eventHandler.emotes[i].emote);
+			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName]);
 
 			//* Get unit */
 			let unit: Option<overworld::Unit>;
-			if gamestate.worldData.eventHandler.emotes[i].unitID == "player" { unit = Some(gamestate.player.unit.clone()); }
-			else { unit = Some(gamestate.worldData.unitMap[&gamestate.worldData.eventHandler.emotes[i].unitID].clone()); }
+			if gamestate.eventHandler.emotes[i].unitID == "player" { unit = Some(gamestate.player.unit.clone()); }
+			else { unit = Some(gamestate.worldData.unitMap[&gamestate.eventHandler.emotes[i].unitID].clone()); }
 
 			//* Draw */
 			let mut offset = 0.5;
-			if gamestate.worldData.eventHandler.emotes[i].ticks <= 10 {
-				offset += gamestate.worldData.eventHandler.emotes[i].ticks as f32 / 9.0;
+			if gamestate.eventHandler.emotes[i].ticks <= 10 {
+				offset += gamestate.eventHandler.emotes[i].ticks as f32 / 9.0;
 			} else { offset = 1.0; }
 			raylib::draw_model_ex(
 				model,
@@ -135,7 +135,7 @@ pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 	}
 
 	for i in remove.iter() {
-		gamestate.worldData.eventHandler.emotes.remove(*i);
+		gamestate.eventHandler.emotes.remove(*i);
 	}
 }
 

@@ -27,11 +27,8 @@ pub struct World{
 	pub currentMap	: HashMap<[i32;3], Tile>,
 
 	pub unitMap		: HashMap<String, overworld::Unit>,
-
 	pub triggerMap	: HashMap<[i32;3], String>,
 	pub eventList	: HashMap<String, events::Event>,
-
-	pub eventHandler: events::event_handler::EventHandler,
 }
 
 /// Tile storage structure
@@ -190,7 +187,7 @@ pub fn init_empty() -> World {
 		triggerMap		: HashMap::new(),
 		eventList		: HashMap::new(),
 
-		eventHandler	: events::event_handler::create(),
+		//eventHandler	: events::event_handler::create(),
 	}
 }
 
@@ -240,8 +237,8 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z-1 {
 			overworld::draw_unit(
-				&gamestate.animations,
-				gamestate.models["unit"],
+				&gamestate.graphics.animations,
+				gamestate.graphics.models["unit"],
 				&mut gamestate.player.unit,
 				gamestate.camera.rotation,
 			);
@@ -253,7 +250,7 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				if gamestate.worldData.currentMap.contains_key(&[x, y, z]) {
 					let tile = &gamestate.worldData.currentMap[&[x, y, z]];
 					raylib::draw_model_ex(
-						gamestate.models[tile.model.as_str()],
+						gamestate.graphics.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						-360.0,
@@ -263,10 +260,10 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
-							&gamestate.animations,
-							gamestate.models["unit"],
+							&gamestate.graphics.animations,
+							gamestate.graphics.models["unit"],
 							unit,
 							gamestate.camera.rotation,
 						);
@@ -301,8 +298,8 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x+1 {
 			overworld::draw_unit(
-				&gamestate.animations,
-				gamestate.models["unit"],
+				&gamestate.graphics.animations,
+				gamestate.graphics.models["unit"],
 				&mut gamestate.player.unit,
 				gamestate.camera.rotation,
 			);
@@ -319,7 +316,7 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 					//if x as f32 > maxX as f32 - (DEPTH / 2.0) { offset = ((x as f32) / (maxX as f32 - (DEPTH / 2.0))) * 1.0; }
 					if tile.trnsp { rot = -90.0; }
 					raylib::draw_model_ex(
-						gamestate.models[tile.model.as_str()],
+						gamestate.graphics.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: (y as f32 / 2.0), z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -329,10 +326,10 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
-							&gamestate.animations,
-							gamestate.models["unit"],
+							&gamestate.graphics.animations,
+							gamestate.graphics.models["unit"],
 							unit,
 							gamestate.camera.rotation,
 						);
@@ -367,8 +364,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z+1 {
 			overworld::draw_unit(
-				&gamestate.animations,
-				gamestate.models["unit"],
+				&gamestate.graphics.animations,
+				gamestate.graphics.models["unit"],
 				&mut gamestate.player.unit,
 				gamestate.camera.rotation,
 			);
@@ -378,8 +375,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 			for y in minY..maxY {
 				//* Check if start of line */
 				if z == maxZ-1 && y as f32 == gamestate.player.unit.position.y - 1.0 {
-					let model = gamestate.models["unit"];
-					raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.textures["bg_forest_day"]);
+					let model = gamestate.graphics.models["unit"];
+					raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures["bg_forest_day"]);
 					raylib::draw_model_ex(
 						model,
 						raylib_ffi::Vector3 { x: x as f32, y: y as f32, z: z as f32 + 1.0 },
@@ -395,7 +392,7 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 					let mut rot = -360.0;
 					if tile.trnsp { rot = -180.0; }
 					raylib::draw_model_ex(
-						gamestate.models[tile.model.as_str()],
+						gamestate.graphics.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -405,10 +402,10 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
-							&gamestate.animations,
-							gamestate.models["unit"],
+							&gamestate.graphics.animations,
+							gamestate.graphics.models["unit"],
 							unit,
 							gamestate.camera.rotation,
 						);
@@ -443,8 +440,8 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x-1 {
 			overworld::draw_unit(
-				&gamestate.animations,
-				gamestate.models["unit"],
+				&gamestate.graphics.animations,
+				gamestate.graphics.models["unit"],
 				&mut gamestate.player.unit,
 				gamestate.camera.rotation,
 			);
@@ -458,7 +455,7 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 					let mut rot = -360.0;
 					if tile.trnsp { rot = -270.0; }
 					raylib::draw_model_ex(
-						gamestate.models[tile.model.as_str()],
+						gamestate.graphics.models[tile.model.as_str()],
 						raylib_ffi::Vector3 {x: x as f32, y: y as f32 / 2.0, z: z as f32},
 						raylib_ffi::Vector3 {x: 0.0, y: 1.0, z: 0.0},
 						rot,
@@ -468,10 +465,10 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.worldData.eventHandler, unit) {
+					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
-							&gamestate.animations,
-							gamestate.models["unit"],
+							&gamestate.graphics.animations,
+							gamestate.graphics.models["unit"],
 							unit,
 							gamestate.camera.rotation,
 						);

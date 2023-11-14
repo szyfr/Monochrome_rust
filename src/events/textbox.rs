@@ -110,76 +110,76 @@ pub fn init() -> Textbox {
 
 /// Sets the textbox to start.
 pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
-	match gamestate.worldData.eventHandler.textbox.state {
+	match gamestate.eventHandler.textbox.state {
 		TextboxState::Inactive => {
 			//* If the Textbox is currently inactive, start it up */
-			gamestate.worldData.eventHandler.textbox.state = TextboxState::Active;
-			gamestate.worldData.eventHandler.textbox.currentText = "".to_string();
-			gamestate.worldData.eventHandler.textbox.timer = 0;
-			gamestate.worldData.eventHandler.textbox.pause = 0;
-			gamestate.worldData.eventHandler.textbox.position = 1;
-			gamestate.worldData.eventHandler.textbox.hasChoice = false;
-			gamestate.worldData.eventHandler.textbox.choiceList = Vec::new();
-			gamestate.worldData.eventHandler.textbox.curPosition = 0;
+			gamestate.eventHandler.textbox.state = TextboxState::Active;
+			gamestate.eventHandler.textbox.currentText = "".to_string();
+			gamestate.eventHandler.textbox.timer = 0;
+			gamestate.eventHandler.textbox.pause = 0;
+			gamestate.eventHandler.textbox.position = 1;
+			gamestate.eventHandler.textbox.hasChoice = false;
+			gamestate.eventHandler.textbox.choiceList = Vec::new();
+			gamestate.eventHandler.textbox.curPosition = 0;
 			gamestate.audio.play_sound("button".to_string());
 
 			//* Check text for replacements */
 			let mut str = gamestate.localization[&text.to_string()].to_string();
 
-			str = str.replace("{PLAYER_NAME}", &gamestate.worldData.eventHandler.playerName);
-			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.worldData.eventHandler.playerPronouns[0]);
-			str = str.replace("{PLAYER_PRO_OBJECT}", &gamestate.worldData.eventHandler.playerPronouns[1]);
-			str = str.replace("{PLAYER_PRO_POSSESIVE}", &gamestate.worldData.eventHandler.playerPronouns[2]);
-			str = str.replace("{RIVAL_NAME}", &gamestate.worldData.eventHandler.rivalName);
-			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.worldData.eventHandler.playerPronouns[0]);
-			//for (variable, cond) in &gamestate.worldData.eventHandler.eventVariables {
+			str = str.replace("{PLAYER_NAME}", &gamestate.eventHandler.playerName);
+			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.eventHandler.playerPronouns[0]);
+			str = str.replace("{PLAYER_PRO_OBJECT}", &gamestate.eventHandler.playerPronouns[1]);
+			str = str.replace("{PLAYER_PRO_POSSESIVE}", &gamestate.eventHandler.playerPronouns[2]);
+			str = str.replace("{RIVAL_NAME}", &gamestate.eventHandler.rivalName);
+			str = str.replace("{PLAYER_PRO_SUBJECT}", &gamestate.eventHandler.playerPronouns[0]);
+			//for (variable, cond) in &gamestate.eventHandler.eventVariables {
 			//	let varStr = "{".to_string() + &variable.to_string() + "}";
 			//	str = str.replace(&varStr, &cond.to_string());
 			//} TODO Figure out why this doesn't work
 
-			gamestate.worldData.eventHandler.textbox.targetText = str;
+			gamestate.eventHandler.textbox.targetText = str;
 
 			return false;
 		},
 		TextboxState::Active => {
 			//* Increase timer */
-			gamestate.worldData.eventHandler.textbox.timer += 1;
-			if gamestate.worldData.eventHandler.textbox.timer >= data::get_textspeed() {
-				gamestate.worldData.eventHandler.textbox.timer = 0;
-				gamestate.worldData.eventHandler.textbox.position += 1;
+			gamestate.eventHandler.textbox.timer += 1;
+			if gamestate.eventHandler.textbox.timer >= data::get_textspeed() {
+				gamestate.eventHandler.textbox.timer = 0;
+				gamestate.eventHandler.textbox.position += 1;
 
-				let str = &mut gamestate.worldData.eventHandler.textbox.targetText.to_string();
+				let str = &mut gamestate.eventHandler.textbox.targetText.to_string();
 
-				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
-					let _ = str.split_off(gamestate.worldData.eventHandler.textbox.position as usize);
+				if gamestate.eventHandler.textbox.position < str.len() as i32 {
+					let _ = str.split_off(gamestate.eventHandler.textbox.position as usize);
 				}
-				gamestate.worldData.eventHandler.textbox.currentText = str.to_string();
+				gamestate.eventHandler.textbox.currentText = str.to_string();
 			}
 
 			//* If it's a choice box, move cursor on button press */
-			if gamestate.worldData.eventHandler.textbox.hasChoice {
+			if gamestate.eventHandler.textbox.hasChoice {
 				if data::key_pressed("up") {
-					if gamestate.worldData.eventHandler.textbox.curPosition == 0 {
-						gamestate.worldData.eventHandler.textbox.curPosition = 3;
-						for i in 0..4 { if gamestate.worldData.eventHandler.textbox.choiceList[i as usize].text == "" { gamestate.worldData.eventHandler.textbox.curPosition -= 1; } }
-					} else { gamestate.worldData.eventHandler.textbox.curPosition -= 1; }
+					if gamestate.eventHandler.textbox.curPosition == 0 {
+						gamestate.eventHandler.textbox.curPosition = 3;
+						for i in 0..4 { if gamestate.eventHandler.textbox.choiceList[i as usize].text == "" { gamestate.eventHandler.textbox.curPosition -= 1; } }
+					} else { gamestate.eventHandler.textbox.curPosition -= 1; }
 				}
 				if data::key_pressed("down") {
-					if gamestate.worldData.eventHandler.textbox.curPosition >= gamestate.worldData.eventHandler.textbox.choiceList.len() as i32 - 1 || gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize + 1].text == "" { gamestate.worldData.eventHandler.textbox.curPosition = 0; }
-					else { gamestate.worldData.eventHandler.textbox.curPosition += 1; }
+					if gamestate.eventHandler.textbox.curPosition >= gamestate.eventHandler.textbox.choiceList.len() as i32 - 1 || gamestate.eventHandler.textbox.choiceList[gamestate.eventHandler.textbox.curPosition as usize + 1].text == "" { gamestate.eventHandler.textbox.curPosition = 0; }
+					else { gamestate.eventHandler.textbox.curPosition += 1; }
 				}
 			}
 
 			//* If it's an input box, accept all keys */
 			// TODO Decide if i want string max length to be 16...
-			if gamestate.worldData.eventHandler.textbox.isInput {
+			if gamestate.eventHandler.textbox.isInput {
 				let input = raylib::get_key_pressed();
-				if input == ".".to_string() && gamestate.worldData.eventHandler.textbox.input.len() > 0 {
-					gamestate.worldData.eventHandler.textbox.input.truncate(gamestate.worldData.eventHandler.textbox.input.len()-1);
-				} else if gamestate.worldData.eventHandler.textbox.input.len() < 16 && input != ".".to_string() { gamestate.worldData.eventHandler.textbox.input += &input; }
+				if input == ".".to_string() && gamestate.eventHandler.textbox.input.len() > 0 {
+					gamestate.eventHandler.textbox.input.truncate(gamestate.eventHandler.textbox.input.len()-1);
+				} else if gamestate.eventHandler.textbox.input.len() < 16 && input != ".".to_string() { gamestate.eventHandler.textbox.input += &input; }
 				if data::key_pressed("enter") {
-					if gamestate.worldData.eventHandler.textbox.input.len() > 0 {
-						gamestate.worldData.eventHandler.textbox.reset();
+					if gamestate.eventHandler.textbox.input.len() > 0 {
+						gamestate.eventHandler.textbox.reset();
 						gamestate.audio.play_sound("button".to_string());
 						return true;
 					}
@@ -188,49 +188,49 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 
 			if data::key_pressed("confirm") {
 				let str = &mut gamestate.localization[&text.to_string()].to_string();
-				if gamestate.worldData.eventHandler.textbox.position < str.len() as i32 {
+				if gamestate.eventHandler.textbox.position < str.len() as i32 {
 					gamestate.audio.play_sound("button".to_string());
-					gamestate.worldData.eventHandler.textbox.position = str.len() as i32;
+					gamestate.eventHandler.textbox.position = str.len() as i32;
 				} else {
-					if gamestate.worldData.eventHandler.textbox.hasChoice {
+					if gamestate.eventHandler.textbox.hasChoice {
 						gamestate.audio.play_sound("button".to_string());
 
-						let choice = &gamestate.worldData.eventHandler.textbox.choiceList[gamestate.worldData.eventHandler.textbox.curPosition as usize];
+						let choice = &gamestate.eventHandler.textbox.choiceList[gamestate.eventHandler.textbox.curPosition as usize];
 						if choice.event == "" {
-							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
-							gamestate.worldData.eventHandler.textbox.reset();
+							if choice.position != -1 { gamestate.eventHandler.currentChain = choice.position; }
+							gamestate.eventHandler.textbox.reset();
 							return true;
 						}
-						if choice.event == gamestate.worldData.eventHandler.currentEvent {
-							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
-							gamestate.worldData.eventHandler.textbox.reset();
+						if choice.event == gamestate.eventHandler.currentEvent {
+							if choice.position != -1 { gamestate.eventHandler.currentChain = choice.position; }
+							gamestate.eventHandler.textbox.reset();
 							return false;
 						}
 						if gamestate.worldData.eventList.contains_key(&choice.event) {
-							gamestate.worldData.eventHandler.currentEvent = choice.event.to_string();
-							if choice.position != -1 { gamestate.worldData.eventHandler.currentChain = choice.position; }
-							gamestate.worldData.eventHandler.textbox.reset();
+							gamestate.eventHandler.currentEvent = choice.event.to_string();
+							if choice.position != -1 { gamestate.eventHandler.currentChain = choice.position; }
+							gamestate.eventHandler.textbox.reset();
 							return false;
 						}
-					} else if gamestate.worldData.eventHandler.textbox.isInput {
+					} else if gamestate.eventHandler.textbox.isInput {
 						
 					} else {
 						gamestate.audio.play_sound("button".to_string());
 
-						let chPos = gamestate.worldData.eventHandler.currentChain as usize + 1;
-						if chPos >= gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain.len() { gamestate.worldData.eventHandler.textbox.state = TextboxState::Inactive; return true; }
-						let chain = &gamestate.worldData.eventList[&gamestate.worldData.eventHandler.currentEvent].chain[chPos];
+						let chPos = gamestate.eventHandler.currentChain as usize + 1;
+						if chPos >= gamestate.worldData.eventList[&gamestate.eventHandler.currentEvent].chain.len() { gamestate.eventHandler.textbox.state = TextboxState::Inactive; return true; }
+						let chain = &gamestate.worldData.eventList[&gamestate.eventHandler.currentEvent].chain[chPos];
 						match chain {
 							EventChain::Text {..} => {
-								gamestate.worldData.eventHandler.textbox.timer = 0;
-								gamestate.worldData.eventHandler.textbox.position = 0;
+								gamestate.eventHandler.textbox.timer = 0;
+								gamestate.eventHandler.textbox.position = 0;
 							},
 							EventChain::Choice {..} => {
-								gamestate.worldData.eventHandler.textbox.timer = 0;
-								gamestate.worldData.eventHandler.textbox.position = 0;
+								gamestate.eventHandler.textbox.timer = 0;
+								gamestate.eventHandler.textbox.position = 0;
 							},
 							_ => {
-								gamestate.worldData.eventHandler.textbox.reset();
+								gamestate.eventHandler.textbox.reset();
 							},
 						}
 						return true;
@@ -249,9 +249,9 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 	let widthOffset = 160.0 * data::get_screenratio();
 	let heightOffset = 480.0 * data::get_screenratio();
 
-	if gamestate.worldData.eventHandler.textbox.state != TextboxState::Inactive {
+	if gamestate.eventHandler.textbox.state != TextboxState::Inactive {
 		raylib::draw_texture_npatch(
-			gamestate.textures["ui_textbox_general"],
+			gamestate.graphics.textures["ui_textbox_general"],
 			raylib_ffi::Rectangle {
 				x: widthOffset,
 				y: heightOffset,
@@ -267,8 +267,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		let mut fontSize = 24.0;
 		if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0) as i32) as f32 * 8.0 }
 		raylib::draw_text_pro(
-			gamestate.fonts["default"],
-			&gamestate.worldData.eventHandler.textbox.currentText,
+			gamestate.graphics.fonts["default"],
+			&gamestate.eventHandler.textbox.currentText,
 			raylib_ffi::Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (heightOffset / 8.0)},
 			raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 			0.0,
@@ -278,11 +278,11 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		);
 
 		//* Draw options */
-		if gamestate.worldData.eventHandler.textbox.hasChoice {
+		if gamestate.eventHandler.textbox.hasChoice {
 			let choiceWidthOffset = data::get_screenwidth() as f32 - (widthOffset * 2.0);
 			let choiceHeightOffset = heightOffset - fontSize;
 			raylib::draw_texture_npatch(
-				gamestate.textures["ui_textbox_general"],
+				gamestate.graphics.textures["ui_textbox_general"],
 				raylib_ffi::Rectangle {
 					x: choiceWidthOffset,
 					y: choiceHeightOffset,
@@ -294,10 +294,10 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				raylib_ffi::colors::WHITE,
 			);
 			let mut choiceOffset = 0.0;
-			for i in &gamestate.worldData.eventHandler.textbox.choiceList {
+			for i in &gamestate.eventHandler.textbox.choiceList {
 				if i.text != "" {
 					raylib::draw_text_pro(
-						gamestate.fonts["default"],
+						gamestate.graphics.fonts["default"],
 						&gamestate.localization[&i.text],
 						raylib_ffi::Vector2 {x: choiceWidthOffset + (widthOffset / 3.0) + (12.0 * ratio), y: choiceHeightOffset + (heightOffset / 8.0) + (choiceOffset * (fontSize + (12.0 * ratio)))},
 						raylib_ffi::Vector2 {x: 0.0, y: 0.0},
@@ -310,14 +310,14 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				choiceOffset += 1.0;
 			}
 			let mut height = choiceHeightOffset + (heightOffset / 8.0) - (8.0 * ratio);
-			match gamestate.worldData.eventHandler.textbox.curPosition {
+			match gamestate.eventHandler.textbox.curPosition {
 				1 => height += fontSize + (12.0 * ratio),
 				2 => height += 2.0 * (fontSize + (12.0 * ratio)),
 				3 => height += 3.0 * (fontSize + (12.0 * ratio)),
 				_ => {},
 			}
 			raylib::draw_texture_pro(
-				gamestate.textures["ui_pointer_general"],
+				gamestate.graphics.textures["ui_pointer_general"],
 				raylib_ffi::Rectangle{ x:0.0,y:0.0, width:8.0,height:8.0 },
 				raylib_ffi::Rectangle{
 					x: choiceWidthOffset + (widthOffset / 3.0) - (24.0 * ratio),
@@ -332,11 +332,11 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		}
 
 		//* Draw input */
-		if gamestate.worldData.eventHandler.textbox.isInput {
+		if gamestate.eventHandler.textbox.isInput {
 			let inputWidthOffset = 320.0 * data::get_screenratio();
 			let inputHeightOffset = heightOffset - (fontSize * 2.0);
 			raylib::draw_texture_npatch(
-				gamestate.textures["ui_textbox_general"],
+				gamestate.graphics.textures["ui_textbox_general"],
 				raylib_ffi::Rectangle {
 					x: inputWidthOffset,
 					y: inputHeightOffset,
@@ -349,8 +349,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			);
 
 			raylib::draw_text_pro(
-				gamestate.fonts["default"],
-				&gamestate.worldData.eventHandler.textbox.input,
+				gamestate.graphics.fonts["default"],
+				&gamestate.eventHandler.textbox.input,
 				raylib_ffi::Vector2 {x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio), y: inputHeightOffset + (heightOffset / 10.5)},
 				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 				0.0,
@@ -360,7 +360,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			);
 
 			raylib::draw_texture_pro(
-				gamestate.textures["ui_input_general"],
+				gamestate.graphics.textures["ui_input_general"],
 				raylib_ffi::Rectangle{
 					x: 0.0,
 					y: 0.0,
@@ -368,7 +368,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 					height: 8.0,
 				},
 				raylib_ffi::Rectangle{
-					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.worldData.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
+					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
 					y: inputHeightOffset + (heightOffset / 12.0),
 					width: 32.0 * ratio,
 					height: 32.0 * ratio,

@@ -299,7 +299,7 @@ pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction
 
 	//* Check for entities */
 	for (_, unit) in gamestate.worldData.unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.worldData.eventHandler, unit) {
+		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) {
 			gamestate.audio.play_sound("collision".to_string());
 			return;
 		}

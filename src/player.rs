@@ -64,7 +64,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				gamestate.player.unit.posTarget.y as i32,
 				gamestate.player.unit.posTarget.z as i32,
 			];
-			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.worldData.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); return; }
+			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); return; }
 
 			//* Check for interaction */
 			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
@@ -78,13 +78,13 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 				//* The last event in the loop that the conditions are met for is done. */
 				let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
-				if unitCheck.0 && overworld::exists(&gamestate.worldData.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
+				if unitCheck.0 && overworld::exists(&gamestate.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
 					let unit = gamestate.worldData.unitMap.get_mut(&unitCheck.1).unwrap();
 					unit.direction = gamestate.player.unit.direction.reverse();
 					if gamestate.worldData.unitMap.contains_key(&unitCheck.1) {
 						for (str, event) in &gamestate.worldData.unitMap[&unitCheck.1].events {
-							if overworld::check_conditions(&gamestate.worldData.eventHandler, &event) {
-								gamestate.worldData.eventHandler.currentEvent = str.to_string();
+							if overworld::check_conditions(&gamestate.eventHandler, &event) {
+								gamestate.eventHandler.currentEvent = str.to_string();
 							}
 						}
 					}
@@ -177,7 +177,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			gamestate.player.unit.direction = dir;
 			if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
 				overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
-				//overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.worldData.eventHandler, &mut gamestate.player.unit, dir);
+				//overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.eventHandler, &mut gamestate.player.unit, dir);
 				overworld::move_unit_test(gamestate, "player".to_string(), dir);
 			} else {
 				overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );

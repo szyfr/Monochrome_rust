@@ -25,6 +25,14 @@ pub struct Graphics {
 //= Procedures
 
 impl Graphics {
+	/// Load all
+	pub fn load(&mut self) {
+		self.load_fonts();
+		self.load_textures();
+		self.load_models();
+		self.load_animations();
+	} 
+
 	/// Load fonts
 	pub fn load_fonts(&mut self) {
 		//* Default */
@@ -145,19 +153,12 @@ impl Graphics {
 
 /// Initialize
 pub fn init() -> Graphics {
-	let mut output = Graphics {
+	return Graphics {
 		fonts:		HashMap::new(),
 		textures:	HashMap::new(),
 		models:		HashMap::new(),
 		animations:	HashMap::new(),
 	};
-
-	output.load_fonts();
-	output.load_textures();
-	output.load_models();
-	output.load_animations();
-
-	return output;
 }
 
 /// Loads all necessary textures into Hashmap indexed by their names.

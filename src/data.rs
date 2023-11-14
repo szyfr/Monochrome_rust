@@ -7,7 +7,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use crate::{settings, camera, player, overworld, world, graphics, localization, audio};
+use crate::{settings, camera, player, world, graphics, audio, localization, events};
 
 
 //= Structs
@@ -16,14 +16,11 @@ use crate::{settings, camera, player, overworld, world, graphics, localization, 
 pub struct Gamestate {
 	pub localization : HashMap<String, String>,
 
-	pub fonts		: HashMap<String, raylib_ffi::Font>,
-	pub textures	: HashMap<String, raylib_ffi::Texture>,
-	pub models		: HashMap<String, raylib_ffi::Model>,
-	pub animations	: HashMap<String, overworld::Animation>,
-
-	pub audio		: audio::AudioHandler,
+	pub graphics:		graphics::Graphics,
+	pub audio:			audio::Audio,
 
 	pub worldData	: world::World,
+	pub eventHandler:	events::event_handler::EventHandler,
 
 	pub camera		: camera::Camera,
 	pub player		: player::Player,
@@ -54,12 +51,10 @@ pub static mut SETTINGS : settings::Settings = settings::Settings{
 pub fn init() -> Gamestate {
 	let output = Gamestate{
 		localization	: localization::load(),
-		fonts			: HashMap::new(),
-		textures		: HashMap::new(),
-		models			: HashMap::new(),
-		animations		: graphics::load_animations(),
-		audio			: audio::init(),
+		graphics:		graphics::init(),
+		audio:			audio::init(),
 		worldData		: world::init_empty(),
+		eventHandler:	events::event_handler::create(),
 		camera			: camera::init(),
 		player			: player::init(),
 	};
@@ -67,7 +62,7 @@ pub fn init() -> Gamestate {
 	return output;
 }
 
-/// Non-unsafe button calls
+/// Non-Unsafe button calls
 pub fn key_pressed( k: &str ) -> bool {
 	unsafe { return SETTINGS.key_pressed(k); }
 }

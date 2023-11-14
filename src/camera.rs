@@ -102,5 +102,5 @@ pub fn update( gamestate : &mut data::Gamestate ) {
 			gamestate.camera.position = math::add_v3(gamestate.camera.position, math::mul_v3(dir, MVSPEED * ft));
 		} else { gamestate.camera.position = gamestate.camera.posTarget; }
 	}
-	gamestate.camera.update_rotation(gamestate.worldData.eventHandler.currentEvent == "".to_string());
+	gamestate.camera.update_rotation(gamestate.eventHandler.currentEvent == "".to_string());
 }

@@ -14,8 +14,8 @@ use crate::{raylib, data};
 
 //= Structures
 
-///
-pub struct AudioHandler{
+/// Audio structure
+pub struct Audio{
 	currentMusicName: String,
 	currentMusic: Option<raylib_ffi::Music>,
 	currentSoundName: String,
@@ -25,7 +25,7 @@ pub struct AudioHandler{
 
 //= Procedures
 
-impl AudioHandler {
+impl Audio {
 	/// Play sound
 	pub fn play_sound( &mut self, sound: String ) {
 		if sound == self.currentSoundName { return }
@@ -71,8 +71,8 @@ impl AudioHandler {
 }
 
 /// Default init
-pub fn init() -> AudioHandler {
-	return AudioHandler {
+pub fn init() -> Audio {
+	return Audio {
 		currentMusicName: "".to_string(),
 		currentMusic: None,
 		currentSoundName: "".to_string(),
