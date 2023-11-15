@@ -2,12 +2,13 @@
 
 	"title":"Monochrome",
 
-	"pokedex": "Pokedex",
-	"monster": "Pokemon",
-	"inventory": "Bag",
-	"player": "Player",
-	"options": "Options",
-	"quit": "Quit",
+	"menu_0": "Pokedex",
+	"menu_1": "Pokemon",
+	"menu_2": "Bag",
+	"menu_4": "Gear",
+	"menu_5": "Save",
+	"menu_6": "Options",
+	"menu_7": "Quit",
 
 
 	"yes":"Yes",

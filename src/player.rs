@@ -17,11 +17,29 @@ const MVSPEED : f32 = 3.0;
 //= Structures
 /// Storage structure for Player data
 pub struct Player {
-	pub unit : overworld::Unit,
+	pub unit:		overworld::Unit,
 
-	pub monsters: monsters::MonsterTeam,
+	pub monsters:	monsters::MonsterTeam,
 
-	pub canMove : bool,
+	pub canMove:	bool,
+	pub menu:		Menu,
+}
+
+pub struct Menu {
+	/*
+	- Dex
+	- Mon
+	- Bag
+	- Player
+	- Gear
+	- Save
+	- Options
+	- Quit
+	*/
+	pub open: bool,
+
+	pub options:	[bool;8],
+	pub selection:	i32,
 }
 
 
@@ -31,18 +49,81 @@ impl Player {
 	
 }
 
+impl Menu {
+	/// Get the current number of available option
+	pub fn get_number_of_options(&self) -> i32 {
+		let mut count = 0;
+		for i in self.options {
+			if i { count += 1; }
+		}
+		return count;
+	}
+
+	/// Get the current selection from menu
+	pub fn get_current_option(&self) -> i32 {
+		let mut valid = 0;
+		let mut count = 0;
+
+		for i in self.options {
+			if i {
+				if valid == self.selection { return count; }
+				valid += 1;
+			}
+			count += 1;
+		}
+		return -1;
+	}
+}
+
 /// Initialize player data
 pub fn init() -> Player {
 	let mut player = Player{
 		unit:		overworld::create_unit("player_1"),
 		monsters:	monsters::MonsterTeam([None, None, None, None]),
 		canMove:	true,
+		menu:		init_menu(),
 	};
 	
 	player.unit.position = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
 	player.unit.posTarget = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
 
 	return player;
+}
+
+/// Initial value of menu
+pub fn init_menu() -> Menu {
+	return Menu {
+		open:		false,
+		options:	[
+			false,
+			false,
+			true,
+			true,
+			false,
+			false,
+			true,
+			true,
+		],
+		selection: 0,
+	};
+}
+
+//
+pub fn poll_menu( gamestate : &data::Gamestate) -> Menu {
+	return Menu {
+		open:		gamestate.player.menu.open,
+		options:	[
+			gamestate.eventHandler.eventVariables.contains_key("dex") && gamestate.eventHandler.eventVariables.get("dex").unwrap().as_bool() == true,
+			gamestate.player.monsters.number_of_monsters() >= 1,
+			true,
+			true,
+			gamestate.eventHandler.eventVariables.contains_key("gear") && gamestate.eventHandler.eventVariables.get("gear").unwrap().as_bool() == true,
+			false,
+			true,
+			true,
+		],
+		selection: gamestate.player.menu.selection,
+	};
 }
 
 /// Poll controls and move player or open menus if necessary.
@@ -57,7 +138,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 		//* Event handling */
 		if events::parse_event(gamestate) { return; }
 
-		if gamestate.player.canMove {
+		if gamestate.player.canMove && !gamestate.player.menu.open {
 
 			gamestate.player.unit.position = gamestate.player.unit.posTarget;
 			let mut newpos = gamestate.player.unit.position;
@@ -211,5 +292,132 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 	//* Menus */
 	// TODO
+	if gamestate.eventHandler.currentEvent == "" {
+		
+		if data::key_pressed("enter") {
+			gamestate.player.menu.open = !gamestate.player.menu.open;
+			gamestate.audio.play_sound("menu".to_string());
+			gamestate.player.menu = poll_menu(gamestate);
+		}
 
+		if gamestate.player.menu.open {
+			let count = gamestate.player.menu.get_number_of_options();
+
+			if data::key_pressed("down") {
+				if gamestate.player.menu.selection < count-1 {
+					gamestate.player.menu.selection += 1;
+				} else {
+					gamestate.player.menu.selection = 0;
+				}
+			}
+			if data::key_pressed("up") {
+				if gamestate.player.menu.selection > 0 {
+					gamestate.player.menu.selection -= 1;
+				} else {
+					gamestate.player.menu.selection = count - 1;
+				}
+			}
+
+			if data::key_pressed("confirm") {
+				let selection = gamestate.player.menu.get_current_option();
+
+				match selection {
+					0 => { // Pokedex
+						
+					}
+					1 => { // Pokemon
+						
+					}
+					2 => { // Bag
+						
+					}
+					3 => { // Player
+						
+					}
+					4 => { // Gear
+						
+					}
+					5 => { // Save
+						
+					}
+					6 => { // Options
+						
+					}
+					7 => { // Quit
+						gamestate.running = false;
+					}
+					_ => {}
+				}
+			}
+		}
+	}
+
+}
+
+//
+pub fn draw_menu( gamestate : &data::Gamestate ) {
+	let ratio = data::get_screenratio();
+	let mut fontSize = 24.0;
+	if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0)) * 8.0 }
+
+	let heightOffset = 16.0 * ratio;
+	let width = 320.0 * ratio;
+	let widthOffset = data::get_screenwidth() as f32 - heightOffset - width;
+	let height = (gamestate.player.menu.get_number_of_options() as f32 + 1.5) * (fontSize * 2.0);
+
+	raylib::draw_texture_npatch(
+		gamestate.graphics.textures["ui_textbox_general"],
+		raylib_ffi::Rectangle {
+			x: widthOffset,
+			y: heightOffset,
+			width,
+			height,
+		},
+		raylib_ffi::Vector2 { x: 0.0, y: 0.0 },
+		0.0,
+		raylib_ffi::colors::WHITE,
+	);
+	
+
+	let mut offset = fontSize * 1.25;
+	let mut count = 0;
+	
+	for option in gamestate.player.menu.options {
+		if option {
+			let str = "menu_".to_string() + &count.to_string();
+			let output: String;
+			if str == "menu_3" { output = gamestate.eventHandler.playerName.to_string(); }
+			else { output = gamestate.localization[&str].to_string(); }
+
+			raylib::draw_text_pro(
+				gamestate.graphics.fonts["default"],
+				&output,
+				raylib_ffi::Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + fontSize + offset,
+				},
+				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			offset += fontSize * 2.0;
+		}
+		count += 1;
+	}
+
+	raylib::draw_texture_pro(
+		gamestate.graphics.textures["ui_pointer_general"],
+		raylib_ffi::Rectangle { x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
+		raylib_ffi::Rectangle {
+			x: widthOffset + (fontSize * 1.5),
+			y: heightOffset + (fontSize * 2.0) + (gamestate.player.menu.selection as f32 * (fontSize * 2.0)),
+			width: 32.0 * ratio,
+			height: 32.0 * ratio,
+		},
+		raylib_ffi::Vector2 { x: 0.0, y: 0.0 },
+		0.0,
+		raylib_ffi::colors::WHITE,
+	);
 }

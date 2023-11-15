@@ -14,6 +14,8 @@ use crate::{settings, camera, player, world, graphics, audio, localization, even
 
 /// Structure containing all current information on the games state.
 pub struct Gamestate {
+	pub running:		bool,
+
 	pub localization:	HashMap<String, String>,
 
 	pub graphics:		graphics::Graphics,
@@ -50,13 +52,14 @@ pub static mut SETTINGS : settings::Settings = settings::Settings{
 /// Creates a new gamestate from default values
 pub fn init() -> Gamestate {
 	let output = Gamestate{
-		localization	: localization::load(),
+		running:		true,
+		localization:	localization::load(),
 		graphics:		graphics::init(),
 		audio:			audio::init(),
 		worldData		: world::init_empty(),
 		eventHandler:	events::event_handler::create(),
-		camera			: camera::init(),
-		player			: player::init(),
+		camera:			camera::init(),
+		player:			player::init(),
 	};
 
 	return output;

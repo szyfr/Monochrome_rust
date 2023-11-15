@@ -222,6 +222,15 @@ impl MonsterTeam {
 			return self.shift_down(index+1)
 		}
 	}
+
+	/// Count the number of monsters on team
+	pub fn number_of_monsters(&self) -> i32 {
+		let mut count = 0;
+		for i in self.0.iter() {
+			if !i.is_none() { count += 1; }
+		}
+		return count;
+	}
 }
 
 impl Monster {

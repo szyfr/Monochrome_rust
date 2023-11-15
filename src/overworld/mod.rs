@@ -96,7 +96,7 @@ impl Direction {
 pub fn create_unit( filename : &str ) -> Unit {
 	let mut textures: Vec<raylib_ffi::Texture> = Vec::new();
 
-	if raylib::is_window_ready() { textures = load_unit_textures(filename); }
+	if raylib::is_window_ready() && filename != "" { textures = load_unit_textures(filename); }
 	return Unit {
 		position:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
 		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
@@ -146,6 +146,7 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 		return;
 	}
 	let animation = &animations[&unit.animator.currentAnimation];
+	if unit.animator.textures.len() == 0 { return; }
 
 	//* Check animations */
 	if !math::equal_v3(unit.position, unit.posTarget) {

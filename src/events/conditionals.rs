@@ -35,3 +35,29 @@ pub struct EntityEvent{
 
 
 //= Procedures
+
+impl Condition {
+	///
+	pub fn as_integer(&self) -> i32 {
+		match self {
+			Condition::Integer(int) => { return *int; }
+			_ => { return 0; }
+		}
+	}
+
+	///
+	pub fn as_bool(&self) -> bool {
+		match self {
+			Condition::Boolean(bool) => { return *bool; }
+			_ => { return false; }
+		}
+	}
+
+	///
+	pub fn as_string(&self) -> String {
+		match self {
+			Condition::String(str) => { return str.to_string(); }
+			_ => { return "".to_string(); }
+		}
+	}
+}

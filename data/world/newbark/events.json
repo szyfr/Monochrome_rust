@@ -30,6 +30,12 @@
 				["emote","sad","player",true]
 			]},
 		{
+			"id": "sign_test_1",
+			"chain": [
+				["set_variable","gear",true],
+				["emote","sad","player",true]
+			]},
+		{
 			"id": "warp_elmlab_in",
 			"chain": [
 				["sound","inside",1],

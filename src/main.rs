@@ -16,7 +16,7 @@ fn main() {
 	let mut gamestate = data::init();
 
 	//* Raylib */
-	//raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
+	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
 	raylib::set_target_fps(data::get_screenfps());
 	raylib::init_audio_device();
@@ -31,14 +31,14 @@ fn main() {
 	gamestate.worldData.load_all("newbark");
 	gamestate.audio.play_music("new_bark_town".to_string());
 
-	while !raylib::window_should_close() {
+	while !raylib::window_should_close() && gamestate.running {
 		//* Update */
 		gamestate.camera.update(
 			gamestate.player.unit.position,
 			gamestate.eventHandler.currentEvent == "".to_string(),
 		);
 		player::controls(&mut gamestate);
-		//gamestate.worldData.time_tick();
+		gamestate.worldData.time_tick();
 		//gamestate.worldData.get_time();
 		gamestate.audio.update();
 
@@ -56,6 +56,7 @@ fn main() {
 
 			events::textbox::draw(&mut gamestate);
 			events::animation::draw(&mut gamestate);
+			if gamestate.player.menu.open { player::draw_menu(&gamestate); }
 
 			raylib::draw_fps(0,0);
 		}

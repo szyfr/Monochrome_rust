@@ -24,6 +24,17 @@
 				["test",true],
 				["test2",false]
 			]
+		},
+		{
+			"id":"sign_test_1",
+			"location": [8,0,8],
+			"sprite":"",
+			"movement":"random",
+			"direction":"east",
+			"events":[
+				{ "conditions":[], "id":"sign_test_1" }
+			],
+			"conditions":[]
 		}
 	]
 }

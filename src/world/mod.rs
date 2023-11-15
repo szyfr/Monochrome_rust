@@ -180,7 +180,7 @@ impl World {
 
 	/// Update time tick
 	pub fn time_tick(&mut self) {
-		self.time += 0.001;
+		self.time += 0.0001;
 		if self.time >= 1.6 { self.time = 0.4; }
 	}
 
@@ -203,7 +203,7 @@ pub fn init_empty() -> World {
 		triggerMap:	HashMap::new(),
 		eventList:	HashMap::new(),
 
-		time:		0.4,
+		time:		0.8,
 	}
 }
 
@@ -235,18 +235,6 @@ pub fn draw_world( gamestate : &mut Gamestate ) {
 		[gamestate.worldData.time].as_ptr().cast(),
 		raylib::ShaderUniformDataType::ShaderUniformFloat,
 	);
-	//unsafe {
-	//	let model = gamestate.graphics.models["tree_1"];
-	//	raylib::set_shader_value(
-	//		gamestate.graphics.shader.unwrap(),
-	//		gamestate.graphics.sizeLoc,
-	//		[
-	//			(*(*model.materials).maps).texture.width,
-	//			(*(*model.materials).maps).texture.height,
-	//		].as_ptr().cast(),
-	//		raylib::ShaderUniformDataType::ShaderUniformVec2,
-	//	);
-	//}
 
 	if (rotation > -45.0 && rotation <=  45.0) || (rotation > 315.0 && rotation <= 405.0)	{ return draw_rot_000(gamestate); }
 	if (rotation >  45.0 && rotation <= 135.0) || (rotation > 405.0 && rotation <= 495.0)	{ return draw_rot_090(gamestate); }
