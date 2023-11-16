@@ -233,7 +233,7 @@ pub fn draw_world( gamestate : &mut Gamestate ) {
 		gamestate.graphics.shader.unwrap(),
 		gamestate.graphics.timeLoc,
 		[gamestate.worldData.time].as_ptr().cast(),
-		raylib::ShaderUniformDataType::ShaderUniformFloat,
+		raylib::enums::ShaderUniformDataType::ShaderUniformFloat,
 	);
 
 	if (rotation > -45.0 && rotation <=  45.0) || (rotation > 315.0 && rotation <= 405.0)	{ return draw_rot_000(gamestate); }
@@ -280,7 +280,7 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 								(*(*model.materials).maps).texture.width,
 								(*(*model.materials).maps).texture.height,
 							].as_ptr().cast(),
-							raylib::ShaderUniformDataType::ShaderUniformVec2,
+							raylib::enums::ShaderUniformDataType::ShaderUniformVec2,
 						);
 					}
 					raylib::draw_model_ex(
