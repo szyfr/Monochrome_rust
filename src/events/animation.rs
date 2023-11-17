@@ -88,13 +88,10 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 	animName += &gamestate.eventHandler.animation.as_mut().unwrap().order[frame as usize].to_string();
 	let texture = *gamestate.graphics.textures.get(&animName).unwrap();
 	
-	raylib::draw_texture_pro(
-		texture, 
-		raylib_ffi::Rectangle { x: 0.0, y: 0.0, width: texture.width as f32, height: texture.height as f32 },
-		raylib_ffi::Rectangle { x: 0.0, y: 0.0, width: data::get_screenwidth() as f32, height: data::get_screenheight() as f32 },
-		raylib_ffi::Vector2 { x: 0.0, y: 0.0 },
+	texture.draw_pro(
+		raylib::structures::Rectangle { x: 0.0, y: 0.0, width: texture.width as f32, height: texture.height as f32 },
+		raylib::structures::Rectangle { x: 0.0, y: 0.0, width: data::get_screenwidth() as f32, height: data::get_screenheight() as f32 },
 		0.0,
-		raylib_ffi::colors::WHITE,
 	);
 }
 
@@ -111,7 +108,7 @@ pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 			//* Get model and skin it */
 			let model = gamestate.graphics.models["unit"];
 			let textureName = &("emote_".to_string() + &gamestate.eventHandler.emotes[i].emote);
-			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName]);
+			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName].to_ffi());
 
 			//* Get unit */
 			let unit: Option<overworld::Unit>;

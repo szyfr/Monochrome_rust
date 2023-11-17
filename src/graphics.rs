@@ -6,18 +6,15 @@
 
 //= Imports
 use std::{collections::HashMap, fs::{read_dir, read_to_string}};
-use raylib_ffi::Font;
-use raylib_ffi::Texture;
-use raylib_ffi::Model;
 
-use crate::{raylib, overworld::Animation, utilities::debug};
+use crate::{raylib::{self, structures::{Texture, Image, Rectangle}}, overworld::Animation, utilities::debug};
 
 
 //= Structures
 pub struct Graphics {
-	pub fonts:		HashMap<String, Font>,
+	pub fonts:		HashMap<String, raylib_ffi::Font>,
 	pub textures:	HashMap<String, Texture>,
-	pub models:		HashMap<String, Model>,
+	pub models:		HashMap<String, raylib_ffi::Model>,
 	pub animations:	HashMap<String, Animation>,
 
 	pub shader:		Option<raylib_ffi::Shader>,
@@ -50,71 +47,46 @@ impl Graphics {
 	/// Loads textures
 	pub fn load_textures(&mut self) {
 		//* UI */
-		let mut img = raylib::load_image("data/sprites/ui/textbox.png");
-		raylib::image_resize_nn(&mut img, 4);
-		self.textures.insert("ui_textbox_general".to_string(), raylib::load_texture_from_image(img));
-		raylib::unload_image(img);
+		let mut img = Image::load("data/sprites/ui/textbox.png").resize_nn(4);
+		self.textures.insert("ui_textbox_general".to_string(), img.load_texture());
+		img.unload();
 
-		self.textures.insert("ui_pointer_general".to_string(), raylib::load_texture("data/sprites/ui/pointer.png"));
-		self.textures.insert("ui_input_general".to_string(), raylib::load_texture("data/sprites/ui/input.png"));
-		self.textures.insert("bg_forest_day".to_string(), raylib::load_texture("data/sprites/overworld/background_forest.png"));
+		self.textures.insert("ui_pointer_general".to_string(), Texture::load("data/sprites/ui/pointer.png"));
+		self.textures.insert("ui_input_general".to_string(), Texture::load("data/sprites/ui/input.png"));
+		self.textures.insert("bg_forest_day".to_string(), Texture::load("data/sprites/ui/background_forest.png"));
 
 		//* Emotes */
-		img = raylib::load_image("data/sprites/ui/emotes.png");
+		img = Image::load("data/sprites/ui/emotes.png");
 		//* Shock */
-		let mut subImg_emote = raylib::image_from_image(
-			img,
-			raylib_ffi::Rectangle{ x: 0.0, y: 0.0, width: 16.0, height: 16.0 }
-		);
-		self.textures.insert("emote_shock".to_string(), raylib::load_texture_from_image(subImg_emote));
-		raylib::unload_image(subImg_emote);
+		let shockImage = img.from_image(Rectangle::tex_rect(0, [16, 16]));
+		self.textures.insert("emote_shock".to_string(), shockImage.load_texture());
+		shockImage.unload();
 		//* Confusion */
-		subImg_emote = raylib::image_from_image(
-			img,
-			raylib_ffi::Rectangle{ x: 16.0, y: 0.0, width: 16.0, height: 16.0 }
-		);
-		self.textures.insert("emote_confusion".to_string(), raylib::load_texture_from_image(subImg_emote));
-		raylib::unload_image(subImg_emote);
+		let confusionImage = img.from_image(Rectangle::tex_rect(1, [16, 16]));
+		self.textures.insert("emote_confusion".to_string(), confusionImage.load_texture());
+		confusionImage.unload();
 		//* Sad */
-		subImg_emote = raylib::image_from_image(
-			img,
-			raylib_ffi::Rectangle{ x: 32.0, y: 0.0, width: 16.0, height: 16.0 }
-		);
-		self.textures.insert("emote_sad".to_string(), raylib::load_texture_from_image(subImg_emote));
-		raylib::unload_image(subImg_emote);
+		let sadImage = img.from_image(Rectangle::tex_rect(2, [16, 16]));
+		self.textures.insert("emote_sad".to_string(), sadImage.load_texture());
+		sadImage.unload();
 
 		//* Animations */
 		//* flash */
-		img = raylib::load_image("data/sprites/animations/flash.png");
+		img = Image::load("data/sprites/animations/flash.png");
 		for i in 0..3 {
-			let subImg = raylib::image_from_image(
-				img,
-				raylib_ffi::Rectangle{
-					x: (i * img.width/3) as f32,
-					y: 0.0,
-					width: (img.width/3) as f32,
-					height: img.height as f32,
-				}
-			);
-			self.textures.insert("ui_animation_flash_".to_string() + &i.to_string(), raylib::load_texture_from_image(subImg));
+			let subImg = img.from_image(Rectangle::tex_rect(i, [256,144]));
+			self.textures.insert("ui_animation_flash_".to_string() + &i.to_string(), subImg.load_texture());
+			subImg.unload();
 		}
-		raylib::unload_image(img);
-
+		img.unload();
 		//* trainer_battle_1 */
-		img = raylib::load_image("data/sprites/animations/trainer_battle_1.png");
+		img = Image::load("data/sprites/animations/trainer_battle_1.png");
 		for i in 0..3 {
-			let subImg = raylib::image_from_image(
-				img,
-				raylib_ffi::Rectangle{
-					x: (i * img.width/3) as f32,
-					y: 0.0,
-					width: (img.width/3) as f32,
-					height: img.height as f32,
-				}
-			);
-			self.textures.insert("ui_animation_trainer_battle_1_".to_string() + &i.to_string(), raylib::load_texture_from_image(subImg));
+			let subImg = img.from_image(Rectangle::tex_rect(i, [256,144]));
+			self.textures.insert("ui_animation_trainer_battle_1_".to_string() + &i.to_string(), subImg.load_texture());
+			subImg.unload();
 		}
-		raylib::unload_image(img);
+		img.unload();
 	}
 
 	/// Loads models

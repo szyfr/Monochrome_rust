@@ -180,7 +180,7 @@ impl World {
 
 	/// Update time tick
 	pub fn time_tick(&mut self) {
-		self.time += 0.0001;
+		self.time += 0.00001;
 		if self.time >= 1.6 { self.time = 0.4; }
 	}
 

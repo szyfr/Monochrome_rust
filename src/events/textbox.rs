@@ -250,17 +250,14 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 	let heightOffset = 480.0 * data::get_screenratio();
 
 	if gamestate.eventHandler.textbox.state != TextboxState::Inactive {
-		raylib::draw_texture_npatch(
-			gamestate.graphics.textures["ui_textbox_general"],
-			raylib_ffi::Rectangle {
-				x: widthOffset,
-				y: heightOffset,
-				width: data::get_screenwidth() as f32 - (widthOffset * 2.0),
-				height: data::get_screenheight() as f32 - heightOffset,
+		gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+			raylib::structures::Rectangle {
+				x:		widthOffset,
+				y:		heightOffset,
+				width:	data::get_screenwidth() as f32 - (widthOffset * 2.0),
+				height:	data::get_screenheight() as f32 - heightOffset,
 			},
-			raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 			0.0,
-			raylib_ffi::colors::WHITE,
 		);
 
 		let ratio = data::get_screenratio();
@@ -281,17 +278,15 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		if gamestate.eventHandler.textbox.hasChoice {
 			let choiceWidthOffset = data::get_screenwidth() as f32 - (widthOffset * 2.0);
 			let choiceHeightOffset = heightOffset - fontSize;
-			raylib::draw_texture_npatch(
-				gamestate.graphics.textures["ui_textbox_general"],
-				raylib_ffi::Rectangle {
-					x: choiceWidthOffset,
-					y: choiceHeightOffset,
-					width: widthOffset * 1.5,
-					height: data::get_screenheight() as f32 - heightOffset,
+
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				raylib::structures::Rectangle {
+					x:		choiceWidthOffset,
+					y:		choiceHeightOffset,
+					width:	widthOffset * 1.5,
+					height:	data::get_screenheight() as f32 - heightOffset,
 				},
-				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 				0.0,
-				raylib_ffi::colors::WHITE,
 			);
 			let mut choiceOffset = 0.0;
 			for i in &gamestate.eventHandler.textbox.choiceList {
@@ -316,18 +311,15 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				3 => height += 3.0 * (fontSize + (12.0 * ratio)),
 				_ => {},
 			}
-			raylib::draw_texture_pro(
-				gamestate.graphics.textures["ui_pointer_general"],
-				raylib_ffi::Rectangle{ x:0.0,y:0.0, width:8.0,height:8.0 },
-				raylib_ffi::Rectangle{
-					x: choiceWidthOffset + (widthOffset / 3.0) - (24.0 * ratio),
-					y: height,
-					width: 32.0 * ratio,
-					height: 32.0 * ratio,
+			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
+				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
+				raylib::structures::Rectangle {
+					x:		choiceWidthOffset + (widthOffset / 3.0) - (24.0 * ratio),
+					y:		height,
+					width:	32.0 * ratio,
+					height:	32.0 * ratio,
 				},
-				raylib_ffi::Vector2{x: 0.0, y: 0.0},
 				0.0,
-				raylib_ffi::colors::WHITE,
 			);
 		}
 
@@ -335,17 +327,14 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		if gamestate.eventHandler.textbox.isInput {
 			let inputWidthOffset = 320.0 * data::get_screenratio();
 			let inputHeightOffset = heightOffset - (fontSize * 2.0);
-			raylib::draw_texture_npatch(
-				gamestate.graphics.textures["ui_textbox_general"],
-				raylib_ffi::Rectangle {
-					x: inputWidthOffset,
-					y: inputHeightOffset,
-					width: data::get_screenwidth() as f32 - (inputWidthOffset * 2.0),
-					height: (fontSize * 4.0),
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				raylib::structures::Rectangle {
+					x:		inputWidthOffset,
+					y:		inputHeightOffset,
+					width:	data::get_screenwidth() as f32 - (inputWidthOffset * 2.0),
+					height:	fontSize * 4.0,
 				},
-				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
 				0.0,
-				raylib_ffi::colors::WHITE,
 			);
 
 			raylib::draw_text_pro(
@@ -359,24 +348,16 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
 
-			raylib::draw_texture_pro(
-				gamestate.graphics.textures["ui_input_general"],
-				raylib_ffi::Rectangle{
-					x: 0.0,
-					y: 0.0,
-					width: 8.0,
-					height: 8.0,
+			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
+				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
+				raylib::structures::Rectangle {
+					x:		inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
+					y:		inputHeightOffset + (heightOffset / 12.0),
+					width:	32.0 * ratio,
+					height:	32.0 * ratio,
 				},
-				raylib_ffi::Rectangle{
-					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
-					y: inputHeightOffset + (heightOffset / 12.0),
-					width: 32.0 * ratio,
-					height: 32.0 * ratio,
-				},
-				raylib_ffi::Vector2{x: 0.0, y: 0.0},
 				0.0,
-				raylib_ffi::colors::WHITE,
-			)
+			);
 		}
 	}
 }
