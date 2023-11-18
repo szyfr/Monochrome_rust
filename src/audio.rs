@@ -55,6 +55,7 @@ impl Audio {
 	/// Pause / Resume music
 	pub fn pause_music( &self ) {
 		if self.currentMusic.is_some() {
+			raylib::set_music_volume(self.currentMusic.unwrap(), data::get_master_volume() * data::get_music_volume());
 			if raylib::is_music_playing(self.currentMusic.unwrap()) { raylib::pause_music(self.currentMusic.unwrap()); }
 			else { raylib::play_music(self.currentMusic.unwrap()); }
 		}

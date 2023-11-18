@@ -145,7 +145,7 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			//* Increase timer */
 			gamestate.eventHandler.textbox.timer += 1;
 			if gamestate.eventHandler.textbox.timer >= data::get_textspeed() {
-				gamestate.eventHandler.textbox.timer = 0;
+				gamestate.eventHandler.textbox.timer = -1;
 				gamestate.eventHandler.textbox.position += 1;
 
 				let str = &mut gamestate.eventHandler.textbox.targetText.to_string();

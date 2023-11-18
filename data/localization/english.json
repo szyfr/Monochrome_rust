@@ -12,9 +12,14 @@
 
 	"options_master":"Master Volume",
 	"options_music":"Music Volume",
-	"options_effects":"Effects Volume",
+	"options_effects":"Effects Volume ",
 	"options_resolution":"Screen Resolution",
 	"options_speed":"Text Speed",
+	"options_speed_0":"Instant",
+	"options_speed_1":"Very Fast",
+	"options_speed_2":"Fast",
+	"options_speed_3":"Medium",
+	"options_speed_4":"Slow",
 	"options_language":"Text Language",
 
 	"yes":"Yes",

@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib::{self, structures::Vector2}, utilities::math, events, monsters};
+use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle}}, utilities::math, events, monsters};
 
 
 //= Constants
@@ -391,6 +391,95 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 						gamestate.player.menu.open = MenuOptions::None;
 					}
 				}
+				MenuOptions::Options => {
+					if data::key_pressed("down") {
+						if gamestate.player.menu.optionSelection < 6 {
+							gamestate.player.menu.optionSelection += 1;
+						} else {
+							gamestate.player.menu.optionSelection = 0;
+						}
+					}
+					if data::key_pressed("up") {
+						if gamestate.player.menu.optionSelection > 0 {
+							gamestate.player.menu.optionSelection -= 1;
+						} else {
+							gamestate.player.menu.optionSelection = 6;
+						}
+					}
+
+					//
+					match gamestate.player.menu.optionSelection {
+						0 => { // Master
+							unsafe {
+								if data::key_pressed("right") {
+									if data::SETTINGS.masterVolume < 1.0 {
+										gamestate.audio.pause_music();
+										data::SETTINGS.masterVolume += 0.1;
+										gamestate.audio.pause_music();
+									}
+								}
+								if data::key_pressed("left") {
+									if data::SETTINGS.masterVolume > 0.0 {
+										gamestate.audio.pause_music();
+										data::SETTINGS.masterVolume -= 0.1;
+										gamestate.audio.pause_music();
+									}
+								}
+							}
+						}
+						1 => { // Music
+							unsafe {
+								if data::key_pressed("right") {
+									if data::SETTINGS.musicVolume < 1.0 {
+										gamestate.audio.pause_music();
+										data::SETTINGS.musicVolume += 0.1;
+										gamestate.audio.pause_music();
+									}
+								}
+								if data::key_pressed("left") {
+									if data::SETTINGS.musicVolume > 0.0 {
+										gamestate.audio.pause_music();
+										data::SETTINGS.musicVolume -= 0.1;
+										gamestate.audio.pause_music();
+									}
+								}
+							}
+						}
+						2 => { // Effects
+							unsafe {
+								if data::key_pressed("right") {
+									if data::SETTINGS.sfxVolume < 1.0 { data::SETTINGS.sfxVolume += 0.1; }
+								}
+								if data::key_pressed("left") {
+									if data::SETTINGS.sfxVolume > 0.0 { data::SETTINGS.sfxVolume -= 0.1; }
+								}
+							}
+						}
+						3 => { // Resolution
+
+						}
+						4 => { // Text Speed
+							unsafe {
+								if data::key_pressed("left") {
+									if data::SETTINGS.text_speed < 4 { data::SETTINGS.text_speed += 1; }
+								}
+								if data::key_pressed("right") {
+									if data::SETTINGS.text_speed > 0 { data::SETTINGS.text_speed -= 1; }
+								}
+							}
+						}
+						5 => { // Language
+
+						}
+						_ => {}
+					}
+
+					//* Canceling */
+					if data::key_pressed("cancel") {
+						gamestate.audio.play_sound("menu".to_string());
+						gamestate.player.menu.open = MenuOptions::Base;
+					}
+				}
 				_ => {
 					//* Canceling */
 					if data::key_pressed("cancel") {
@@ -508,8 +597,10 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 			);
 
 			//* Draw Option 1: Master Volume */
+			let mut str: String;
+			unsafe { str = ((data::SETTINGS.masterVolume * 10.0) as i32).to_string(); }
 			gamestate.graphics.fonts["default"].draw_pro(
-				&gamestate.localization["options_master"],
+				&gamestate.localization.get("options_master").unwrap().to_string(),
 				Vector2 {
 					x: widthOffset + (fontSize * 3.0),
 					y: heightOffset + (fontSize * 3.0),
@@ -519,11 +610,157 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 				5.0 * ratio,
 				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 4.25),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+
 			//* Draw Option 2: Music Volume */
+			unsafe { str = ((data::SETTINGS.musicVolume * 10.0) as i32).to_string(); }
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization.get("options_music").unwrap().to_string(),
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 5.5),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 6.75),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
 			//* Draw Option 3: Effects Volume */
+			unsafe { str = ((data::SETTINGS.sfxVolume * 10.0) as i32).to_string(); }
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization.get("options_effects").unwrap().to_string(),
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 8.0),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 9.25),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
 			//* Draw Option 4: Resolution */
+			unsafe { str = data::SETTINGS.screenWidth.to_string() + " x " + &data::SETTINGS.screenHeight.to_string(); }
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization.get("options_resolution").unwrap().to_string(),
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 10.5),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 11.75),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
 			//* Draw Option 5: Text Speed */
+			unsafe {
+				match data::SETTINGS.text_speed {
+					1 => { str = gamestate.localization.get("options_speed_1").unwrap().to_string(); }
+					2 => { str = gamestate.localization.get("options_speed_2").unwrap().to_string(); }
+					3 => { str = gamestate.localization.get("options_speed_3").unwrap().to_string(); }
+					4 => { str = gamestate.localization.get("options_speed_4").unwrap().to_string(); }
+					_ => { str = gamestate.localization.get("options_speed_0").unwrap().to_string(); }
+				}
+			}
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization.get("options_speed").unwrap().to_string(),
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 12.75),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 14.0),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
 			//* Draw Option 6: Language */
+			unsafe { str = data::SETTINGS.language.to_string(); }
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization.get("options_language").unwrap().to_string(),
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 15.25),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+			gamestate.graphics.fonts["default"].draw_pro(
+				&str,
+				Vector2 {
+					x: widthOffset + (fontSize * 5.5),
+					y: heightOffset + (fontSize * 16.5),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
+
+			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
+				Rectangle{ x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
+				Rectangle{
+					x: widthOffset + (fontSize * 1.5),
+					y: heightOffset + (fontSize * 3.25) + ((fontSize * gamestate.player.menu.optionSelection as f32) * 2.5),
+					width: 32.0,
+					height: 32.0,
+				},
+				0.0,
+			);
 		}
 		_ => {}
 	}

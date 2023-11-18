@@ -149,7 +149,7 @@ impl Settings {
 		self.screenHeight 	=  720;
 		self.screenFps 		=   80;
 
-		self.text_speed		=    5;
+		self.text_speed		=    4;
 		self.language 		= Language::English;
 
 		self.keybindings 	= Some(HashMap::new());
@@ -164,9 +164,9 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("cancel".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 341 });
 		self.keybindings.as_mut().unwrap().insert("enter".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 257 });
 
-		self.masterVolume = 0.25;
-		self.musicVolume = 0.25;
-		self.sfxVolume = 0.25;
+		self.masterVolume = 0.5;
+		self.musicVolume = 0.2;
+		self.sfxVolume = 0.2;
 
 		self.save();
 	}
