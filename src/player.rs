@@ -508,6 +508,17 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 			);
 
 			//* Draw Option 1: Master Volume */
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization["options_master"],
+				Vector2 {
+					x: widthOffset + (fontSize * 3.0),
+					y: heightOffset + (fontSize * 3.0),
+				},
+				0.0,
+				fontSize,
+				5.0 * ratio,
+				raylib_ffi::Color{r:57,g:57,b:57,a:255},
+			);
 			//* Draw Option 2: Music Volume */
 			//* Draw Option 3: Effects Volume */
 			//* Draw Option 4: Resolution */

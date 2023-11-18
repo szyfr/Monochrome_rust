@@ -10,6 +10,12 @@
 	"menu_6": "Options",
 	"menu_7": "Quit",
 
+	"options_master":"Master Volume",
+	"options_music":"Music Volume",
+	"options_effects":"Effects Volume",
+	"options_resolution":"Screen Resolution",
+	"options_speed":"Text Speed",
+	"options_language":"Text Language",
 
 	"yes":"Yes",
 	"no":"No",
