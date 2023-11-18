@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}, data};
+use crate::{raylib::{self, structures::{Image, Rectangle, Texture, Model, Vector3}}, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}, data};
 
 
 //= Enumerations
@@ -63,12 +63,12 @@ pub struct Unit {
 /// The animation controller for Units.
 #[derive(Clone)]
 pub struct Animator {
-	pub textures	: Vec<raylib_ffi::Texture>,
+	pub textures: Vec<Texture>,
 
-	pub currentAnimation : String,
+	pub currentAnimation: String,
 
-	pub frame	: i32,
-	pub counter : i32,
+	pub frame:		i32,
+	pub counter:	i32,
 }
 
 /// Storage format for animations loaded from file.
@@ -94,7 +94,7 @@ impl Direction {
 /// Creates a new Unit.<br>
 /// If the Raylib window is ready, input filename will be loaded as the texture. It will be dropped otherwise.
 pub fn create_unit( filename : &str ) -> Unit {
-	let mut textures: Vec<raylib_ffi::Texture> = Vec::new();
+	let mut textures: Vec<Texture> = Vec::new();
 
 	if raylib::is_window_ready() && filename != "" { textures = load_unit_textures(filename); }
 	return Unit {
@@ -114,32 +114,34 @@ pub fn create_unit( filename : &str ) -> Unit {
 }
 
 /// Concatenates the full path to the input and loads the respective Image into a ``Vec<Texture>``.
-pub fn load_unit_textures( filename : &str ) -> Vec<raylib_ffi::Texture> {
+pub fn load_unit_textures( filename : &str ) -> Vec<Texture> {
 	//* Create full path */
 	let fullPath = "data/sprites/overworld/".to_string() + filename + ".png";
 
 	//* Load image */
-	let img = raylib::load_image(&fullPath);
-	let mut output: Vec<raylib_ffi::Texture> = Vec::new();
+	let img = Image::load(&fullPath);
+	let mut output: Vec<Texture> = Vec::new();
 
 	//* Generate each texture from image */
 	for i in 0..img.width/img.height {
-		let subImg = raylib::image_from_image(img, raylib_ffi::Rectangle{
-			x:(i*img.height) as f32,
-			y:0.0,
-			width:img.height as f32,
-			height:img.height as f32,
-		});
-		output.push(raylib::load_texture_from_image(subImg));
-		raylib::unload_image(subImg);
+		let subImg = img.from_image(
+			Rectangle{
+				x:		(i*img.height) as f32,
+				y:		0.0,
+				width:	img.height as f32,
+				height:	img.height as f32,
+			}
+		);
+		output.push(subImg.load_texture());
+		subImg.unload();
 	}
-	raylib::unload_image(img);
+	img.unload();
 
 	return output;
 }
 
 /// Draws the input Unit in the world as well as updating the Unit's animations.
-pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::Model, unit : &mut Unit, rotation : f32 ) {
+pub fn draw_unit( animations : &HashMap<String, Animation>, model : &Model, unit : &mut Unit, rotation : f32 ) {
 	//* Check if animation exists */
 	if !animations.contains_key(&unit.animator.currentAnimation) {
 		debug::log("[ERROR] - Attempting to use animation that doesn't exist.\n");
@@ -168,15 +170,18 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : raylib_ffi::
 	//* Update material */
 	let index = unit.animator.frame as usize;
 	let frame = animation.frames[index] as usize;
-	raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, unit.animator.textures[frame]);
+	raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, unit.animator.textures[frame].to_ffi());
 
 	//* Draw */
-	raylib::draw_model_ex(
-		model,
-		raylib_ffi::Vector3{x: unit.position.x, y: unit.position.y/2.0, z: unit.position.z},
-		raylib_ffi::Vector3{x:0.0,y:1.0,z:0.0},
+	model.draw_ex(
+		Vector3{
+			x: unit.position.x,
+			y: unit.position.y/2.0,
+			z: unit.position.z,
+		},
+		Vector3{x:0.0,y:1.0,z:0.0},
 		-rotation,
-		raylib_ffi::Vector3{x:1.0,y:1.0,z:1.0},
+		Vector3{x:1.0,y:1.0,z:1.0},
 		raylib_ffi::colors::WHITE,
 	);
 }

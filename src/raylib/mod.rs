@@ -25,24 +25,6 @@ pub fn clear_background( color : raylib_ffi::Color ) {
 	unsafe { raylib_ffi::ClearBackground(color); }
 }
 
-pub fn draw_text( text : *const std::os::raw::c_char, posX : i32, posY : i32, fontSize : i32, color : raylib_ffi::Color ) {
-	unsafe { raylib_ffi::DrawText(text, posX, posY, fontSize, color); }
-}
-pub fn draw_text_pro( font : raylib_ffi::Font, text : &str, position : raylib_ffi::Vector2, origin : raylib_ffi::Vector2, rotation : f32, fontSize : f32, spacing : f32, tint : raylib_ffi::Color ) {
-	unsafe {
-		raylib_ffi::DrawTextPro(
-			font,
-			raylib_ffi::rl_str!(text),
-			position,
-			origin,
-			rotation,
-			fontSize,
-			spacing,
-			tint,
-		);
-	}
-}
-
 pub fn window_should_close() -> bool {
 	unsafe { return raylib_ffi::WindowShouldClose(); }
 }
@@ -78,71 +60,8 @@ pub fn set_exit_key( key : raylib_ffi::enums::KeyboardKey ) {
 	unsafe { raylib_ffi::SetExitKey(key as i32); }
 }
 
-pub fn load_font( filename : &str ) -> raylib_ffi::Font {
-	unsafe { return raylib_ffi::LoadFont(raylib_ffi::rl_str!(filename)); }
-}
-pub fn load_image( filename : &str ) -> raylib_ffi::Image {
-	unsafe { return raylib_ffi::LoadImage(raylib_ffi::rl_str!(filename)); }
-}
-pub fn image_from_image( image : raylib_ffi::Image, rec : raylib_ffi::Rectangle ) -> raylib_ffi::Image {
-	unsafe { return raylib_ffi::ImageFromImage(image, rec); }
-}
-pub fn image_copy( image : raylib_ffi::Image ) -> raylib_ffi::Image {
-	unsafe { return raylib_ffi::ImageCopy(image); }
-}
-pub fn unload_image( image : raylib_ffi::Image ) {
-	unsafe { raylib_ffi::UnloadImage(image) }
-}
-pub fn load_texture( filename : &str ) -> raylib_ffi::Texture {
-	unsafe { return raylib_ffi::LoadTexture(raylib_ffi::rl_str!(filename)) }
-}
-pub fn load_texture_from_image( img : raylib_ffi::Image ) -> raylib_ffi::Texture {
-	unsafe { return raylib_ffi::LoadTextureFromImage(img); }
-}
-pub fn draw_texture( texture : raylib_ffi::Texture, posX : i32, posY : i32, tint : raylib_ffi::Color ) {
-	unsafe { raylib_ffi::DrawTexture(texture, posX, posY, tint) }
-}
-pub fn draw_texture_pro( texture : raylib_ffi::Texture, source : raylib_ffi::Rectangle, dest : raylib_ffi::Rectangle, origin : raylib_ffi::Vector2, rotation : f32, tint : raylib_ffi::Color ) {
-	unsafe { raylib_ffi::DrawTexturePro(texture, source, dest, origin, rotation, tint); }
-}
-pub fn draw_texture_npatch( texture : raylib_ffi::Texture, dest : raylib_ffi::Rectangle, origin : raylib_ffi::Vector2, rotation : f32, tint : raylib_ffi::Color ) {
-	let nPatchInfo = raylib_ffi::NPatchInfo {
-		source: raylib_ffi::Rectangle {
-			x: 0.0,
-			y: 0.0,
-			width: texture.width as f32,
-			height: texture.height as f32,
-		},
-		left: texture.width / 3,
-		top: texture.height / 3,
-		right: texture.width / 3,
-		bottom: texture.height / 3,
-		layout: raylib_ffi::enums::NPatchLayout::NinePatch as i32,
-	};
-	unsafe { raylib_ffi::DrawTextureNPatch(texture, nPatchInfo, dest, origin, rotation, tint); }
-}
-pub fn image_resize_nn( image : &mut raylib_ffi::Image, scale : i32 ) {
-	unsafe { raylib_ffi::ImageResizeNN(image, image.width * scale, image.height * scale); }
-}
-
 pub fn set_material_texture( material : *mut raylib_ffi::Material, mapType : raylib_ffi::enums::MaterialMapIndex, texture : raylib_ffi::Texture ) {
 	unsafe { raylib_ffi::SetMaterialTexture(material, mapType as i32, texture) }
-}
-
-pub fn load_model( filename : &str ) -> raylib_ffi::Model {
-	unsafe { return raylib_ffi::LoadModel(raylib_ffi::rl_str!(filename)) }
-}
-
-pub fn draw_mesh( mesh : *mut raylib_ffi::Mesh, material : &raylib_ffi::Material, transform : raylib_ffi::Matrix ) {
-	unsafe {
-		raylib_ffi::DrawMesh(*mesh, *material, transform);
-	}
-}
-pub fn draw_model( model : raylib_ffi::Model, position : raylib_ffi::Vector3, scale : f32, tint : raylib_ffi::Color ) {
-	unsafe { raylib_ffi::DrawModel(model, position, scale, tint); }
-}
-pub fn draw_model_ex( model : raylib_ffi::Model, position : raylib_ffi::Vector3, rotationAxis : raylib_ffi::Vector3, rotationAngle : f32, scale : raylib_ffi::Vector3, tint : raylib_ffi::Color ) {
-	unsafe { raylib_ffi::DrawModelEx(model, position, rotationAxis, rotationAngle, scale, tint); }
 }
 
 pub fn load_default_material() -> raylib_ffi::Material {

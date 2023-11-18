@@ -7,7 +7,7 @@
 
 //= Imports
 use std::fmt::Display;
-use crate::{data, raylib};
+use crate::{data, raylib::{self, structures::Vector2}};
 use super::EventChain;
 
 
@@ -189,9 +189,11 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 			if data::key_pressed("confirm") {
 				let str = &mut gamestate.localization[&text.to_string()].to_string();
 				if gamestate.eventHandler.textbox.position < str.len() as i32 {
+					//* Skip text scroll */
 					gamestate.audio.play_sound("button".to_string());
 					gamestate.eventHandler.textbox.position = str.len() as i32;
 				} else {
+					//* If its a choice */
 					if gamestate.eventHandler.textbox.hasChoice {
 						gamestate.audio.play_sound("button".to_string());
 
@@ -212,8 +214,10 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 							gamestate.eventHandler.textbox.reset();
 							return false;
 						}
+					//* If it's an input */
 					} else if gamestate.eventHandler.textbox.isInput {
-						
+					
+					//* If it's a basic textbox */
 					} else {
 						gamestate.audio.play_sound("button".to_string());
 
@@ -263,11 +267,9 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		let ratio = data::get_screenratio();
 		let mut fontSize = 24.0;
 		if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0) as i32) as f32 * 8.0 }
-		raylib::draw_text_pro(
-			gamestate.graphics.fonts["default"],
+		gamestate.graphics.fonts["default"].draw_pro(
 			&gamestate.eventHandler.textbox.currentText,
-			raylib_ffi::Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (heightOffset / 8.0)},
-			raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+			Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (heightOffset / 8.0)},
 			0.0,
 			fontSize,
 			5.0 * ratio,
@@ -291,11 +293,12 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			let mut choiceOffset = 0.0;
 			for i in &gamestate.eventHandler.textbox.choiceList {
 				if i.text != "" {
-					raylib::draw_text_pro(
-						gamestate.graphics.fonts["default"],
+					gamestate.graphics.fonts["default"].draw_pro(
 						&gamestate.localization[&i.text],
-						raylib_ffi::Vector2 {x: choiceWidthOffset + (widthOffset / 3.0) + (12.0 * ratio), y: choiceHeightOffset + (heightOffset / 8.0) + (choiceOffset * (fontSize + (12.0 * ratio)))},
-						raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+						Vector2 {
+							x: choiceWidthOffset + (widthOffset / 3.0) + (12.0 * ratio),
+							y: choiceHeightOffset + (heightOffset / 8.0) + (choiceOffset * (fontSize + (12.0 * ratio))),
+						},
 						0.0,
 						fontSize,
 						5.0 * ratio,
@@ -337,11 +340,12 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				0.0,
 			);
 
-			raylib::draw_text_pro(
-				gamestate.graphics.fonts["default"],
+			gamestate.graphics.fonts["default"].draw_pro(
 				&gamestate.eventHandler.textbox.input,
-				raylib_ffi::Vector2 {x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio), y: inputHeightOffset + (heightOffset / 10.5)},
-				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+				Vector2 {
+					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio),
+					y: inputHeightOffset + (heightOffset / 10.5),
+				},
 				0.0,
 				fontSize,
 				5.0 * ratio,

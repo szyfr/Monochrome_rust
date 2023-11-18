@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{data, raylib, overworld};
+use crate::{data, raylib::{self, structures::Vector3}, overworld};
 
 
 //= Enumerations
@@ -106,7 +106,7 @@ pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 		} else {
 			print!("{}\n",gamestate.eventHandler.emotes[i].ticks);
 			//* Get model and skin it */
-			let model = gamestate.graphics.models["unit"];
+			let model = &gamestate.graphics.models["unit"];
 			let textureName = &("emote_".to_string() + &gamestate.eventHandler.emotes[i].emote);
 			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName].to_ffi());
 
@@ -120,14 +120,25 @@ pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 			if gamestate.eventHandler.emotes[i].ticks <= 10 {
 				offset += gamestate.eventHandler.emotes[i].ticks as f32 / 9.0;
 			} else { offset = 1.0; }
-			raylib::draw_model_ex(
-				model,
-				raylib_ffi::Vector3{x: unit.as_ref().unwrap().position.x, y: (unit.as_ref().unwrap().position.y/2.0) + offset, z: unit.as_ref().unwrap().position.z},
-				raylib_ffi::Vector3{x:0.0,y:1.0,z:0.0},
+			model.draw_ex(
+				Vector3{
+					x: unit.as_ref().unwrap().position.x,
+					y: (unit.as_ref().unwrap().position.y/2.0) + offset,
+					z: unit.as_ref().unwrap().position.z,
+				},
+				Vector3{x:0.0,y:1.0,z:0.0},
 				-gamestate.camera.rotation,
-				raylib_ffi::Vector3{x:0.8,y:0.8,z:0.8},
+				Vector3{x:0.8,y:0.8,z:0.8},
 				raylib_ffi::colors::WHITE,
 			);
+			//raylib::draw_model_ex(
+			//	model,
+			//	raylib_ffi::Vector3{x: unit.as_ref().unwrap().position.x, y: (unit.as_ref().unwrap().position.y/2.0) + offset, z: unit.as_ref().unwrap().position.z},
+			//	raylib_ffi::Vector3{x:0.0,y:1.0,z:0.0},
+			//	-gamestate.camera.rotation,
+			//	raylib_ffi::Vector3{x:0.8,y:0.8,z:0.8},
+			//	raylib_ffi::colors::WHITE,
+			//);
 		}
 	}
 

@@ -83,6 +83,21 @@ pub enum PixelFormat {
     CompressedAstc8x8Rgba = 24,		// 2 bpp
 }
 
+/// Material map index
+pub enum MaterialMapIndex {
+	ALBEDO = 0,		// Albedo material (same as: MATERIAL_MAP_DIFFUSE)
+	METALNESS,		// Metalness material (same as: MATERIAL_MAP_SPECULAR)
+	NORMAL,			// Normal material
+	ROUGHNESS,		// Roughness material
+	OCCLUSION,		// Ambient occlusion material
+	EMISSION,		// Emission material
+	HEIGHT,			// Heightmap material
+	CUBEMAP,		// Cubemap material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+	IRRADIANCE,		// Irradiance material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+	PREFILTER,		// Prefilter material (NOTE: Uses GL_TEXTURE_CUBE_MAP)
+	BRDF,			// Brdf material
+}
+
 
 /// Framebuffer attachment type
 pub enum RlFramebufferAttachType {

@@ -7,14 +7,14 @@
 //= Imports
 use std::{collections::HashMap, fs::{read_dir, read_to_string}};
 
-use crate::{raylib::{self, structures::{Texture, Image, Rectangle}}, overworld::Animation, utilities::debug};
+use crate::{raylib::{self, structures::{Texture, Image, Rectangle, Font, Model}}, overworld::Animation, utilities::debug};
 
 
 //= Structures
 pub struct Graphics {
-	pub fonts:		HashMap<String, raylib_ffi::Font>,
+	pub fonts:		HashMap<String, Font>,
 	pub textures:	HashMap<String, Texture>,
-	pub models:		HashMap<String, raylib_ffi::Model>,
+	pub models:		HashMap<String, Model>,
 	pub animations:	HashMap<String, Animation>,
 
 	pub shader:		Option<raylib_ffi::Shader>,
@@ -41,7 +41,7 @@ impl Graphics {
 	/// Load fonts
 	pub fn load_fonts(&mut self) {
 		//* Default */
-		self.fonts.insert("default".to_string(), raylib::load_font("data/font.ttf"));
+		self.fonts.insert("default".to_string(), Font::load("data/font.ttf"));
 	}
 
 	/// Loads textures
@@ -105,7 +105,7 @@ impl Graphics {
 				let mut name = str.to_string();
 				name = name.replace(".obj", "");
 				name = name.replace("data/tiles/", "");
-				let model = raylib::load_model(str);
+				let model = Model::load(str);
 				unsafe { (*model.materials.wrapping_add(0)).shader = self.shader.unwrap(); }
 				self.models.insert(name.to_string(), model);
 			}

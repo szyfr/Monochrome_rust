@@ -54,6 +54,7 @@ pub struct Matrix {
 }
 
 /// Rectangle type
+#[derive(Copy, Clone)]
 pub struct Rectangle {
 	pub x: f32,			//* Rectangle top-left corner position x
 	pub y: f32,			//* Rectangle top-left corner position y
@@ -94,6 +95,68 @@ pub struct Texture2D (Texture);
 /// TextureCubemap type, same as Texture
 pub struct TextureCubeMap (Texture);
 
+/// Font character info
+pub struct GlyphInfo {
+	pub value: i32,
+	pub offsetX: i32,
+	pub offsetY: i32,
+	pub advanceX: i32,
+	pub image: Image,
+}
+
+/// Font type, includes texture and charSet array data
+pub struct Font {
+	pub baseSize: i32,
+	pub charsCount: i32,
+	pub charsPadding: i32,
+	pub texture: Texture,
+	pub recs: *mut raylib_ffi::Rectangle,
+	pub chars: *mut raylib_ffi::GlyphInfo,
+}
+
+/// Shader type (generic)
+pub struct Shader {
+	id:		u32,
+	locs:	*mut i32,
+}
+
+/// Material texture map
+pub struct MaterialMap {
+	texture:	Texture,
+	color:		raylib_ffi::Color,
+	value:		f32,
+}
+
+/// Material type (generic)
+pub struct Material {
+	shader: Shader,
+	maps: *mut raylib_ffi::MaterialMap,
+	params: [f32;4],
+}
+
+/// Transformation properties
+pub struct Transform {
+	translation:	Vector3,
+	rotation:		Quaternion,
+	scale:			Vector3,
+}
+
+/// Model type
+pub struct Model {
+	pub transform: Matrix,
+
+	pub meshCount: i32,
+	pub materialCount: i32,
+	pub meshes: *mut raylib_ffi::Mesh,
+	pub materials: *mut raylib_ffi::Material,
+	pub meshMaterial: *mut i32,
+
+	// Animation data
+	pub boneCount:	i32,
+	pub bones:		*mut raylib_ffi::BoneInfo,
+	pub bindPose:	*mut raylib_ffi::Transform,
+}
+
 
 //= Procedures
 
@@ -127,8 +190,18 @@ impl Vector3 {
 
 impl Rectangle {
 
+	/// Zeroed out rect
+	pub fn zero() -> Self {
+		return Rectangle {
+			x:		0.0,
+			y:		0.0,
+			width:	0.0,
+			height:	0.0,
+		}
+	}
+
 	/// Create a rectangle using an index in a spritesheet
-	pub fn tex_rect(index: i32, size: [i32;2]) -> Rectangle {
+	pub fn tex_rect(index: i32, size: [i32;2]) -> Self {
 		return Rectangle {
 			x:		(index * size[0]) as f32,
 			y:		0.0,
@@ -146,7 +219,37 @@ impl Rectangle {
 			height:	self.height,
 		};
 	}
+	/// Converting to Rectangle
+	pub fn from_ffi(rectangle: raylib_ffi::Rectangle) -> Self {
+		return Rectangle {
+			x:		rectangle.x,
+			y:		rectangle.y,
+			width:	rectangle.width,
+			height:	rectangle.height,
+		}
+	}
 
+}
+
+impl Matrix {
+	/// Converting to raylib_ffi version
+	pub fn to_ffi(&self) -> raylib_ffi::Matrix {
+		return raylib_ffi::Matrix {
+			m0: self.m0, m4: self.m4,  m8: self.m8,  m12: self.m12,
+			m1: self.m1, m5: self.m5,  m9: self.m9,  m13: self.m13,
+			m2: self.m2, m6: self.m6, m10: self.m10, m14: self.m14,
+			m3: self.m3, m7: self.m7, m11: self.m11, m15: self.m15,
+		}
+	}
+	/// Converting to Matrix
+	pub fn from_ffi(matrix: raylib_ffi::Matrix) -> Self {
+		return Matrix {
+			m0: matrix.m0, m4: matrix.m4,  m8: matrix.m8,  m12: matrix.m12,
+			m1: matrix.m1, m5: matrix.m5,  m9: matrix.m9,  m13: matrix.m13,
+			m2: matrix.m2, m6: matrix.m6, m10: matrix.m10, m14: matrix.m14,
+			m3: matrix.m3, m7: matrix.m7, m11: matrix.m11, m15: matrix.m15,
+		}
+	}
 }
 
 impl Image {
@@ -315,6 +418,171 @@ impl Texture {
 			format:		enums::PixelFormat::from_i32(texture.format),
 			origin:		Vector2 { x: 0.0, y: 0.0 },
 			tint:		raylib_ffi::colors::WHITE,
+		}
+	}
+}
+
+impl GlyphInfo {
+	/// Converting to raylib_ffi version
+	pub fn to_ffi(&self) -> raylib_ffi::GlyphInfo {
+		return raylib_ffi::GlyphInfo {
+			value:		self.value,
+			offsetX:	self.offsetX,
+			offsetY:	self.offsetY,
+			advanceX:	self.advanceX,
+			image:		self.image.to_ffi(),
+		}
+	}
+	/// Converting to GlyphInfo
+	pub fn from_ffi(glyphInfo: raylib_ffi::GlyphInfo) -> Self {
+		return GlyphInfo {
+			value:		glyphInfo.value,
+			offsetX:	glyphInfo.offsetX,
+			offsetY:	glyphInfo.offsetY,
+			advanceX:	glyphInfo.advanceX,
+			image:		Image::from_ffi(glyphInfo.image),
+		}
+	}
+}
+
+impl Font {
+	/// Loading Font
+	pub fn load(fileName: &str) -> Self {
+		unsafe {
+			return Font::from_ffi(raylib_ffi::LoadFont(raylib_ffi::rl_str!(fileName)));
+		}
+	}
+	/// Unloading Font
+	pub fn unload(&self) {
+		unsafe {
+			raylib_ffi::UnloadFont(self.to_ffi());
+		}
+	}
+
+	/// Draw text using raylib_ffi::DrawText
+	pub fn draw(&self, text: &str, posX: i32, posY: i32, fontSize: i32, color: raylib_ffi::Color) {
+		unsafe {
+			raylib_ffi::DrawText(
+				raylib_ffi::rl_str!(text),
+				posX,
+				posY,
+				fontSize,
+				color,
+			);
+		}
+	}
+	/// Draw text using raylib_ffi::DrawTextPro
+	pub fn draw_pro(&self, text: &str, position: Vector2, rotation: f32, fontSize: f32, spacing: f32, tint: raylib_ffi::Color) {
+		unsafe {
+			raylib_ffi::DrawTextPro(
+				self.to_ffi(),
+				raylib_ffi::rl_str!(text),
+				position.to_ffi(),
+				Vector2::zero().to_ffi(),
+				rotation,
+				fontSize,
+				spacing,
+				tint,
+			);
+		}
+	}
+
+	/// Converting to raylib_ffi version
+	pub fn to_ffi(&self) -> raylib_ffi::Font {
+		return raylib_ffi::Font {
+			baseSize:		self.baseSize,
+			glyphCount:		self.charsCount,
+			glyphPadding:	self.charsPadding,
+			texture:		self.texture.to_ffi(),
+			recs:			self.recs,
+			glyphs:			self.chars,
+		}
+	}
+	/// Converting to Texture
+	pub fn from_ffi(font: raylib_ffi::Font) -> Self {
+		return Font {
+			baseSize:		font.baseSize,
+			charsCount:		font.glyphCount,
+			charsPadding:	font.glyphPadding,
+			texture:		Texture::from_ffi(font.texture),
+			recs:			font.recs,
+			chars:			font.glyphs,
+		}
+	}
+}
+
+impl Model {
+	/// Loading Model
+	pub fn load(fileName: &str) -> Model {
+		unsafe {
+			return Model::from_ffi(raylib_ffi::LoadModel(raylib_ffi::rl_str!(fileName)));
+		}
+	}
+
+	/// Set material texture
+	pub fn set_material_texture(&mut self, texture: Texture) -> &mut Self {
+		unsafe {
+			//(*self.materials).
+			raylib_ffi::SetMaterialTexture(self.materials, enums::MaterialMapIndex::ALBEDO as i32, texture.to_ffi());
+		}
+
+		return self;
+	}
+
+	/// Draw text using raylib_ffi::DrawModel
+	pub fn draw(&self, position: Vector3, scale: f32, tint: raylib_ffi::Color) -> &Self {
+		unsafe {
+			raylib_ffi::DrawModel(
+				self.to_ffi(),
+				position.to_ffi(),
+				scale,
+				tint,
+			);
+			return self;
+		}
+	}
+
+	/// Draw text using raylib_ffi::DrawModelEx
+	pub fn draw_ex(&self, position: Vector3, rotationAxis: Vector3, rotationAngle: f32, scale: Vector3, tint: raylib_ffi::Color) -> &Self {
+		unsafe {
+			raylib_ffi::DrawModelEx(
+				self.to_ffi(),
+				position.to_ffi(),
+				rotationAxis.to_ffi(),
+				rotationAngle,
+				scale.to_ffi(),
+				tint,
+			);
+			return self;
+		}
+	}
+
+	/// Converting to raylib_ffi version
+	pub fn to_ffi(&self) -> raylib_ffi::Model {
+		return raylib_ffi::Model {
+			transform:		self.transform.to_ffi(),
+			meshCount:		self.meshCount,
+			materialCount:	self.materialCount,
+			meshes:			self.meshes,
+			materials:		self.materials,
+			meshMaterial:	self.meshMaterial,
+			boneCount:		self.boneCount,
+			bones:			self.bones,
+			bindPose:		self.bindPose,
+		}
+	}
+	/// Converting to Model
+	pub fn from_ffi(model: raylib_ffi::Model) -> Self {
+		return Model {
+			transform:		Matrix::from_ffi(model.transform),
+			meshCount:		model.meshCount,
+			materialCount:	model.materialCount,
+			meshes:			model.meshes,
+			materials:		model.materials,
+			meshMaterial:	model.meshMaterial,
+			boneCount:		model.boneCount,
+			bones:			model.bones,
+			bindPose:		model.bindPose,
 		}
 	}
 }
