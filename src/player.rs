@@ -14,6 +14,34 @@ use crate::{overworld::{self, Direction}, data, raylib, utilities::math, events,
 const MVSPEED : f32 = 3.0;
 
 
+//= Enumerations
+
+/// The options on the menu screen
+#[derive(Copy, Clone, PartialEq)]
+pub enum MenuOptions {
+	None	= -2,
+	Base	= -1,
+	Dex		=  0,
+	Mon		=  1,
+	Bag		=  2,
+	Player	=  3,
+	Gear	=  4,
+	Save	=  5,
+	Options	=  6,
+}
+
+/// The options on the gear screen
+#[derive(Copy, Clone, PartialEq)]
+pub enum GearOptions {
+	None	= -2,
+	Base	= -1,
+	Status	=  0,
+	Map		=  1,
+	Phone	=  2,
+	Radio	=  3,
+}
+
+
 //= Structures
 /// Storage structure for Player data
 pub struct Player {
@@ -25,21 +53,15 @@ pub struct Player {
 	pub menu:		Menu,
 }
 
+/// Variables that handle the menus
 pub struct Menu {
-	/*
-	- Dex
-	- Mon
-	- Bag
-	- Player
-	- Gear
-	- Save
-	- Options
-	- Quit
-	*/
-	pub open: bool,
-
+	pub open:		MenuOptions,
 	pub options:	[bool;8],
 	pub selection:	i32,
+
+	pub gearOpen:		GearOptions,
+	pub gearOptions:	[bool;4],
+	pub gearSelection:	i32
 }
 
 
@@ -93,11 +115,11 @@ pub fn init() -> Player {
 /// Initial value of menu
 pub fn init_menu() -> Menu {
 	return Menu {
-		open:		false,
-		options:	[
+		open: MenuOptions::None,
+		options: [
 			false,
 			false,
-			true,
+			false,
 			true,
 			false,
 			false,
@@ -105,24 +127,42 @@ pub fn init_menu() -> Menu {
 			true,
 		],
 		selection: 0,
+
+		gearOpen: GearOptions::None,
+		gearOptions: [
+			true,
+			false,
+			false,
+			false,
+		],
+		gearSelection: 0,
 	};
 }
 
 //
 pub fn poll_menu( gamestate : &data::Gamestate) -> Menu {
 	return Menu {
-		open:		gamestate.player.menu.open,
-		options:	[
+		open: gamestate.player.menu.open,
+		options: [
 			gamestate.eventHandler.eventVariables.contains_key("dex") && gamestate.eventHandler.eventVariables.get("dex").unwrap().as_bool() == true,
 			gamestate.player.monsters.number_of_monsters() >= 1,
-			true,
+			gamestate.eventHandler.eventVariables.contains_key("bag") && gamestate.eventHandler.eventVariables.get("bag").unwrap().as_bool() == true,
 			true,
 			gamestate.eventHandler.eventVariables.contains_key("gear") && gamestate.eventHandler.eventVariables.get("gear").unwrap().as_bool() == true,
-			false,
+			false, // TODO saving
 			true,
 			true,
 		],
 		selection: gamestate.player.menu.selection,
+
+		gearOpen: gamestate.player.menu.gearOpen,
+		gearOptions: [
+			true,
+			gamestate.eventHandler.eventVariables.contains_key("gear_map") && gamestate.eventHandler.eventVariables.get("gear_map").unwrap().as_bool() == true,
+			gamestate.eventHandler.eventVariables.contains_key("gear_phone") && gamestate.eventHandler.eventVariables.get("gear_phone").unwrap().as_bool() == true,
+			gamestate.eventHandler.eventVariables.contains_key("gear_radio") && gamestate.eventHandler.eventVariables.get("gear_radio").unwrap().as_bool() == true,
+		],
+		gearSelection: 0,
 	};
 }
 
@@ -138,7 +178,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 		//* Event handling */
 		if events::parse_event(gamestate) { return; }
 
-		if gamestate.player.canMove && !gamestate.player.menu.open {
+		if gamestate.player.canMove && gamestate.player.menu.open == MenuOptions::None {
 
 			gamestate.player.unit.position = gamestate.player.unit.posTarget;
 			let mut newpos = gamestate.player.unit.position;
@@ -288,130 +328,174 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 				overworld::set_animation( &mut gamestate.player.unit, "idle_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 			}
 		}
+
+		//* Menus */
+		if gamestate.eventHandler.currentEvent == "" {
+			//* Openning menu */
+			if data::key_pressed("enter") {
+				gamestate.audio.play_sound("menu".to_string());
+				gamestate.player.menu = poll_menu(gamestate);
+				if gamestate.player.menu.open == MenuOptions::None { gamestate.player.menu.open = MenuOptions::Base; return; }
+				if gamestate.player.menu.open != MenuOptions::None { gamestate.player.menu.open = MenuOptions::None; return; }
+			}
+
+			//* Selecting option */
+			if gamestate.player.menu.open != MenuOptions::None {
+				let count = gamestate.player.menu.get_number_of_options();
+
+				//* Moving cursor */
+				if data::key_pressed("down") {
+					if gamestate.player.menu.selection < count-1 {
+						gamestate.player.menu.selection += 1;
+					} else {
+						gamestate.player.menu.selection = 0;
+					}
+				}
+				if data::key_pressed("up") {
+					if gamestate.player.menu.selection > 0 {
+						gamestate.player.menu.selection -= 1;
+					} else {
+						gamestate.player.menu.selection = count - 1;
+					}
+				}
+
+				//* Confirming */
+				if data::key_pressed("confirm") {
+					if gamestate.player.menu.open == MenuOptions::Base {
+						let selection = gamestate.player.menu.get_current_option();
+
+						match selection {
+							0 => { // Pokedex
+								gamestate.player.menu.open = MenuOptions::Dex;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							1 => { // Pokemon
+								gamestate.player.menu.open = MenuOptions::Mon;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							2 => { // Bag
+								gamestate.player.menu.open = MenuOptions::Bag;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							3 => { // Player
+								gamestate.player.menu.open = MenuOptions::Player;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							4 => { // Gear
+								gamestate.player.menu.open = MenuOptions::Gear;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							5 => { // Save
+								gamestate.player.menu.open = MenuOptions::Save;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							6 => { // Options
+								gamestate.player.menu.open = MenuOptions::Options;
+								gamestate.audio.play_sound("menu".to_string());
+							}
+							7 => { // Quit
+								gamestate.running = false;
+							}
+							_ => {}
+						}
+					}
+				}
+			}
+		}
 	}
 
-	//* Menus */
-	// TODO
-	if gamestate.eventHandler.currentEvent == "" {
-		
-		if data::key_pressed("enter") {
-			gamestate.player.menu.open = !gamestate.player.menu.open;
-			gamestate.audio.play_sound("menu".to_string());
-			gamestate.player.menu = poll_menu(gamestate);
-		}
-
-		if gamestate.player.menu.open {
-			let count = gamestate.player.menu.get_number_of_options();
-
-			if data::key_pressed("down") {
-				if gamestate.player.menu.selection < count-1 {
-					gamestate.player.menu.selection += 1;
-				} else {
-					gamestate.player.menu.selection = 0;
-				}
-			}
-			if data::key_pressed("up") {
-				if gamestate.player.menu.selection > 0 {
-					gamestate.player.menu.selection -= 1;
-				} else {
-					gamestate.player.menu.selection = count - 1;
-				}
-			}
-
-			if data::key_pressed("confirm") {
-				let selection = gamestate.player.menu.get_current_option();
-
-				match selection {
-					0 => { // Pokedex
-						
-					}
-					1 => { // Pokemon
-						
-					}
-					2 => { // Bag
-						
-					}
-					3 => { // Player
-						
-					}
-					4 => { // Gear
-						
-					}
-					5 => { // Save
-						
-					}
-					6 => { // Options
-						
-					}
-					7 => { // Quit
-						gamestate.running = false;
-					}
-					_ => {}
-				}
-			}
-		}
-	}
+	
 
 }
 
-//
+/// Draw menu to screen
 pub fn draw_menu( gamestate : &data::Gamestate ) {
 	let ratio = data::get_screenratio();
 	let mut fontSize = 24.0;
 	if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0)) * 8.0 }
 
-	let heightOffset = 16.0 * ratio;
-	let width = 320.0 * ratio;
-	let widthOffset = data::get_screenwidth() as f32 - heightOffset - width;
-	let height = (gamestate.player.menu.get_number_of_options() as f32 + 1.5) * (fontSize * 2.0);
+	match gamestate.player.menu.open {
+		MenuOptions::Base => {
+			let heightOffset = 16.0 * ratio;
+			let width = 320.0 * ratio;
+			let widthOffset = data::get_screenwidth() as f32 - heightOffset - width;
+			let height = (gamestate.player.menu.get_number_of_options() as f32 + 1.5) * (fontSize * 2.0);
 
-	gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-		raylib::structures::Rectangle {
-				x: widthOffset,
-				y: heightOffset,
-				width,
-				height,
-			},
-		0.0,
-	);
-	
-
-	let mut offset = fontSize * 1.25;
-	let mut count = 0;
-	
-	for option in gamestate.player.menu.options {
-		if option {
-			let str = "menu_".to_string() + &count.to_string();
-			let output: String;
-			if str == "menu_3" { output = gamestate.eventHandler.playerName.to_string(); }
-			else { output = gamestate.localization[&str].to_string(); }
-
-			raylib::draw_text_pro(
-				gamestate.graphics.fonts["default"],
-				&output,
-				raylib_ffi::Vector2 {
-					x: widthOffset + (fontSize * 3.0),
-					y: heightOffset + fontSize + offset,
-				},
-				raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+			//* Draw BG */
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				raylib::structures::Rectangle {
+						x: widthOffset,
+						y: heightOffset,
+						width,
+						height,
+					},
 				0.0,
-				fontSize,
-				5.0 * ratio,
-				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
-			offset += fontSize * 2.0;
-		}
-		count += 1;
-	}
 
-	gamestate.graphics.textures["ui_pointer_general"].draw_pro(
-		raylib::structures::Rectangle { x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
-		raylib::structures::Rectangle{
-			x: widthOffset + (fontSize * 1.5),
-			y: heightOffset + (fontSize * 2.0) + (gamestate.player.menu.selection as f32 * (fontSize * 2.0)),
-			width: 32.0 * ratio,
-			height: 32.0 * ratio,
-		},
-		0.0,
-	);
+			//* Draw text */
+			let mut offset = fontSize * 1.25;
+			let mut count = 0;
+			for option in gamestate.player.menu.options {
+				if option {
+					let str = "menu_".to_string() + &count.to_string();
+					let output: String;
+					if str == "menu_3" { output = gamestate.eventHandler.playerName.to_string(); }
+					else { output = gamestate.localization[&str].to_string(); }
+				
+					raylib::draw_text_pro(
+						gamestate.graphics.fonts["default"],
+						&output,
+						raylib_ffi::Vector2 {
+							x: widthOffset + (fontSize * 3.0),
+							y: heightOffset + fontSize + offset,
+						},
+						raylib_ffi::Vector2 {x: 0.0, y: 0.0},
+						0.0,
+						fontSize,
+						5.0 * ratio,
+						raylib_ffi::Color{r:57,g:57,b:57,a:255},
+					);
+					offset += fontSize * 2.0;
+				}
+				count += 1;
+			}
+		
+			//* Draw Pointer */
+			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
+				raylib::structures::Rectangle { x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
+				raylib::structures::Rectangle{
+					x: widthOffset + (fontSize * 1.5),
+					y: heightOffset + (fontSize * 2.0) + (gamestate.player.menu.selection as f32 * (fontSize * 2.0)),
+					width: 32.0 * ratio,
+					height: 32.0 * ratio,
+				},
+				0.0,
+			);
+		}
+		MenuOptions::Dex => {}
+		MenuOptions::Mon => {}
+		MenuOptions::Bag => {}
+		MenuOptions::Player => {}
+		MenuOptions::Gear => {
+			let heightOffset = 16.0 * ratio;
+			let width = 320.0 * ratio;
+			let widthOffset = data::get_screenwidth() as f32 - heightOffset - width;
+			let height = (gamestate.player.menu.get_number_of_options() as f32 + 1.5) * (fontSize * 2.0);
+
+			//* Draw BG */
+			gamestate.graphics.textures["ui_blackbox_general"].draw_npatch(
+				raylib::structures::Rectangle {
+						x: widthOffset,
+						y: heightOffset,
+						width,
+						height,
+					},
+				0.0,
+			);
+		}
+		MenuOptions::Save => {}
+		MenuOptions::Options => {}
+		_ => {}
+	}
+	
 }

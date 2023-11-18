@@ -47,8 +47,13 @@ impl Graphics {
 	/// Loads textures
 	pub fn load_textures(&mut self) {
 		//* UI */
+		//* Textbox */
 		let mut img = Image::load("data/sprites/ui/textbox.png").resize_nn(4);
 		self.textures.insert("ui_textbox_general".to_string(), img.load_texture());
+		img.unload();
+		//* Blackbox */
+		img = Image::load("data/sprites/ui/blackbox.png").resize_nn(4);
+		self.textures.insert("ui_blackbox_general".to_string(), img.load_texture());
 		img.unload();
 
 		self.textures.insert("ui_pointer_general".to_string(), Texture::load("data/sprites/ui/pointer.png"));

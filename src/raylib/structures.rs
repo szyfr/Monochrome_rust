@@ -172,7 +172,6 @@ impl Image {
 	}
 	/// Create duplicate of portion of Image
 	pub fn from_image(&self, rec: Rectangle) -> Self {
-		print!("{}-{}-{}-{}\n",rec.x,rec.y,rec.width,rec.height);
 		unsafe {
 			return Image::from_ffi(raylib_ffi::ImageFromImage(self.to_ffi(), rec.to_ffi()));
 		}

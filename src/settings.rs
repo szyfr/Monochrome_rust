@@ -161,6 +161,7 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("rotate_left".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 81 });
 		self.keybindings.as_mut().unwrap().insert("rotate_right".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
 		self.keybindings.as_mut().unwrap().insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 32 });
+		self.keybindings.as_mut().unwrap().insert("cancel".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 341 });
 		self.keybindings.as_mut().unwrap().insert("enter".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 257 });
 
 		self.masterVolume = 0.25;

@@ -56,7 +56,7 @@ fn main() {
 
 			events::textbox::draw(&mut gamestate);
 			events::animation::draw(&mut gamestate);
-			if gamestate.player.menu.open { player::draw_menu(&gamestate); }
+			if gamestate.player.menu.open != player::MenuOptions::None { player::draw_menu(&gamestate); }
 
 			raylib::draw_fps(0,0);
 		}

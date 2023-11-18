@@ -30,6 +30,7 @@ pub struct World{
 	pub triggerMap:	HashMap<[i32;3], String>,
 	pub eventList:	HashMap<String, events::Event>,
 
+	pub day:		i32,
 	pub time:		f32,
 }
 
@@ -181,7 +182,11 @@ impl World {
 	/// Update time tick
 	pub fn time_tick(&mut self) {
 		self.time += 0.00001;
-		if self.time >= 1.6 { self.time = 0.4; }
+		if self.time >= 1.6 {
+			self.time = 0.4;
+			self.day += 1;
+			if self.day > 6 { self.day = 0; }
+		}
 	}
 
 	/// Get the hour of the day
@@ -203,6 +208,7 @@ pub fn init_empty() -> World {
 		triggerMap:	HashMap::new(),
 		eventList:	HashMap::new(),
 
+		day:		0,
 		time:		0.8,
 	}
 }
