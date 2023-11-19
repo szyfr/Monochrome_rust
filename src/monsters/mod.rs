@@ -187,6 +187,12 @@ impl Display for Monster {
 //= Procedures
 
 impl MonsterTeam {
+
+	/// Create new Empty team
+	pub fn new() -> Self {
+		return MonsterTeam([None,None,None,None])
+	}
+
 	/// Removes member by index
 	pub fn remove_member_index(&mut self, index: usize) -> Option<Monster> {
 		if self.0[index].is_none() {
@@ -231,9 +237,44 @@ impl MonsterTeam {
 		}
 		return count;
 	}
+
 }
 
 impl Monster {
+
+	/// Create a new monster only using species and level.
+	pub fn new(species: MonsterSpecies, level: i32) -> Self {
+		let mut result = Monster {
+			species,
+			types: [MonsterTypes::None,MonsterTypes::None],
+
+			nickname: "".to_string(),
+
+			health: [0,0],
+			stamina: [0,0],
+
+			physicalAttack: 0,
+			physicalDefense: 0,
+			specialAttack: 0,
+			specialDefense: 0,
+			speed: 0,
+
+			statChanges: [0,0,0,0,0],
+			flinch: false,
+
+			experience: 0,
+			level,
+			growthRate: MonsterGrowthRate::Fast,
+
+			//TODO Generate attacks from their attack list and level.
+			attacks: [MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None],
+		};
+
+		result.generate_stats();
+
+		return result;
+	}
+
 	/// Generate monster stats from a clean monster.
 	pub fn generate_stats(&mut self) {
 		match self.species {
@@ -356,39 +397,6 @@ impl Monster {
 	pub fn check_for_level(&self) -> bool {
 		return self.experience >= experience_from_level(self.level + 1, self.growthRate);
 	}
-}
-
-/// Create a new monster only using species and level.
-pub fn new(species: MonsterSpecies, level: i32) -> Monster {
-	let mut result = Monster {
-		species,
-		types: [MonsterTypes::None,MonsterTypes::None],
-
-		nickname: "".to_string(),
-
-		health: [0,0],
-		stamina: [0,0],
-
-		physicalAttack: 0,
-		physicalDefense: 0,
-		specialAttack: 0,
-		specialDefense: 0,
-		speed: 0,
-
-		statChanges: [0,0,0,0,0],
-		flinch: false,
-
-		experience: 0,
-		level,
-		growthRate: MonsterGrowthRate::Fast,
-
-		//TODO Generate attacks from their attack list and level.
-		attacks: [MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None,MonsterAttacks::None],
-	};
-
-	result.generate_stats();
-
-	return result;
 }
 
 /// Calculates health or stamina.

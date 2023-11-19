@@ -99,7 +99,7 @@ pub fn parse_value( value: &Value ) -> EventChain {
 			match value.as_array().unwrap()[1].as_array().unwrap()[0].as_i64().unwrap() {
 				_ => {
 					return EventChain::GiveMonster {
-						monster: monsters::new(
+						monster: monsters::Monster::new(
 							monsters::MonsterSpecies::from_str(value.as_array().unwrap()[1].as_array().unwrap()[1].as_str().unwrap()).unwrap(),
 							value.as_array().unwrap()[1].as_array().unwrap()[2].as_i64().unwrap() as i32,
 						),

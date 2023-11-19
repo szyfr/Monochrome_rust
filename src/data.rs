@@ -44,6 +44,8 @@ pub static mut SETTINGS : settings::Settings = settings::Settings{
 	masterVolume:	0.5,
 	musicVolume:	1.0,
 	sfxVolume:		1.0,
+
+	difficulty:		settings::Difficulty::Medium,
 };
 
 
@@ -105,4 +107,7 @@ pub fn get_music_volume() -> f32 {
 }
 pub fn get_sfx_volume() -> f32 {
 	unsafe { return SETTINGS.sfxVolume }
+}
+pub fn get_difficulty() -> settings::Difficulty {
+	unsafe { return SETTINGS.difficulty }
 }

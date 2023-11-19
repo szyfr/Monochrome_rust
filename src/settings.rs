@@ -67,6 +67,15 @@ impl Display for Origin {
 	}
 }
 
+/// Difficulty
+// TODO Improve
+#[derive(Clone, Copy)]
+pub enum Difficulty {
+	Easy,
+	Medium,
+	Hard,
+}
+
 
 //= Structures
 
@@ -90,6 +99,10 @@ pub struct Settings {
 	pub masterVolume: f32,
 	pub musicVolume: f32,
 	pub sfxVolume: f32,
+
+	//* Game config */
+	// TODO Seperate this into seperate structure?
+	pub difficulty: Difficulty,
 }
 
 /// Storage for individual keybindings

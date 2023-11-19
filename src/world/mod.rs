@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle, monsters};
 
 
 //= Constants
@@ -29,6 +29,7 @@ pub struct World{
 	pub unitMap:	HashMap<String, overworld::Unit>,
 	pub triggerMap:	HashMap<[i32;3], String>,
 	pub eventList:	HashMap<String, events::Event>,
+	pub battleList:	HashMap<String, battle::Battle>,
 
 	pub day:		i32,
 	pub time:		f32,
@@ -48,15 +49,16 @@ pub struct Tile{
 
 impl World {
 	/// Load all
-	pub fn load_all( &mut self, mapName : &str ) {
+	pub fn load_all(&mut self, mapName : &str) {
 		self.load_world(mapName);
 		self.load_entities(mapName);
 		self.load_events(mapName);
 		self.load_triggers(mapName);
+		self.load_battles(mapName);
 	}
 
 	/// Load tile data from input file to Hashmap indexed by their position.
-	pub fn load_world( &mut self, mapName : &str ) {
+	pub fn load_world(&mut self, mapName : &str) {
 		//* Attempt to load map file */
 		let fileResult_map = read_to_string("data/world/".to_string() + mapName + "/map.json" );
 		if fileResult_map.is_err() {
@@ -83,7 +85,7 @@ impl World {
 	}
 
 	/// Loads entity data from input file to Hashmap indexed by their ID.
-	pub fn load_entities( &mut self, mapName : &str ) {
+	pub fn load_entities(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
 		let fileResult_ent = read_to_string("data/world/".to_string() + mapName + "/entities.json" );
 		if fileResult_ent.is_err() {
@@ -139,7 +141,7 @@ impl World {
 	}
 
 	/// Loads event data from input file to Hashmap indexed by their ID.
-	pub fn load_events( &mut self, mapName : &str ) {
+	pub fn load_events(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
 		let fileResult_evt = read_to_string("data/world/".to_string() + mapName + "/events.json" );
 		if fileResult_evt.is_err() {
@@ -158,8 +160,8 @@ impl World {
 		}
 	}
 
-	/// Loads trigger data from input file to hasmap indexed by position.
-	pub fn load_triggers( &mut self, mapName : &str ) {
+	/// Loads trigger data from input file to hashmap indexed by position.
+	pub fn load_triggers(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
 		let fileResult_evt = read_to_string("data/world/".to_string() + mapName + "/events.json" );
 		if fileResult_evt.is_err() {
@@ -178,6 +180,56 @@ impl World {
 			self.triggerMap.insert(pos, i["event"].as_str().unwrap().to_string());
 		}
 	}
+
+	/// Loads battle data from input file to hashmap indexed by position.
+	pub fn load_battles(&mut self, mapName : &str) {
+		//* Attempt to load entities file */
+		let fileResult_evt = read_to_string("data/world/".to_string() + mapName + "/battles.json" );
+		if fileResult_evt.is_err() {
+			debug::log("[ERROR] - Failed to load battles file.\n");
+			return;
+		}
+
+		//* Convert to JSON and read */
+		let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
+		for i in jsonFile_evt["battles"].as_array().unwrap() {
+			let mut battle = battle::Battle {
+				battleType:		battle::BattleType::from_str(i.as_object().unwrap()["type"].as_str().unwrap()).unwrap(),
+				trainerName:	i.as_object().unwrap()["trainer"].as_str().unwrap().to_string(),
+				easyTeam:		monsters::MonsterTeam::new(),
+				mediumTeam:		monsters::MonsterTeam::new(),
+				hardTeam:		monsters::MonsterTeam::new(),
+			};
+
+			//* Easy team */
+			for b in i.as_object().unwrap()["mon_easy"].as_array().unwrap() {
+				battle.easyTeam.add_member(monsters::Monster::new(
+					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+				));
+			}
+
+			//* Medium team */
+			for b in i.as_object().unwrap()["mon_medium"].as_array().unwrap() {
+				battle.mediumTeam.add_member(monsters::Monster::new(
+					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+				));
+			}
+
+			//* Hard team */
+			for b in i.as_object().unwrap()["mon_hard"].as_array().unwrap() {
+				battle.hardTeam.add_member(monsters::Monster::new(
+					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+				));
+			}
+
+			print!("E:{}\nM:{}\nH:{}\n\n",battle.easyTeam.to_string(),battle.mediumTeam.to_string(),battle.hardTeam.to_string());
+
+			self.battleList.insert(i.as_object().unwrap()["id"].as_str().unwrap().to_string(), battle);
+		}
+	} 
 
 	/// Update time tick
 	pub fn time_tick(&mut self) {
@@ -207,6 +259,7 @@ pub fn init_empty() -> World {
 
 		triggerMap:	HashMap::new(),
 		eventList:	HashMap::new(),
+		battleList:	HashMap::new(),
 
 		day:		0,
 		time:		0.8,

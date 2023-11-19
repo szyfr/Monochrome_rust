@@ -109,9 +109,11 @@ impl Graphics {
 				let mut name = str.to_string();
 				name = name.replace(".obj", "");
 				name = name.replace("data/tiles/", "");
+
 				let mut model = Model::load(str);
 				model.set_material_texture(texture);
 				unsafe { (*model.materials.wrapping_add(0)).shader = self.shader.unwrap(); }
+				
 				self.models.insert(name.to_string(), model);
 			}
 		}

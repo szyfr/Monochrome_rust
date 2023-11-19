@@ -12,6 +12,7 @@ pub mod world;
 pub mod events;
 pub mod audio;
 pub mod monsters;
+pub mod battle;
 
 pub mod raylib;
 
