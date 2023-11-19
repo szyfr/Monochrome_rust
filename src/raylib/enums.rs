@@ -320,37 +320,3 @@ impl PixelFormat {
 		}
 	}
 }
-
-//impl TryFrom<i32> for PixelFormat {
-//    type Error = ();
-//
-//    fn try_from(value: i32) -> Result<Self, Self::Error> {
-//        match value {
-//			 1 => Ok(PixelFormat::PixelformatUncompressedGrayscale),
-//			 2 => Ok(PixelFormat::PixelformatUncompressedGrayAlpha),
-//			 3 => Ok(PixelFormat::PixelformatUncompressedR5g6b5),
-//			 4 => Ok(PixelFormat::PixelformatUncompressedR8g8b8),
-//			 5 => Ok(PixelFormat::PixelformatUncompressedR5g5b5a1),
-//			 6 => Ok(PixelFormat::PixelformatUncompressedR4g4b4a4),
-//			 7 => Ok(PixelFormat::PixelformatUncompressedR8g8b8a8),
-//			 8 => Ok(PixelFormat::PixelformatUncompressedR32),
-//			 9 => Ok(PixelFormat::PixelformatUncompressedR32g32b32),
-//			10 => Ok(PixelFormat::PixelformatUncompressedR32g32b32a32),
-//			11 => Ok(PixelFormat::PixelformatUncompressedR16),
-//			12 => Ok(PixelFormat::PixelformatUncompressedR16g16b16),
-//			13 => Ok(PixelFormat::PixelformatUncompressedR16g16b16a16),
-//			14 => Ok(PixelFormat::PixelformatCompressedDxt1Rgb),
-//			15 => Ok(PixelFormat::PixelformatCompressedDxt1Rgba),
-//			16 => Ok(PixelFormat::PixelformatCompressedDxt3Rgba),
-//			17 => Ok(PixelFormat::PixelformatCompressedDxt5Rgba),
-//			18 => Ok(PixelFormat::PixelformatCompressedEtc1Rgb),
-//			19 => Ok(PixelFormat::PixelformatCompressedEtc2Rgb),
-//			20 => Ok(PixelFormat::PixelformatCompressedEtc2EacRgba),
-//			21 => Ok(PixelFormat::PixelformatCompressedPvrtRgb),
-//			22 => Ok(PixelFormat::PixelformatCompressedPvrtRgba),
-//			23 => Ok(PixelFormat::PixelformatCompressedAstc4x4Rgba),
-//			24 => Ok(PixelFormat::PixelformatCompressedAstc8x8Rgba),
-//			 _ => Err(()),
-//		}
-//    }
-//}
