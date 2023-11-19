@@ -202,6 +202,17 @@ impl Settings {
 		let _ = newFile.unwrap().write_all(newSettingsFile.as_bytes());
 	}
 
+	/// Change screen resolution
+	pub fn change_resolution(&mut self, width: i32, height: i32) {
+		unsafe {
+			self.screenWidth = width;
+			self.screenHeight = height;
+			self.screenRatio = height as f32 / 720.0;
+			raylib_ffi::SetWindowSize(self.screenWidth, self.screenHeight);
+			raylib_ffi::SetTextLineSpacing((self.screenRatio * 56.0) as i32);
+		}
+	}
+
 	/// True if input ``k`` is valid and was pressed once.
 	pub fn key_pressed(&self, k: &str) -> bool {
 		//* Check for key */

@@ -61,6 +61,11 @@ pub struct Rectangle {
 	pub width: f32,		//* Rectangle width
 	pub height: f32,	//* Rectangle height
 }
+impl ToString for Rectangle {
+    fn to_string(&self) -> String {
+    	return "[".to_string() + &self.x.to_string() + "," + &self.y.to_string() + "," + &self.width.to_string() + "," + &self.height.to_string() + "]"
+    }
+}
 
 /// Color, 4 components, R8G8B8A8 (32bit)
 pub struct Color {
@@ -112,6 +117,15 @@ pub struct Font {
 	pub texture: Texture,
 	pub recs: *mut raylib_ffi::Rectangle,
 	pub chars: *mut raylib_ffi::GlyphInfo,
+}
+impl ToString for Font {
+    fn to_string(&self) -> String {
+		unsafe {
+			let rect = Rectangle::from_ffi(*self.recs);
+			let str = "[".to_string() + &rect.to_string() + " : ]";
+    		return str;
+		}
+    }
 }
 
 /// Shader type (generic)
@@ -522,7 +536,7 @@ impl Model {
 	/// Set material texture
 	pub fn set_material_texture(&mut self, texture: Texture) -> &mut Self {
 		unsafe {
-			//(*self.materials).
+			Texture::from_ffi((*(*self.materials).maps).texture).unload();
 			raylib_ffi::SetMaterialTexture(self.materials, enums::MaterialMapIndex::ALBEDO as i32, texture.to_ffi());
 		}
 

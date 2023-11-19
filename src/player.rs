@@ -407,7 +407,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 						}
 					}
 
-					//
+					//* Changing settings */
 					match gamestate.player.menu.optionSelection {
 						0 => { // Master
 							unsafe {
@@ -456,7 +456,18 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 							}
 						}
 						3 => { // Resolution
-
+							unsafe {
+								if data::key_pressed("left") {
+									if data::SETTINGS.screenHeight == 1080 {
+										data::SETTINGS.change_resolution(1280, 720);
+									}
+								}
+								if data::key_pressed("right") {
+									if data::SETTINGS.screenHeight == 720 {
+										data::SETTINGS.change_resolution(1920, 1080);
+									}
+								}
+							}
 						}
 						4 => { // Text Speed
 							unsafe {
@@ -621,7 +632,6 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 				5.0 * ratio,
 				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
-
 			//* Draw Option 2: Music Volume */
 			unsafe { str = ((data::SETTINGS.musicVolume * 10.0) as i32).to_string(); }
 			gamestate.graphics.fonts["default"].draw_pro(
@@ -751,6 +761,7 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 				raylib_ffi::Color{r:57,g:57,b:57,a:255},
 			);
 
+			//* Cursor */
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
 				Rectangle{ x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
 				Rectangle{

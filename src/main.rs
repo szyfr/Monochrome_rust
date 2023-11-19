@@ -16,8 +16,9 @@ fn main() {
 	let mut gamestate = data::init();
 
 	//* Raylib */
-	raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
+	//raylib::set_trace_log_level(raylib_ffi::enums::TraceLogLevel::None);
 	raylib::init_window(&gamestate);
+	raylib::set_line_spacing(data::get_screenratio() as i32 * 56);
 	raylib::set_target_fps(data::get_screenfps());
 	raylib::init_audio_device();
 

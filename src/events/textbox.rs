@@ -250,43 +250,54 @@ pub fn run( gamestate : &mut data::Gamestate, text : String ) -> bool {
 
 /// Draw textbox
 pub fn draw( gamestate : &mut data::Gamestate ) {
-	let widthOffset = 160.0 * data::get_screenratio();
-	let heightOffset = 480.0 * data::get_screenratio();
+	let ratio = data::get_screenratio();
+	let boxWidth = 1020.0 * ratio;
+	let boxHeight = 240.0 * ratio;
+	let boxOffsetX = (data::get_screenwidth() as f32 - boxWidth) / 2.0;
+	let boxOffsetY = data::get_screenheight() as f32 - boxHeight;
 
 	if gamestate.eventHandler.textbox.state != TextboxState::Inactive {
 		gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
 			raylib::structures::Rectangle {
-				x:		widthOffset,
-				y:		heightOffset,
-				width:	data::get_screenwidth() as f32 - (widthOffset * 2.0),
-				height:	data::get_screenheight() as f32 - heightOffset,
+				x:		boxOffsetX,
+				y:		boxOffsetY,
+				width:	boxWidth,
+				height:	boxHeight,
 			},
 			0.0,
 		);
 
 		let ratio = data::get_screenratio();
 		let mut fontSize = 24.0;
-		if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0) as i32) as f32 * 8.0 }
+		if ratio > 1.0 { fontSize = (((24.0 * ratio) / 8.0) as i32 + 1) as f32 * 8.0 }
 		gamestate.graphics.fonts["default"].draw_pro(
 			&gamestate.eventHandler.textbox.currentText,
-			Vector2 {x: widthOffset + (widthOffset / 3.0), y: heightOffset + (heightOffset / 8.0)},
+			Vector2 {
+				x: boxOffsetX + (fontSize * 2.5),
+				y: boxOffsetY + (fontSize * 2.5),
+			},
 			0.0,
 			fontSize,
 			5.0 * ratio,
 			raylib_ffi::Color{r:57,g:57,b:57,a:255},
 		);
+		
 
 		//* Draw options */
 		if gamestate.eventHandler.textbox.hasChoice {
-			let choiceWidthOffset = data::get_screenwidth() as f32 - (widthOffset * 2.0);
-			let choiceHeightOffset = heightOffset - fontSize;
+			let mut choiceCount = 7.0;
+			for i in &gamestate.eventHandler.textbox.choiceList { if i.text != "" { choiceCount -= 1.75 } }
+			let choiceWidth = boxHeight;
+			let choiceHeight = boxHeight - (fontSize * choiceCount);
+			let choiceOffsetX = data::get_screenwidth() as f32 - (choiceWidth * 1.25);
+			let choiceOffsetY = boxOffsetY - (24.0 * ratio);
 
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
 				raylib::structures::Rectangle {
-					x:		choiceWidthOffset,
-					y:		choiceHeightOffset,
-					width:	widthOffset * 1.5,
-					height:	data::get_screenheight() as f32 - heightOffset,
+					x:		choiceOffsetX,
+					y:		choiceOffsetY,
+					width:	choiceWidth,
+					height:	choiceHeight,
 				},
 				0.0,
 			);
@@ -296,8 +307,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 					gamestate.graphics.fonts["default"].draw_pro(
 						&gamestate.localization[&i.text],
 						Vector2 {
-							x: choiceWidthOffset + (widthOffset / 3.0) + (12.0 * ratio),
-							y: choiceHeightOffset + (heightOffset / 8.0) + (choiceOffset * (fontSize + (12.0 * ratio))),
+							x: choiceOffsetX + (fontSize * 3.5),
+							y: choiceOffsetY + ((fontSize * 1.75) * choiceOffset) + (fontSize * 2.125),
 						},
 						0.0,
 						fontSize,
@@ -307,17 +318,17 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				}
 				choiceOffset += 1.0;
 			}
-			let mut height = choiceHeightOffset + (heightOffset / 8.0) - (8.0 * ratio);
+			let mut height = choiceOffsetY + (fontSize * 1.875);
 			match gamestate.eventHandler.textbox.curPosition {
-				1 => height += fontSize + (12.0 * ratio),
-				2 => height += 2.0 * (fontSize + (12.0 * ratio)),
-				3 => height += 3.0 * (fontSize + (12.0 * ratio)),
+				1 => height += fontSize * 1.75,
+				2 => height += fontSize * 3.50,
+				3 => height += fontSize * 5.25,
 				_ => {},
 			}
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
 				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
 				raylib::structures::Rectangle {
-					x:		choiceWidthOffset + (widthOffset / 3.0) - (24.0 * ratio),
+					x:		choiceOffsetX + (fontSize * 2.0),
 					y:		height,
 					width:	32.0 * ratio,
 					height:	32.0 * ratio,
@@ -329,7 +340,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 		//* Draw input */
 		if gamestate.eventHandler.textbox.isInput {
 			let inputWidthOffset = 320.0 * data::get_screenratio();
-			let inputHeightOffset = heightOffset - (fontSize * 2.0);
+			let inputHeightOffset = boxOffsetY - (fontSize * 2.0);
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
 				raylib::structures::Rectangle {
 					x:		inputWidthOffset,
@@ -343,8 +354,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			gamestate.graphics.fonts["default"].draw_pro(
 				&gamestate.eventHandler.textbox.input,
 				Vector2 {
-					x: inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio),
-					y: inputHeightOffset + (heightOffset / 10.5),
+					x: inputWidthOffset + (fontSize * 1.75),
+					y: inputHeightOffset + (fontSize * 1.75),
 				},
 				0.0,
 				fontSize,
@@ -355,8 +366,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
 				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
 				raylib::structures::Rectangle {
-					x:		inputWidthOffset + (widthOffset / 5.5) + (12.0 * ratio) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + (5.0 * ratio))),
-					y:		inputHeightOffset + (heightOffset / 12.0),
+					x:		inputWidthOffset + (fontSize * 1.75) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + 5.0)),
+					y:		inputHeightOffset + (fontSize * 1.5),
 					width:	32.0 * ratio,
 					height:	32.0 * ratio,
 				},

@@ -42,6 +42,9 @@ pub fn init_window( gamestate : &data::Gamestate ) {
 		);
 	}
 }
+pub fn set_line_spacing(spacing : i32) {
+	unsafe { raylib_ffi::SetTextLineSpacing(spacing); }
+}
 pub fn close_window() {
 	unsafe { raylib_ffi::CloseWindow(); }
 }
