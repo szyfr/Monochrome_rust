@@ -118,6 +118,7 @@ pub enum MonsterGrowthRate {
 //= Structures
 
 /// The structure of a monster team.
+#[derive(Clone)]
 pub struct MonsterTeam(pub [Option<Monster>;4]);
 impl Display for MonsterTeam {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

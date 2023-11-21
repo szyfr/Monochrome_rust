@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle, monsters};
+use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
 
 
 //= Constants
@@ -29,7 +29,7 @@ pub struct World{
 	pub unitMap:	HashMap<String, overworld::Unit>,
 	pub triggerMap:	HashMap<[i32;3], String>,
 	pub eventList:	HashMap<String, events::Event>,
-	pub battleList:	HashMap<String, battle::Battle>,
+	pub battleList:	HashMap<String, battle::BattleType>,
 
 	pub day:		i32,
 	pub time:		f32,
@@ -51,10 +51,10 @@ impl World {
 	/// Load all
 	pub fn load_all(&mut self, mapName : &str) {
 		self.load_world(mapName);
+		self.load_battles(mapName);
 		self.load_entities(mapName);
 		self.load_events(mapName);
 		self.load_triggers(mapName);
-		self.load_battles(mapName);
 	}
 
 	/// Load tile data from input file to Hashmap indexed by their position.
@@ -154,7 +154,7 @@ impl World {
 		for i in jsonFile_evt["events"].as_array().unwrap() {
 			let mut event: events::Event = events::Event{ chain : Vec::new() };
 			for o in i["chain"].as_array().unwrap() {
-				event.chain.push(events::parser::parse_value(o));
+				event.chain.push(events::parser::parse_value(self, o));
 			}
 			self.eventList.insert(i["id"].as_str().unwrap().to_string(), event);
 		}
@@ -193,39 +193,120 @@ impl World {
 		//* Convert to JSON and read */
 		let jsonFile_evt: serde_json::Value = serde_json::from_str(&fileResult_evt.unwrap()).unwrap();
 		for i in jsonFile_evt["battles"].as_array().unwrap() {
-			let mut battle = battle::Battle {
-				battleType:		battle::BattleType::from_str(i.as_object().unwrap()["type"].as_str().unwrap()).unwrap(),
-				trainerName:	i.as_object().unwrap()["trainer"].as_str().unwrap().to_string(),
-				easyTeam:		monsters::MonsterTeam::new(),
-				mediumTeam:		monsters::MonsterTeam::new(),
-				hardTeam:		monsters::MonsterTeam::new(),
-			};
+			let battle: battle::BattleType;
+			match i.as_object().unwrap()["type"].as_str().unwrap() {
+				"single" => {
+					//* Easy team */
+					let mut easyTeam = monsters::MonsterTeam::new();
+					for b in i.as_object().unwrap()["mon_easy"].as_array().unwrap() {
+						easyTeam.add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+				
+					//* Medium team */
+					let mut mediumTeam = monsters::MonsterTeam::new();
+					for b in i.as_object().unwrap()["mon_medium"].as_array().unwrap() {
+						mediumTeam.add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+				
+					//* Hard team */
+					let mut hardTeam = monsters::MonsterTeam::new();
+					for b in i.as_object().unwrap()["mon_hard"].as_array().unwrap() {
+						hardTeam.add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
 
-			//* Easy team */
-			for b in i.as_object().unwrap()["mon_easy"].as_array().unwrap() {
-				battle.easyTeam.add_member(monsters::Monster::new(
-					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
-					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
-				));
+					battle = battle::BattleType::Single {
+						trainerName: i.as_object().unwrap()["trainer"].as_str().unwrap().to_string(),
+						easyTeam,
+						mediumTeam,
+						hardTeam,
+					};
+				}
+				"double" => {
+					//* Easy team */
+					let mut easyTeam = [monsters::MonsterTeam::new(),monsters::MonsterTeam::new()];
+					for b in i.as_object().unwrap()["mon_easy_1"].as_array().unwrap() {
+						easyTeam[0].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+					for b in i.as_object().unwrap()["mon_easy_2"].as_array().unwrap() {
+						easyTeam[1].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+				
+					//* Medium team */
+					let mut mediumTeam = [monsters::MonsterTeam::new(),monsters::MonsterTeam::new()];
+					for b in i.as_object().unwrap()["mon_medium_1"].as_array().unwrap() {
+						mediumTeam[0].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+					for b in i.as_object().unwrap()["mon_medium_2"].as_array().unwrap() {
+						mediumTeam[1].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+				
+					//* Hard team */
+					let mut hardTeam = [monsters::MonsterTeam::new(),monsters::MonsterTeam::new()];
+					for b in i.as_object().unwrap()["mon_hard_1"].as_array().unwrap() {
+						hardTeam[0].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+					for b in i.as_object().unwrap()["mon_hard_2"].as_array().unwrap() {
+						hardTeam[1].add_member(monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							b.as_array().unwrap()[1].as_i64().unwrap() as i32,
+						));
+					}
+
+					let mut trainerName = ["".to_string(),"".to_string()];
+					let singleTrainer = i.as_object().unwrap()["single"].as_bool().unwrap();
+					if singleTrainer {
+						trainerName[0] = i.as_object().unwrap()["trainer_1"].as_str().unwrap().to_string();
+						trainerName[1] = "".to_string();
+					} else {
+						trainerName[0] = i.as_object().unwrap()["trainer_1"].as_str().unwrap().to_string();
+						trainerName[1] = i.as_object().unwrap()["trainer_2"].as_str().unwrap().to_string();
+					}
+
+					battle = battle::BattleType::Double {
+						trainerName,
+						singleTrainer,
+						easyTeam,
+						mediumTeam,
+						hardTeam,
+					};
+				}
+				"wild"	 => {
+					battle = battle::BattleType::Wild {
+    					monster: monsters::Monster::new(
+							monsters::MonsterSpecies::from_str(i.as_object().unwrap()["mon"].as_array().unwrap()[0].as_str().unwrap()).unwrap(),
+							i.as_object().unwrap()["mon"].as_array().unwrap()[1].as_i64().unwrap() as i32,
+						),
+    				};
+				}
+				_ => {
+					battle = BattleType::Empty;
+					debug::log("[ERROR] - Battle type doesn't exist!\n");
+				}
 			}
-
-			//* Medium team */
-			for b in i.as_object().unwrap()["mon_medium"].as_array().unwrap() {
-				battle.mediumTeam.add_member(monsters::Monster::new(
-					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
-					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
-				));
-			}
-
-			//* Hard team */
-			for b in i.as_object().unwrap()["mon_hard"].as_array().unwrap() {
-				battle.hardTeam.add_member(monsters::Monster::new(
-					monsters::MonsterSpecies::from_str(b.as_array().unwrap()[0].as_str().unwrap()).unwrap(),
-					b.as_array().unwrap()[1].as_i64().unwrap() as i32,
-				));
-			}
-
-			print!("E:{}\nM:{}\nH:{}\n\n",battle.easyTeam.to_string(),battle.mediumTeam.to_string(),battle.hardTeam.to_string());
 
 			self.battleList.insert(i.as_object().unwrap()["id"].as_str().unwrap().to_string(), battle);
 		}

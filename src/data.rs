@@ -7,7 +7,7 @@
 
 //= Imports
 use std::collections::HashMap;
-use crate::{settings, camera, player, world, graphics, audio, localization, events};
+use crate::{settings, camera, player, world, graphics, audio, localization, events, battle};
 
 
 //= Structs
@@ -22,6 +22,7 @@ pub struct Gamestate {
 	pub audio:			audio::Audio,
 
 	pub worldData	: world::World,
+	pub battleData:		battle::BattleData,
 	pub eventHandler:	events::event_handler::EventHandler,
 
 	pub camera:			camera::Camera,
@@ -59,6 +60,7 @@ pub fn init() -> Gamestate {
 		graphics:		graphics::init(),
 		audio:			audio::init(),
 		worldData		: world::init_empty(),
+		battleData:		battle::BattleData::init(),
 		eventHandler:	events::event_handler::create(),
 		camera:			camera::init(),
 		player:			player::init(),

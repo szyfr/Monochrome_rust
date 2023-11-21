@@ -12,7 +12,7 @@ pub mod textbox;
 pub mod animation;
 pub mod parser;
 
-use crate::{overworld::{Direction, self}, data, utilities::math, monsters};
+use crate::{overworld::{Direction, self}, data, utilities::math, monsters, battle};
 
 
 //= Enumerations
@@ -70,6 +70,10 @@ pub enum EventChain{
 	},
 	/// Show level up stat changes for monster
 	//ShowStats{},
+
+	//= Battle
+	StartBattle{ battle: battle::BattleType },
+	EndBattle,
 
 	//= Camera controls
 	/// Reset camera to player
@@ -198,6 +202,13 @@ impl Event {
 				}
 				EventChain::GiveExperience { monsterPosition, amount } => {
 					str += &format!("GIVE_EXPERIENCE-[{}->{}]\n",amount,monsterPosition);
+				}
+				EventChain::StartBattle { .. } => {
+					// TODO
+					str += &format!("STARTBATTLE-\n");
+				}
+				EventChain::EndBattle => {
+					str += "ENDBATTLE\n";
 				}
 				EventChain::ResetCamera => {
 					str += &format!("CAMERA_RESET\n");
@@ -361,6 +372,18 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					gamestate.eventHandler.internal = 0;
 				}
 			}
+
+		//= Battle events
+		EventChain::StartBattle { battle } => {
+			gamestate.player.canMove = false;
+			gamestate.battleData.start_trainer_battle(battle.clone());
+			gamestate.eventHandler.currentChain += 1;
+		}
+		EventChain::EndBattle => {
+			gamestate.player.canMove = true;
+			gamestate.battleData.clear();
+			gamestate.eventHandler.currentChain += 1;
+		}
 
 		//= Camera events
 		EventChain::ResetCamera => {

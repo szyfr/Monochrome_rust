@@ -6,64 +6,57 @@
 
 
 //= Imports
-use std::str::FromStr;
-use crate::{monsters, data, settings};
+use crate::monsters;
 
 
 //= Enumerations
 
-///
-pub enum Combatant {
-	Empty,
-	Trainer(Enemy),
-	Wild(monsters::Monster),
-	WildDouble([monsters::Monster;2]),
-}
-
-///
+/// The type of battle
+#[derive(Clone)]
 pub enum BattleType {
-	Normal,
-	Double,
-}
-impl FromStr for BattleType {
-	type Err = ();
-	fn from_str( input : &str ) -> Result<BattleType, Self::Err> {
-		match input {
-			"single"	=> Ok(BattleType::Normal),
-			"double"	=> Ok(BattleType::Double),
-			_			=> Err(()),
-		}
-	}
+	Empty,
+	/// Data for a Single Battle
+	Single{
+		trainerName: String,
+	
+		easyTeam:	monsters::MonsterTeam,
+		mediumTeam:	monsters::MonsterTeam,
+		hardTeam:	monsters::MonsterTeam,
+	},
+	/// Data for a Double Battle
+	Double{
+		trainerName: [String;2],
+		singleTrainer: bool,
+	
+		easyTeam:	[monsters::MonsterTeam;2],
+		mediumTeam:	[monsters::MonsterTeam;2],
+		hardTeam:	[monsters::MonsterTeam;2],
+	},
+	/// Data for a Wild Battle
+	Wild{
+		monster: monsters::Monster,
+	},
 }
 
 
 //= Structures
 
-///
+/// The general battle data struct
 pub struct BattleData {
+	//* Battle variables */
 	pub started: bool,
-	pub combatant: Combatant,
-}
 
-///
-pub struct Battle {
+	//* Data */
 	pub battleType: BattleType,
-	pub trainerName: String,
-
-	pub easyTeam: monsters::MonsterTeam,
-	pub mediumTeam: monsters::MonsterTeam,
-	pub hardTeam: monsters::MonsterTeam,
-}
-
-///
-pub struct Enemy {
-	pub name: String,
-	pub team: monsters::MonsterTeam,
-	pub batType: BattleType,
 }
 
 
 //= Procedures
+
+impl BattleType {
+	
+
+}
 
 impl BattleData {
 	
@@ -71,36 +64,26 @@ impl BattleData {
 	pub fn init() -> Self {
 		return BattleData{
 			started:	false,
-    		combatant:	Combatant::Empty,
+    		battleType:	BattleType::Empty,
 		}
 	}
+
 	/// Clear battle structure to empty
 	pub fn clear(&mut self) {
 		self.started = false;
-		self.combatant = Combatant::Empty;
+		self.battleType = BattleType::Empty;
 	}
 
 	/// Start battle
-	pub fn start_tariner_battle(&mut self, battle: Battle) {
+	pub fn start_trainer_battle(&mut self, battle: BattleType) {
 		self.started = true;
 
-		let team: monsters::MonsterTeam;
-		match data::get_difficulty() {
-			settings::Difficulty::Easy => { team = battle.easyTeam; }
-			settings::Difficulty::Medium => { team = battle.mediumTeam; }
-			settings::Difficulty::Hard => { team = battle.hardTeam; }
-		}
-		self.combatant = Combatant::Trainer(
-			Enemy {
-				name:		battle.trainerName,
-				team,
-				batType:	battle.battleType,
-			},
-		);
+		self.battleType = battle;
 	}
 
-}
+	//
+	pub fn update(&self) {
+		
+	}
 
-impl Enemy {
-	
 }

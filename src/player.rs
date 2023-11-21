@@ -184,7 +184,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 		//* Event handling */
 		if events::parse_event(gamestate) { return; }
 
-		if gamestate.player.canMove && gamestate.player.menu.open == MenuOptions::None {
+		if gamestate.player.canMove && gamestate.player.menu.open == MenuOptions::None && !gamestate.battleData.started {
 
 			gamestate.player.unit.position = gamestate.player.unit.posTarget;
 			let mut newpos = gamestate.player.unit.position;

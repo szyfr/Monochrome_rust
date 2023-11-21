@@ -42,6 +42,7 @@ fn main() {
 		gamestate.worldData.time_tick();
 		//gamestate.worldData.get_time();
 		gamestate.audio.update();
+		if gamestate.battleData.started { gamestate.battleData.update(); }
 
 		raylib::begin_drawing();
 		{

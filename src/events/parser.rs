@@ -13,6 +13,7 @@ use serde_json::Value;
 use crate::monsters;
 use crate::overworld;
 use crate::utilities::debug;
+use crate::world;
 
 use super::EventChain;
 use super::conditionals;
@@ -25,7 +26,7 @@ use super::textbox;
 //= Procedures
 
 /// Parses JSON object into an EventChain
-pub fn parse_value( value: &Value ) -> EventChain {
+pub fn parse_value( world: &mut world::World, value: &Value ) -> EventChain {
 	match value.as_array().unwrap()[0].as_str().unwrap() {
 		//= Text events
 		"text" => {
@@ -112,6 +113,16 @@ pub fn parse_value( value: &Value ) -> EventChain {
 				monsterPosition:	value.as_array().unwrap()[1].as_i64().unwrap() as usize,
 				amount: 			value.as_array().unwrap()[2].as_i64().unwrap() as i32,
 			}
+		}
+
+		//= Battle Events
+		"start_battle" => {
+			return EventChain::StartBattle {
+				battle: world.battleList[&value.as_array().unwrap()[1].as_str().unwrap().to_string()].clone(),
+			}
+		}
+		"end_battle" => {
+			return EventChain::EndBattle;
 		}
 
 		//= Camera events
