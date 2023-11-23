@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::{debug, math}, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
+use crate::{utilities::debug, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
 
 
 //= Constants
@@ -97,11 +97,12 @@ impl World {
 		let jsonFile_ent: serde_json::Value = serde_json::from_str(&fileResult_ent.unwrap()).unwrap();
 		let arr = jsonFile_ent["entities"].as_array().unwrap();
 		for i in 0..arr.len() {
-			let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
+			//let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
+			let mut unit = overworld::Unit::new();
 
 			//* Set entity direction and position */
 			unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
-			unit.position = raylib_ffi::Vector3{
+			unit.position = Vector3{
 				x: arr[i]["location"].as_array().unwrap()[0].as_i64().unwrap() as f32,
 				y: arr[i]["location"].as_array().unwrap()[1].as_i64().unwrap() as f32,
 				z: arr[i]["location"].as_array().unwrap()[2].as_i64().unwrap() as f32,
@@ -384,7 +385,8 @@ pub fn draw_world( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a north-facing persepective.
 fn draw_rot_000( gamestate : &mut Gamestate ) {
-	let playerPosition = math::round_v3(gamestate.player.unit.position);
+	//let playerPosition = math::round_v3(gamestate.player.unit.position);
+	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -433,7 +435,8 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.graphics.animations,
 							&gamestate.graphics.models["unit"],
@@ -456,7 +459,8 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a east-facing persepective.
 fn draw_rot_090( gamestate : &mut Gamestate ){
-	let playerPosition = math::round_v3(gamestate.player.unit.position);
+	//let playerPosition = math::round_v3(gamestate.player.unit.position);
+	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + (DEPTH + (DEPTH / 2.0))) as i32;
 	let minX = (playerPosition.x - (DEPTH / 2.0)) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -495,7 +499,8 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.graphics.animations,
 							&gamestate.graphics.models["unit"],
@@ -518,7 +523,8 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 
 /// Draws tiles and units from a south-facing persepective.
 fn draw_rot_180( gamestate : &mut Gamestate ) {
-	let playerPosition = math::round_v3(gamestate.player.unit.position);
+	//let playerPosition = math::round_v3(gamestate.player.unit.position);
+	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -557,7 +563,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.graphics.animations,
 							&gamestate.graphics.models["unit"],
@@ -580,7 +587,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a west-facing persepective.
 fn draw_rot_270( gamestate : &mut Gamestate ) {
-	let playerPosition = math::round_v3(gamestate.player.unit.position);
+	//let playerPosition = math::round_v3(gamestate.player.unit.position);
+	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + (DEPTH / 2.0)) as i32;
 	let minX = (playerPosition.x - (DEPTH + (DEPTH / 2.0))) as i32;
 	let maxY = (playerPosition.y + HEIGHT) as i32;
@@ -619,7 +627,8 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 						overworld::draw_unit(
 							&gamestate.graphics.animations,
 							&gamestate.graphics.models["unit"],

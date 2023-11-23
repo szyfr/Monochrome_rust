@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib::{self, structures::{Image, Rectangle, Texture, Model, Vector3}}, utilities::{debug, math::{close_enough_v3, self}}, world, events::{self, conditionals::Condition}, data};
+use crate::{raylib::{self, structures::{Image, Rectangle, Texture, Model, Vector3}}, utilities::{debug, math}, world, events::{self, conditionals::Condition}, data};
 
 
 //= Enumerations
@@ -43,13 +43,14 @@ impl Display for Direction {
 	}
 }
 
+
 //= Structures
 
 /// Represents an overworld Character/Item. Also used with the Player.
 #[derive(Clone)]
 pub struct Unit {
-	pub position	: raylib_ffi::Vector3,
-	pub posTarget	: raylib_ffi::Vector3,
+	pub position	: Vector3,
+	pub posTarget	: Vector3,
 
 	pub direction	: Direction,
 
@@ -91,27 +92,58 @@ impl Direction {
 	}
 }
 
+impl Animator {
+
+	/// Create new blank animator
+	pub fn new() -> Self {
+		return Animator {
+			textures:	Vec::new(),
+			currentAnimation:	"idle_south".to_string(),
+			frame: 		0,
+			counter:	0,
+		}
+	}
+
+}
+
+impl Unit {
+
+	/// Create new blank unit
+	pub fn new() -> Self {
+		return Unit {
+			position:	Vector3::zero(),
+			posTarget:	Vector3::zero(),
+			direction:	Direction::South,
+			id:			"".to_string(),
+			events:		HashMap::new(),
+			conditions:	HashMap::new(),
+			animator:	Animator::new(),
+		}
+	}
+
+}
+
 /// Creates a new Unit.<br>
 /// If the Raylib window is ready, input filename will be loaded as the texture. It will be dropped otherwise.
-pub fn create_unit( filename : &str ) -> Unit {
-	let mut textures: Vec<Texture> = Vec::new();
-
-	if raylib::is_window_ready() && filename != "" { textures = load_unit_textures(filename); }
-	return Unit {
-		position:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
-		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
-		direction:	Direction::South,
-		id:			"".to_string(),
-		events:		HashMap::new(),
-		conditions:	HashMap::new(),
-		animator:	Animator{
-			textures:	textures,
-			currentAnimation: "walk_south".to_string(),
-			frame: 		0,
-			counter: 	0,
-		},
-	};
-}
+//pub fn create_unit( filename : &str ) -> Unit {
+//	let mut textures: Vec<Texture> = Vec::new();
+//
+//	if raylib::is_window_ready() && filename != "" { textures = load_unit_textures(filename); }
+//	return Unit {
+//		position:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
+//		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
+//		direction:	Direction::South,
+//		id:			"".to_string(),
+//		events:		HashMap::new(),
+//		conditions:	HashMap::new(),
+//		animator:	Animator{
+//			textures:	textures,
+//			currentAnimation: "walk_south".to_string(),
+//			frame: 		0,
+//			counter: 	0,
+//		},
+//	};
+//}
 
 /// Concatenates the full path to the input and loads the respective Image into a ``Vec<Texture>``.
 pub fn load_unit_textures( filename : &str ) -> Vec<Texture> {
@@ -151,7 +183,8 @@ pub fn draw_unit( animations : &HashMap<String, Animation>, model : &Model, unit
 	if unit.animator.textures.len() == 0 { return; }
 
 	//* Check animations */
-	if !math::equal_v3(unit.position, unit.posTarget) {
+	//if !math::equal_v3(unit.position, unit.posTarget) {
+	if unit.position == unit.posTarget {
 		let dir = math::get_relative_direction_dir(rotation, unit.direction);
 		set_animation(unit, format!("walk_{}",dir))
 	} else {
@@ -200,7 +233,8 @@ pub fn set_animation( unit : &mut Unit, animation : String ) {
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
 pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
 	//* Leave if still moving */
-	if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
+	//if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
+	if unit.position.close(unit.posTarget, 0.05) { return; }
 
 	//* Calculate new position */
 	let mut newPos = unit.position;
@@ -243,7 +277,8 @@ pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMa
 
 	//* Check for entities */
 	for (_, unit) in unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return; }
+		//if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return; }
+		if newPos == unit.position && exists(&eventHandler, unit) { return; }
 	}
 
 	unit.posTarget = newPos;
@@ -259,7 +294,8 @@ pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction
 	else { unitMove = gamestate.worldData.unitMap.get(&unit).unwrap().clone(); }
 
 	//* Leave if still moving */
-	if !close_enough_v3(unitMove.position, unitMove.posTarget, 0.05) { return; }
+	//if !close_enough_v3(unitMove.position, unitMove.posTarget, 0.05) { return; }
+	if unitMove.position.close(unitMove.posTarget, 0.05) { return; }
 
 	//* Calculate new position */
 	let mut newPos = unitMove.position;
@@ -305,7 +341,8 @@ pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction
 
 	//* Check for entities */
 	for (_, unit) in gamestate.worldData.unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) {
+		//if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) {
+		if newPos == unit.position && exists(&gamestate.eventHandler, unit) {
 			gamestate.audio.play_sound("collision".to_string());
 			return;
 		}
@@ -317,9 +354,10 @@ pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction
 }
 
 //
-pub fn check_unit_collision( unitMap: &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, newPos: raylib_ffi::Vector3 ) -> bool {
+pub fn check_unit_collision( unitMap: &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, newPos: Vector3 ) -> bool {
 	for (_,  unit) in unitMap.iter() {
-		if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return false; }
+		//if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return false; }
+		if newPos == unit.position && exists(&eventHandler, unit) { return false; }
 	}
 	return true;
 }

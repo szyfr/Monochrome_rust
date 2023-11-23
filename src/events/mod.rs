@@ -12,7 +12,7 @@ pub mod textbox;
 pub mod animation;
 pub mod parser;
 
-use crate::{overworld::{Direction, self}, data, utilities::math, monsters, battle};
+use crate::{overworld::{Direction, self}, data, monsters, battle, raylib::structures::Vector3};
 
 
 //= Enumerations
@@ -312,13 +312,13 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
 
 				//* Move unit */
-				unit.position  = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
-				unit.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				unit.position  = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				unit.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
 				unit.direction = *direction;
 
 				//* If doMove is true, move */
 				if *doMove { overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.eventHandler, unit, *direction); }
-				else { unit.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32}; }
+				else { unit.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32}; }
 				
 				gamestate.eventHandler.currentChain += 1;
 			}
@@ -392,14 +392,14 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 			}
 		EventChain::SetCamera { position } => {
 				gamestate.camera.onPlayer = false;
-				gamestate.camera.position = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
-				gamestate.camera.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				gamestate.camera.position = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				gamestate.camera.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
 				gamestate.eventHandler.currentChain += 1;
 			}
 		EventChain::MoveCamera { position, wait } => {
 				gamestate.camera.onPlayer = false;
-				gamestate.camera.posTarget = raylib_ffi::Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
-				if !*wait || math::equal_v3(gamestate.camera.posTarget, gamestate.camera.position) { gamestate.eventHandler.currentChain += 1; }
+				gamestate.camera.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
+				if !*wait || gamestate.camera.posTarget == gamestate.camera.position { gamestate.eventHandler.currentChain += 1; }
 			}
 		EventChain::RotateCamera { rotation, wait } => {
 				gamestate.camera.onPlayer = false;

@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle}}, utilities::math, events, monsters};
+use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle, Vector3}}, utilities::math, events, monsters};
 
 
 //= Constants
@@ -102,14 +102,15 @@ impl Menu {
 /// Initialize player data
 pub fn init() -> Player {
 	let mut player = Player{
-		unit:		overworld::create_unit("player_1"),
+		//unit:		overworld::create_unit("player_1"),
+		unit:		overworld::Unit::new(),
 		monsters:	monsters::MonsterTeam([None, None, None, None]),
 		canMove:	true,
 		menu:		init_menu(),
 	};
 	
-	player.unit.position = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
-	player.unit.posTarget = raylib_ffi::Vector3{x: 1.0,y: 0.0,z: 2.0};
+	player.unit.position = Vector3{x: 1.0,y: 0.0,z: 2.0};
+	player.unit.posTarget = Vector3{x: 1.0,y: 0.0,z: 2.0};
 
 	return player;
 }
@@ -177,9 +178,12 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 	//* Movement */
 	let ft = raylib::get_frame_time();
 
-	if !math::close_enough_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget, 0.05) {
-		let dir = math::get_direction_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget);
-		gamestate.player.unit.position = math::add_v3(gamestate.player.unit.position, math::mul_v3(dir, MVSPEED * ft));
+	//if !math::close_enough_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget, 0.05) {
+	if gamestate.player.unit.position.close(gamestate.player.unit.posTarget, 0.05) {
+		//let dir = math::get_direction_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget);
+		let dir = gamestate.player.unit.position.direction_to(gamestate.player.unit.posTarget);
+		//gamestate.player.unit.position = math::add_v3(gamestate.player.unit.position, math::mul_v3(dir, MVSPEED * ft));
+		gamestate.player.unit.position = gamestate.player.unit.position + (dir * (MVSPEED * ft));
 	} else {
 		//* Event handling */
 		if events::parse_event(gamestate) { return; }
@@ -326,7 +330,8 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 			//* If the player is moving */
 			gamestate.player.unit.direction = dir;
-			if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
+			//if !math::equal_v3(gamestate.player.unit.posTarget, newpos) {
+			if gamestate.player.unit.posTarget != newpos {
 				overworld::set_animation( &mut gamestate.player.unit, "walk_".to_string() + &math::get_relative_direction_dir(gamestate.camera.rotation, dir).to_string() );
 				//overworld::move_unit(&gamestate.worldData.currentMap, &mut gamestate.worldData.unitMap, &gamestate.eventHandler, &mut gamestate.player.unit, dir);
 				overworld::move_unit_test(gamestate, "player".to_string(), dir);

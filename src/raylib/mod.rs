@@ -11,6 +11,7 @@ use raylib_ffi::Vector3;
 
 pub mod enums;
 pub mod structures;
+pub mod math;
 
 
 //= Procedures
@@ -81,8 +82,8 @@ pub fn get_frame_time() -> f32 {
 pub fn begin_3d_mode( camera : &Camera ) {
 	unsafe {
 		let rlCamera = raylib_ffi::Camera3D{
-			position:	camera.camPosition,
-			target:		camera.position,
+			position:	camera.camPosition.to_ffi(),
+			target:		camera.position.to_ffi(),
 			up:			Vector3{x:0.0,y:1.0,z:0.0},
 			fovy:		camera.fovy,
 			projection:	raylib_ffi::enums::CameraProjection::Perspective as i32,

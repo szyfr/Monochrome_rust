@@ -7,7 +7,7 @@
 
 //= Imports
 use super::enums;
-use std::{ffi::c_void, borrow::BorrowMut};
+use std::{ffi::c_void, borrow::BorrowMut, ops::{Sub, Mul, Add}};
 
 
 //= Structures
@@ -20,12 +20,46 @@ pub struct Vector2 {
 }
 
 /// Vector3 type
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct Vector3 {
 	pub x: f32,
 	pub y: f32,
 	pub z: f32,
 }
+impl Sub for Vector3 {
+	type Output = Self;
+
+	fn sub(self, rhs: Self) -> Self::Output {
+		Self {
+			x: self.x - rhs.x,
+			y: self.y - rhs.y,
+			z: self.z - rhs.z,
+		}
+	}
+}
+impl Add for Vector3 {
+	type Output = Self;
+
+	fn add(self, rhs: Self) -> Self::Output {
+		Self {
+			x: self.x + rhs.x,
+			y: self.y + rhs.y,
+			z: self.z + rhs.z,
+		}
+	}
+}
+impl Mul<f32> for Vector3 {
+    type Output = Self;
+
+	fn mul(self, rhs: f32) -> Self::Output {
+		Self {
+			x: self.x * rhs,
+			y: self.y * rhs,
+			z: self.z * rhs,
+		}
+	}
+}
+
 
 /// Vector4 type
 #[derive(Copy, Clone)]
@@ -193,6 +227,61 @@ impl Vector3 {
 	/// Creating a zeroed V3
 	pub fn zero() -> Vector3 {
 		return Vector3 { x: 0.0, y: 0.0, z: 0.0 }
+	}
+
+	/// Returns true if the inpout Vector is with offset of the original
+	pub fn close(&self, v2: Self, offset: f32) -> bool {
+		let mut output = true;
+
+		if self.x > v2.x + offset || self.x < v2.x - offset { output = false; }
+		if self.y > v2.y + offset || self.y < v2.y - offset { output = false; }
+		if self.z > v2.z + offset || self.z < v2.z - offset { output = false; }
+		
+		return output;
+	}
+
+	/// Rounds V3
+	pub fn round(&self) -> Self {
+		Self {
+			x: self.x.round(),
+			y: self.y.round(),
+			z: self.z.round(),
+		}
+	}
+
+	/// Returns position of camera rotated around input ``Vector3``.
+	pub fn rotate(&self, dist: Self, rot: f32) -> Self {
+		let mut position = Vector3{x:0.0,y:0.0,z:0.0};
+
+		position.x = dist.x * (rot / 57.3).cos() - dist.z * (rot / 57.3).sin();
+		position.z = dist.x * (rot / 57.3).sin() + dist.z * (rot / 57.3).cos();
+
+		position.x += self.x;
+		position.y  = self.y + dist.y;
+		position.z += self.z;
+
+		return position;
+	}
+
+	/// Creates a binary direction for the difference between two points.
+	pub fn direction_to(&self, v2: Self) -> Self {
+		//let difference = sub_v3(v2, v1);
+		let difference = v2 - *self;
+		let mut output = Vector3{x:0.0,y:0.0,z:0.0};
+
+		if difference.x  > 0.0 { output.x =  1.0 }
+		if difference.x == 0.0 { output.x =  0.0 }
+		if difference.x  < 0.0 { output.x = -1.0 }
+
+		if difference.y  > 0.0 { output.y =  1.0 }
+		if difference.y == 0.0 { output.y =  0.0 }
+		if difference.y  < 0.0 { output.y = -1.0 }
+
+		if difference.z  > 0.0 { output.z =  1.0 }
+		if difference.z == 0.0 { output.z =  0.0 }
+		if difference.z  < 0.0 { output.z = -1.0 }
+		
+		return output;
 	}
 
 	/// Converting to raylib_ffi version
