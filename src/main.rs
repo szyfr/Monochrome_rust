@@ -6,7 +6,7 @@
 
 
 //= Imports
-use monorust::{raylib, data, player, overworld, world, events};
+use monorust::{raylib, data, player, world, events};
 
 
 //= Main
@@ -24,7 +24,7 @@ fn main() {
 
 	//* Graphics */
 	gamestate.graphics.load();
-	gamestate.player.unit.animator.textures = overworld::load_unit_textures("player_1");
+	gamestate.player.unit.animator.texture = "player_1".to_string();
 
 	//* Camera / Player */
 

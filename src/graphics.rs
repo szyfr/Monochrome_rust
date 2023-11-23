@@ -49,9 +49,15 @@ impl Graphics {
 		//* World */
 		self.textures.insert("terrain_texture".to_string(), Texture::load("data/tiles/texture_0.png"));
 
+		let mut img = Image::load("data/sprites/overworld/player_1.png");
+		for i in 0..img.width/img.height {
+			let subimg = img.from_image(Rectangle { x: (16 * i) as f32, y: 0.0, width: 16.0, height: 16.0 });
+			self.textures.insert("player_1_".to_string() + &i.to_string(), subimg.load_texture());
+		}
+
 		//* UI */
 		//* Textbox */
-		let mut img = Image::load("data/sprites/ui/textbox.png").resize_nn(4);
+		img = Image::load("data/sprites/ui/textbox.png").resize_nn(4);
 		self.textures.insert("ui_textbox_general".to_string(), img.load_texture());
 		img.unload();
 		//* Blackbox */

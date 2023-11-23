@@ -99,6 +99,7 @@ impl World {
 		for i in 0..arr.len() {
 			//let mut unit = overworld::create_unit(arr[i]["sprite"].as_str().unwrap());
 			let mut unit = overworld::Unit::new();
+			unit.animator.texture = arr[i]["sprite"].as_str().unwrap().to_string();
 
 			//* Set entity direction and position */
 			unit.direction = overworld::Direction::from_str(arr[i]["direction"].as_str().unwrap()).unwrap();
@@ -400,12 +401,13 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z-1 {
-			overworld::draw_unit(
-				&gamestate.graphics.animations,
-				&gamestate.graphics.models["unit"],
-				&mut gamestate.player.unit,
-				gamestate.camera.rotation,
-			);
+			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+			//overworld::draw_unit(
+			//	&gamestate.graphics.animations,
+			//	&gamestate.graphics.models["unit"],
+			//	&mut gamestate.player.unit,
+			//	gamestate.camera.rotation,
+			//);
 		}
 
 		for _ in minX..maxX {
@@ -437,12 +439,13 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				for (_, unit) in &mut gamestate.worldData.unitMap {
 					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-						overworld::draw_unit(
-							&gamestate.graphics.animations,
-							&gamestate.graphics.models["unit"],
-							unit,
-							gamestate.camera.rotation,
-						);
+						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+						//overworld::draw_unit(
+						//	&gamestate.graphics.animations,
+						//	&gamestate.graphics.models["unit"],
+						//	unit,
+						//	gamestate.camera.rotation,
+						//);
 					}
 				}
 			}
@@ -474,12 +477,13 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x+1 {
-			overworld::draw_unit(
-				&gamestate.graphics.animations,
-				&gamestate.graphics.models["unit"],
-				&mut gamestate.player.unit,
-				gamestate.camera.rotation,
-			);
+			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+			//overworld::draw_unit(
+			//	&gamestate.graphics.animations,
+			//	&gamestate.graphics.models["unit"],
+			//	&mut gamestate.player.unit,
+			//	gamestate.camera.rotation,
+			//);
 		}
 
 		for _ in minZ..maxZ {
@@ -501,12 +505,13 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				for (_, unit) in &mut gamestate.worldData.unitMap {
 					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-						overworld::draw_unit(
-							&gamestate.graphics.animations,
-							&gamestate.graphics.models["unit"],
-							unit,
-							gamestate.camera.rotation,
-						);
+						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+						//overworld::draw_unit(
+						//	&gamestate.graphics.animations,
+						//	&gamestate.graphics.models["unit"],
+						//	unit,
+						//	gamestate.camera.rotation,
+						//);
 					}
 				}
 			}
@@ -538,12 +543,13 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z+1 {
-			overworld::draw_unit(
-				&gamestate.graphics.animations,
-				&gamestate.graphics.models["unit"],
-				&mut gamestate.player.unit,
-				gamestate.camera.rotation,
-			);
+			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+			//overworld::draw_unit(
+			//	&gamestate.graphics.animations,
+			//	&gamestate.graphics.models["unit"],
+			//	&mut gamestate.player.unit,
+			//	gamestate.camera.rotation,
+			//);
 		}
 
 		for _ in minX..maxX {
@@ -565,12 +571,13 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 				for (_, unit) in &mut gamestate.worldData.unitMap {
 					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-						overworld::draw_unit(
-							&gamestate.graphics.animations,
-							&gamestate.graphics.models["unit"],
-							unit,
-							gamestate.camera.rotation,
-						);
+						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+						//overworld::draw_unit(
+						//	&gamestate.graphics.animations,
+						//	&gamestate.graphics.models["unit"],
+						//	unit,
+						//	gamestate.camera.rotation,
+						//);
 					}
 				}
 			}
@@ -602,12 +609,13 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x-1 {
-			overworld::draw_unit(
-				&gamestate.graphics.animations,
-				&gamestate.graphics.models["unit"],
-				&mut gamestate.player.unit,
-				gamestate.camera.rotation,
-			);
+			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+			//overworld::draw_unit(
+			//	&gamestate.graphics.animations,
+			//	&gamestate.graphics.models["unit"],
+			//	&mut gamestate.player.unit,
+			//	gamestate.camera.rotation,
+			//);
 		}
 
 		for _ in minZ..maxZ {
@@ -629,12 +637,13 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 				for (_, unit) in &mut gamestate.worldData.unitMap {
 					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
 					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-						overworld::draw_unit(
-							&gamestate.graphics.animations,
-							&gamestate.graphics.models["unit"],
-							unit,
-							gamestate.camera.rotation,
-						);
+						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+						//overworld::draw_unit(
+						//	&gamestate.graphics.animations,
+						//	&gamestate.graphics.models["unit"],
+						//	unit,
+						//	gamestate.camera.rotation,
+						//);
 					}
 				}
 			}

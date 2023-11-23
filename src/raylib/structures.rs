@@ -7,7 +7,7 @@
 
 //= Imports
 use super::enums;
-use std::{ffi::c_void, borrow::BorrowMut, ops::{Sub, Mul, Add}};
+use std::{ffi::c_void, borrow::BorrowMut, ops::{Sub, Mul, Add}, fmt::Display};
 
 
 //= Structures
@@ -59,6 +59,11 @@ impl Mul<f32> for Vector3 {
 		}
 	}
 }
+impl Display for Vector3 {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		return write!(f, "[{},{},{}]",self.x, self.y, self.z);
+	}
+}
 
 
 /// Vector4 type
@@ -80,6 +85,7 @@ pub struct Quaternion {
 }
 
 /// Matrix, 4x4 components, column major, OpenGL style, right handed
+#[derive(Clone)]
 pub struct Matrix {
 	pub m0: f32, pub m4: f32, pub  m8: f32, pub m12: f32, //* Matrix first row  (4 components)
 	pub m1: f32, pub m5: f32, pub  m9: f32, pub m13: f32, //* Matrix second row (4 components)
@@ -190,6 +196,7 @@ pub struct Transform {
 }
 
 /// Model type
+#[derive(Clone)]
 pub struct Model {
 	pub transform: Matrix,
 
@@ -625,7 +632,7 @@ impl Model {
 	/// Set material texture
 	pub fn set_material_texture(&mut self, texture: Texture) -> &mut Self {
 		unsafe {
-			Texture::from_ffi((*(*self.materials).maps).texture).unload();
+			//Texture::from_ffi((*(*self.materials).maps).texture).unload();
 			raylib_ffi::SetMaterialTexture(self.materials, enums::MaterialMapIndex::ALBEDO as i32, texture.to_ffi());
 		}
 

@@ -44,17 +44,13 @@ impl Camera {
 		//* Check if targetting a unit, and update position accordingly */
 		if self.onPlayer {
 			//* Have camera's movements match player */
-			//self.position = math::add_v3(playerPos, Vector3{x:0.0,y:1.0,z:0.0});
 			self.position = playerPos + Vector3{x:0.0,y:1.0,z:0.0};
 			self.position.y = self.position.y / 2.0;
 			self.posTarget = self.position;
 		} else {
 			//* Update Position */
-			//if !math::close_enough_v3(self.position, self.posTarget, 0.5) {
 			if self.position.close(self.posTarget, 0.5) {
-				//let dir = math::get_direction_v3(self.position, self.posTarget);
 				let dir = self.position.direction_to(self.posTarget);
-				//self.position = math::add_v3(self.position, math::mul_v3(dir, MVSPEED * ft));
 				self.position = self.position + (dir * (MVSPEED * ft));
 			} else { self.position = self.posTarget; }
 		}
@@ -84,8 +80,7 @@ impl Camera {
 		}
 	
 		//* Calculate rotation */
-		//self.camPosition = math::rotate(self.position, self.rotation);
-		self.camPosition.rotate(Vector3{x: 0.0, y: 6.0, z: 5.0}, self.rotation);
+		self.camPosition = self.position.rotate(Vector3{x: 0.0, y: 6.0, z: 5.0}, self.rotation);
 	}
 }
 

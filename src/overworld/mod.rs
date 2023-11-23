@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib::{self, structures::{Image, Rectangle, Texture, Model, Vector3}}, utilities::{debug, math}, world, events::{self, conditionals::Condition}, data};
+use crate::{raylib::structures::Vector3, utilities::{debug, math}, world, events::{self, conditionals::Condition}, data, graphics};
 
 
 //= Enumerations
@@ -64,7 +64,7 @@ pub struct Unit {
 /// The animation controller for Units.
 #[derive(Clone)]
 pub struct Animator {
-	pub textures: Vec<Texture>,
+	pub texture: String,
 
 	pub currentAnimation: String,
 
@@ -97,10 +97,21 @@ impl Animator {
 	/// Create new blank animator
 	pub fn new() -> Self {
 		return Animator {
-			textures:	Vec::new(),
+			texture:	"".to_string(),
 			currentAnimation:	"idle_south".to_string(),
 			frame: 		0,
 			counter:	0,
+		}
+	}
+
+	/// Sets the Unit's current animation
+	pub fn set_animation(&mut self, animation: String) {
+		//* Check if new animation is the not the one currently playing */
+		if self.currentAnimation != animation {
+			//* Reset all variables */
+			self.counter = 0;
+			self.frame = 0;
+			self.currentAnimation = animation;
 		}
 	}
 
@@ -121,113 +132,58 @@ impl Unit {
 		}
 	}
 
-}
+	/// Draw Unit
+	pub fn draw(&mut self, graphics: &graphics::Graphics, rotation: f32) -> &Self {
+		//* Check if unit HAS a sprite */
+		if self.animator.texture == "".to_string() { return self; }
 
-/// Creates a new Unit.<br>
-/// If the Raylib window is ready, input filename will be loaded as the texture. It will be dropped otherwise.
-//pub fn create_unit( filename : &str ) -> Unit {
-//	let mut textures: Vec<Texture> = Vec::new();
-//
-//	if raylib::is_window_ready() && filename != "" { textures = load_unit_textures(filename); }
-//	return Unit {
-//		position:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
-//		posTarget:	raylib_ffi::Vector3{x:0.0,y:0.0,z:0.0},
-//		direction:	Direction::South,
-//		id:			"".to_string(),
-//		events:		HashMap::new(),
-//		conditions:	HashMap::new(),
-//		animator:	Animator{
-//			textures:	textures,
-//			currentAnimation: "walk_south".to_string(),
-//			frame: 		0,
-//			counter: 	0,
-//		},
-//	};
-//}
+		//* Check if animation exists */
+		if !graphics.animations.contains_key(&self.animator.currentAnimation) {
+			debug::log("[ERROR] - Attempting to use animation that doesn't exist.\n");
+			return self;
+		}
+		let animation = &graphics.animations[&self.animator.currentAnimation];
 
-/// Concatenates the full path to the input and loads the respective Image into a ``Vec<Texture>``.
-pub fn load_unit_textures( filename : &str ) -> Vec<Texture> {
-	//* Create full path */
-	let fullPath = "data/sprites/overworld/".to_string() + filename + ".png";
+		//* Check animations */
+		if self.position == self.posTarget {
+			let dir = math::get_relative_direction_dir(rotation, self.direction);
+			self.animator.set_animation(format!("idle_{}",dir));
+		} else {
+			let dir = math::get_relative_direction_dir(rotation, self.direction);
+			self.animator.set_animation(format!("walk_{}",dir));
+		}
 
-	//* Load image */
-	let img = Image::load(&fullPath);
-	let mut output: Vec<Texture> = Vec::new();
+		//* Update animation */
+		self.animator.counter += 1;
+		if animation.delay != 0 && self.animator.counter >= animation.delay {
+			self.animator.counter = 0;
+			self.animator.frame += 1;
+			if self.animator.frame >= animation.frames.len() as i32 { self.animator.frame = 0; }
+		}
 
-	//* Generate each texture from image */
-	for i in 0..img.width/img.height {
-		let subImg = img.from_image(
-			Rectangle{
-				x:		(i*img.height) as f32,
-				y:		0.0,
-				width:	img.height as f32,
-				height:	img.height as f32,
-			}
+		//* Update material */
+		let index = self.animator.frame as usize;
+		let frame = animation.frames[index] as usize;
+		let texture = graphics.textures[&(self.animator.texture.to_string() + "_" + &frame.to_string())];
+		let mut model = graphics.models["unit"].clone();
+		model.set_material_texture(texture);
+
+		//* Draw */
+		model.draw_ex(
+			Vector3{
+				x: self.position.x,
+				y: self.position.y/2.0,
+				z: self.position.z,
+			},
+			Vector3{x:0.0,y:1.0,z:0.0},
+			-rotation,
+			Vector3{x:1.0,y:1.0,z:1.0},
+			raylib_ffi::colors::WHITE,
 		);
-		output.push(subImg.load_texture());
-		subImg.unload();
-	}
-	img.unload();
 
-	return output;
-}
-
-/// Draws the input Unit in the world as well as updating the Unit's animations.
-pub fn draw_unit( animations : &HashMap<String, Animation>, model : &Model, unit : &mut Unit, rotation : f32 ) {
-	//* Check if animation exists */
-	if !animations.contains_key(&unit.animator.currentAnimation) {
-		debug::log("[ERROR] - Attempting to use animation that doesn't exist.\n");
-		return;
-	}
-	let animation = &animations[&unit.animator.currentAnimation];
-	if unit.animator.textures.len() == 0 { return; }
-
-	//* Check animations */
-	//if !math::equal_v3(unit.position, unit.posTarget) {
-	if unit.position == unit.posTarget {
-		let dir = math::get_relative_direction_dir(rotation, unit.direction);
-		set_animation(unit, format!("walk_{}",dir))
-	} else {
-		let dir = math::get_relative_direction_dir(rotation, unit.direction);
-		set_animation(unit, format!("idle_{}",dir))
+		return self;
 	}
 
-	//* Update animation */
-	unit.animator.counter += 1;
-	if animation.delay != 0 && unit.animator.counter >= animation.delay {
-		unit.animator.counter = 0;
-		unit.animator.frame += 1;
-		if unit.animator.frame >= animation.frames.len() as i32 { unit.animator.frame = 0; }
-	}
-
-	//* Update material */
-	let index = unit.animator.frame as usize;
-	let frame = animation.frames[index] as usize;
-	raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, unit.animator.textures[frame].to_ffi());
-
-	//* Draw */
-	model.draw_ex(
-		Vector3{
-			x: unit.position.x,
-			y: unit.position.y/2.0,
-			z: unit.position.z,
-		},
-		Vector3{x:0.0,y:1.0,z:0.0},
-		-rotation,
-		Vector3{x:1.0,y:1.0,z:1.0},
-		raylib_ffi::colors::WHITE,
-	);
-}
-
-/// Sets the Unit's current animation
-pub fn set_animation( unit : &mut Unit, animation : String ) {
-	//* Check if new animation is the not the one currently playing */
-	if unit.animator.currentAnimation != animation {
-		//* Reset all variables */
-		unit.animator.counter = 0;
-		unit.animator.frame = 0;
-		unit.animator.currentAnimation = animation;
-	}
 }
 
 /// Calculates whether the Unit can move in the input direction and if possible set them to move.
@@ -295,7 +251,7 @@ pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction
 
 	//* Leave if still moving */
 	//if !close_enough_v3(unitMove.position, unitMove.posTarget, 0.05) { return; }
-	if unitMove.position.close(unitMove.posTarget, 0.05) { return; }
+	if !unitMove.position.close(unitMove.posTarget, 0.05) { return; }
 
 	//* Calculate new position */
 	let mut newPos = unitMove.position;
