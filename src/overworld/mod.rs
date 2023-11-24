@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib::structures::Vector3, utilities::{debug, math}, world, events::{self, conditionals::Condition}, data, graphics};
+use crate::{raylib::{structures::Vector3, self}, utilities::{debug, math}, events::{self, conditionals::Condition}, data, graphics};
 
 
 //= Enumerations
@@ -43,6 +43,24 @@ impl Display for Direction {
 	}
 }
 
+/// Result of an attemted move
+#[derive(Copy, Clone, PartialEq)]
+pub enum MovementResult {
+	Worked,
+	Blocked,
+	DoesntExist,
+	Moving,
+}
+impl Display for MovementResult {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			MovementResult::Worked		=> write!(f, "worked"),
+			MovementResult::Blocked		=> write!(f, "blocked"),
+			MovementResult::DoesntExist	=> write!(f, "doesn't exist"),
+			MovementResult::Moving		=> write!(f, "moving"),
+		}
+	}
+}
 
 //= Structures
 
@@ -82,6 +100,8 @@ pub struct Animation {
 //= Procedures
 
 impl Direction {
+
+	/// Reverse the direction
 	pub fn reverse(&self) -> Direction {
 		match self {
 			Direction::North => return Direction::South,
@@ -90,6 +110,7 @@ impl Direction {
 			Direction::West => return Direction::East,
 		}
 	}
+
 }
 
 impl Animator {
@@ -132,7 +153,7 @@ impl Unit {
 		}
 	}
 
-	/// Draw Unit
+	/// Draw unit
 	pub fn draw(&mut self, graphics: &graphics::Graphics, rotation: f32) -> &Self {
 		//* Check if unit HAS a sprite */
 		if self.animator.texture == "".to_string() { return self; }
@@ -184,169 +205,157 @@ impl Unit {
 		return self;
 	}
 
-}
+	/// Returns whether the Unit should be drawn / Interracted with.
+	pub fn exists(&self, eventHandler : &events::event_handler::EventHandler) -> bool {
+		let mut result = true;
 
-/// Calculates whether the Unit can move in the input direction and if possible set them to move.
-pub fn move_unit( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
-	//* Leave if still moving */
-	//if !close_enough_v3(unit.position, unit.posTarget, 0.05) { return; }
-	if unit.position.close(unit.posTarget, 0.05) { return; }
+		//* Check if there are any conditions */
+		if self.conditions.len() == 0 { return true; }
 
-	//* Calculate new position */
-	let mut newPos = unit.position;
-	match direction {
-		Direction::North => newPos.z += -1.0,
-		Direction::South => newPos.z +=  1.0,
-		Direction::East  => newPos.x += -1.0,
-		Direction::West  => newPos.x +=  1.0,
+		for (str, cond) in &self.conditions {
+			match cond {
+				Condition::Integer(_) => {
+					if eventHandler.eventVariables.contains_key(str) {
+						if eventHandler.eventVariables[str] != *cond {  result = false; }
+					} else {
+						if *cond != Condition::Integer(0) { result = false; }
+					}
+				}
+				Condition::Boolean(_) => {
+					if eventHandler.eventVariables.contains_key(str) {
+						if eventHandler.eventVariables[str] != *cond {  result = false; }
+					} else {
+						if *cond != Condition::Boolean(false) { result = false; }
+					}
+				}
+				Condition::String(_) => {
+					if eventHandler.eventVariables.contains_key(str) {
+						if eventHandler.eventVariables[str] != *cond {  result = false; }
+					} else {
+						if *cond != Condition::String("".to_string()) { result = false; }
+					}
+				}
+			}
+		}
+		return result;
 	}
 
-	//* Check Tiles existance */
-	let tileExists = currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
-	if !tileExists {
-		//TODO If the reverse movement would not be allowed, jump
-		//* Checking for tile up */
-		let tileExistsUp = currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
-		let mut tileUpColli = false;
-		if tileExistsUp {
-			let tileUp = &currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
-			tileUpColli = !check_collision(direction, tileUp.solid);
-			if tileUpColli { newPos.y += 1.0; }
-		}
-		//* Checking for tile down */
-		let tileExistsDw = currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
-		let mut tileDwColli = false;
-		if tileExistsDw {
-			let tileDw = &currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
-			tileDwColli = !check_collision(direction, tileDw.solid);
-			if tileDwColli { newPos.y -= 1.0; }
-		}
-		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) {
-			//gamestate.audio.play_sound("collision".to_string());
-			return;
-		}
-	}
-	let tile = &currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
-
-	//* Check if Solid */
-	if check_collision(direction, tile.solid) { return; }
-
-	//* Check for entities */
-	for (_, unit) in unitMap.iter() {
-		//if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return; }
-		if newPos == unit.position && exists(&eventHandler, unit) { return; }
+	/// Checks if unit is moving
+	pub fn is_moving(gamestate: &data::Gamestate, unitId : &str) -> bool {
+		let unit = &gamestate.worldData.unitMap[unitId];
+		return unit.position == unit.posTarget;
 	}
 
-	unit.posTarget = newPos;
-}
+	/// Update unit
+	pub fn update(&mut self) -> &Self {
+		let ft = raylib::get_frame_time();
+		
+		if !self.position.close(self.posTarget, 0.05) {
+			print!("{}->{}\n",self.position,self.posTarget);
+			let dir = self.position.direction_to(self.posTarget);
+			self.position = self.position + (dir * (3.0 * ft));
+		} else {
+			self.position = self.posTarget;
+		}
 
-///
-//pub fn move_unit_test( currentMap : &HashMap<[i32;3], world::Tile>, unitMap : &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, unit : &mut Unit, direction : Direction ) {
-//pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : &mut Unit, direction : Direction ) {
-pub fn move_unit_test( gamestate: &mut data::Gamestate, unit : String, direction : Direction ) {
-	//* Get unit */
-	let mut unitMove: Unit;
-	if unit == "player" { unitMove = gamestate.player.unit.clone(); }
-	else { unitMove = gamestate.worldData.unitMap.get(&unit).unwrap().clone(); }
-
-	//* Leave if still moving */
-	//if !close_enough_v3(unitMove.position, unitMove.posTarget, 0.05) { return; }
-	if !unitMove.position.close(unitMove.posTarget, 0.05) { return; }
-
-	//* Calculate new position */
-	let mut newPos = unitMove.position;
-	match direction {
-		Direction::North => newPos.z += -1.0,
-		Direction::South => newPos.z +=  1.0,
-		Direction::East  => newPos.x += -1.0,
-		Direction::West  => newPos.x +=  1.0,
+		return self;
 	}
 
-	//* Check Tiles existance */
-	let tileExists = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
-	if !tileExists {
-		//TODO If the reverse movement would not be allowed, jump
-		//* Checking for tile up */
-		let tileExistsUp = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
-		let mut tileUpColli = false;
-		if tileExistsUp {
-			let tileUp = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
-			tileUpColli = !check_collision(direction, tileUp.solid);
-			if tileUpColli { newPos.y += 1.0; }
+	/// Calculates whether the Unit can move in the input direction and if possible set them to move.
+	pub fn walk(gamestate: &mut data::Gamestate, unitId : &str, direction : Direction) -> MovementResult {
+		//* Get unit */
+		let mut unitMove: Unit;
+		if unitId == "player" { unitMove = gamestate.player.unit.clone(); }
+		else if gamestate.worldData.unitMap.contains_key(unitId) { unitMove = gamestate.worldData.unitMap.get(unitId).unwrap().clone(); }
+		else { return MovementResult::DoesntExist; }
+
+		//* Leave if still moving */
+		if !unitMove.position.close(unitMove.posTarget, 0.05) { return MovementResult::Moving; }
+
+		//* Set direction */
+		unitMove.direction = direction;
+
+		//* Calculate new position */
+		let mut newPos = unitMove.position;
+		match direction {
+			Direction::North => newPos.z += -1.0,
+			Direction::South => newPos.z +=  1.0,
+			Direction::East  => newPos.x += -1.0,
+			Direction::West  => newPos.x +=  1.0,
 		}
-		//* Checking for tile down */
-		let tileExistsDw = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
-		let mut tileDwColli = false;
-		if tileExistsDw {
-			let tileDw = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
-			tileDwColli = !check_collision(direction, tileDw.solid);
-			if tileDwColli { newPos.y -= 1.0; }
+
+		//* Check Tiles existance */
+		let tileExists = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, newPos.y as i32, newPos.z as i32]);
+		if !tileExists {
+			//TODO If the reverse movement would not be allowed, jump
+			//* Checking for tile up */
+			let tileExistsUp = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]);
+			let mut tileUpColli = false;
+			if tileExistsUp {
+				let tileUp = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)+1, newPos.z as i32]];
+				tileUpColli = !check_collision(direction, tileUp.solid);
+				if tileUpColli { newPos.y += 1.0; }
+			}
+			//* Checking for tile down */
+			let tileExistsDw = gamestate.worldData.currentMap.contains_key(&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]);
+			let mut tileDwColli = false;
+			if tileExistsDw {
+				let tileDw = &gamestate.worldData.currentMap[&[newPos.x as i32, (newPos.y as i32)-1, newPos.z as i32]];
+				tileDwColli = !check_collision(direction, tileDw.solid);
+				if tileDwColli { newPos.y -= 1.0; }
+			}
+			if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) {
+				gamestate.audio.play_sound("collision".to_string());
+				return MovementResult::Blocked;
+			}
 		}
-		if !(tileExistsUp && tileUpColli) && !(tileDwColli && tileDwColli) {
+		let tile = &gamestate.worldData.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
+
+		//* Check if Solid */
+		if check_collision(direction, tile.solid) {
 			gamestate.audio.play_sound("collision".to_string());
-			return;
+			return MovementResult::Blocked;
 		}
-	}
-	let tile = &gamestate.worldData.currentMap[&[newPos.x as i32, newPos.y as i32, newPos.z as i32]];
 
-	//* Check if Solid */
-	if check_collision(direction, tile.solid) {
-		gamestate.audio.play_sound("collision".to_string());
-		return;
-	}
-
-	//* Check for entities */
-	for (_, unit) in gamestate.worldData.unitMap.iter() {
-		//if math::equal_v3(newPos ,unit.position) && exists(&gamestate.eventHandler, unit) {
-		if newPos == unit.position && exists(&gamestate.eventHandler, unit) {
-			gamestate.audio.play_sound("collision".to_string());
-			return;
+		//* Check for entities */
+		for (_, unit) in gamestate.worldData.unitMap.iter() {
+			if newPos == unit.position && unit.exists(&gamestate.eventHandler) {
+				gamestate.audio.play_sound("collision".to_string());
+				return MovementResult::Blocked;
+			}
 		}
+
+		//* Set animation */
+		unitMove.animator.set_animation("walk_".to_string() + &direction.to_string());
+
+		unitMove.posTarget = newPos;
+		if unitId == "player" { gamestate.player.unit = unitMove; }
+		else { gamestate.worldData.unitMap.insert(unitId.to_string(), unitMove); }
+
+		return MovementResult::Worked;
 	}
 
-	unitMove.posTarget = newPos;
-	if unit == "player" { gamestate.player.unit = unitMove; }
-	else { gamestate.worldData.unitMap.insert(unit, unitMove); }
+	/// Teleports a Unit to target location
+	pub fn warp(gamestate: &mut data::Gamestate, unitId : &str, position : Vector3) {
+		//* Get unit */
+		let unitMove: &mut Unit;
+		if unitId == "player" { unitMove = &mut gamestate.player.unit; }
+		else { unitMove = gamestate.worldData.unitMap.get_mut(unitId).unwrap(); }
+
+		//* Warp */
+		unitMove.position = position;
+		unitMove.posTarget = position;
+	}
+
 }
 
 //
 pub fn check_unit_collision( unitMap: &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, newPos: Vector3 ) -> bool {
 	for (_,  unit) in unitMap.iter() {
 		//if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return false; }
-		if newPos == unit.position && exists(&eventHandler, unit) { return false; }
+		if newPos == unit.position && unit.exists(&eventHandler) { return false; }
 	}
 	return true;
-}
-
-/// Returns whether the Unit should exist.
-pub fn exists( handler : &events::event_handler::EventHandler, unit : &Unit ) -> bool {
-	let mut result = true;
-
-	if unit.conditions.len() == 0 { return true; }
-
-	for (str, cond) in &unit.conditions {
-		match cond {
-			Condition::Integer(_) =>
-				if handler.eventVariables.contains_key(str) {
-					if handler.eventVariables[str] != *cond { result = false; }
-				} else {
-					if *cond != Condition::Integer(0) { result = false; }
-				},
-			Condition::Boolean(_) =>
-				if handler.eventVariables.contains_key(str) {
-					if handler.eventVariables[str] != *cond { result = false; }
-				} else {
-					if *cond != Condition::Boolean(false) { result = false; }
-				},
-			Condition::String(_) => 
-				if handler.eventVariables.contains_key(str) {
-					if handler.eventVariables[str] != *cond { result = false; }
-				} else {
-					if *cond != Condition::String("".to_string()) { result = false; }
-				},
-		}
-	}
-	return result;
 }
 
 pub fn check_conditions( handler : &events::event_handler::EventHandler, conditions : &HashMap<String, events::conditionals::Condition> ) -> bool {

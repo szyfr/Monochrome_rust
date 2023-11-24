@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle, Vector3}}, utilities::math, events, monsters};
+use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle, Vector3}}, events, monsters};
 
 
 //= Constants
@@ -74,6 +74,7 @@ impl Player {
 }
 
 impl Menu {
+
 	/// Get the current number of available option
 	pub fn get_number_of_options(&self) -> i32 {
 		let mut count = 0;
@@ -97,6 +98,7 @@ impl Menu {
 		}
 		return -1;
 	}
+
 }
 
 /// Initialize player data
@@ -144,7 +146,7 @@ pub fn init_menu() -> Menu {
 	};
 }
 
-//
+/// Update the menu
 pub fn poll_menu( gamestate : &data::Gamestate) -> Menu {
 	return Menu {
 		open: gamestate.player.menu.open,
@@ -178,19 +180,18 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 	//* Movement */
 	let ft = raylib::get_frame_time();
 
-	//if !math::close_enough_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget, 0.05) {
 	if !gamestate.player.unit.position.close(gamestate.player.unit.posTarget, 0.05) {
-		//let dir = math::get_direction_v3(gamestate.player.unit.position, gamestate.player.unit.posTarget);
 		let dir = gamestate.player.unit.position.direction_to(gamestate.player.unit.posTarget);
-		//gamestate.player.unit.position = math::add_v3(gamestate.player.unit.position, math::mul_v3(dir, MVSPEED * ft));
 		gamestate.player.unit.position = gamestate.player.unit.position + (dir * (MVSPEED * ft));
 	} else {
+		gamestate.player.unit.position = gamestate.player.unit.posTarget;
+
 		//* Event handling */
 		if events::parse_event(gamestate) { return; }
 
 		if gamestate.player.canMove && gamestate.player.menu.open == MenuOptions::None && !gamestate.battleData.started {
 
-			gamestate.player.unit.position = gamestate.player.unit.posTarget;
+			//gamestate.player.unit.position = gamestate.player.unit.posTarget;
 			let mut newpos = gamestate.player.unit.position;
 
 			//* Check for trigger */
@@ -213,7 +214,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 				//* The last event in the loop that the conditions are met for is done. */
 				let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
-				if unitCheck.0 && overworld::exists(&gamestate.eventHandler, &gamestate.worldData.unitMap[&unitCheck.1]) {
+				if unitCheck.0 && gamestate.worldData.unitMap[&unitCheck.1].exists(&gamestate.eventHandler) {
 					let unit = gamestate.worldData.unitMap.get_mut(&unitCheck.1).unwrap();
 					unit.direction = gamestate.player.unit.direction.reverse();
 					if gamestate.worldData.unitMap.contains_key(&unitCheck.1) {
@@ -331,7 +332,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			//* If the player is moving */
 			gamestate.player.unit.direction = dir;
 			if gamestate.player.unit.posTarget != newpos {
-				overworld::move_unit_test(gamestate, "player".to_string(), gamestate.player.unit.direction);
+				overworld::Unit::walk(gamestate, "player", dir);
 			}
 		}
 

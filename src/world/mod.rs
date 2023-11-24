@@ -48,6 +48,7 @@ pub struct Tile{
 //= Procedures
 
 impl World {
+	//= Loading
 	/// Load all
 	pub fn load_all(&mut self, mapName : &str) {
 		self.load_world(mapName);
@@ -56,7 +57,6 @@ impl World {
 		self.load_events(mapName);
 		self.load_triggers(mapName);
 	}
-
 	/// Load tile data from input file to Hashmap indexed by their position.
 	pub fn load_world(&mut self, mapName : &str) {
 		//* Attempt to load map file */
@@ -83,7 +83,6 @@ impl World {
 			self.currentMap.insert(position, tile);
 		}
 	}
-
 	/// Loads entity data from input file to Hashmap indexed by their ID.
 	pub fn load_entities(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
@@ -141,7 +140,6 @@ impl World {
 			self.unitMap.insert(arr[i]["id"].as_str().unwrap().to_string(), unit);
 		}
 	}
-
 	/// Loads event data from input file to Hashmap indexed by their ID.
 	pub fn load_events(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
@@ -161,7 +159,6 @@ impl World {
 			self.eventList.insert(i["id"].as_str().unwrap().to_string(), event);
 		}
 	}
-
 	/// Loads trigger data from input file to hashmap indexed by position.
 	pub fn load_triggers(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
@@ -182,7 +179,6 @@ impl World {
 			self.triggerMap.insert(pos, i["event"].as_str().unwrap().to_string());
 		}
 	}
-
 	/// Loads battle data from input file to hashmap indexed by position.
 	pub fn load_battles(&mut self, mapName : &str) {
 		//* Attempt to load entities file */
@@ -314,8 +310,9 @@ impl World {
 		}
 	} 
 
+	//= Time
 	/// Update time tick
-	pub fn time_tick(&mut self) {
+	fn time_tick(&mut self) {
 		self.time += 0.00001;
 		if self.time >= 1.6 {
 			self.time = 0.4;
@@ -323,7 +320,6 @@ impl World {
 			if self.day > 6 { self.day = 0; }
 		}
 	}
-
 	/// Get the hour of the day
 	pub fn get_time(&self) -> i32 {
 		let mut time = (((self.time - 0.4) * 100.0) * 0.2) as i32;
@@ -331,6 +327,19 @@ impl World {
 		print!("{}\n",time);
 		return time;
 	}
+
+	//= 
+	/// Update world
+	pub fn update(&mut self) {
+		//* Update time */
+		self.time_tick();
+
+		//* Update units */
+		for (_, unit) in self.unitMap.iter_mut() {
+			unit.update();
+		}
+	}
+
 }
 
 /// Creates an empty worlddata structure.
@@ -386,7 +395,6 @@ pub fn draw_world( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a north-facing persepective.
 fn draw_rot_000( gamestate : &mut Gamestate ) {
-	//let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
@@ -402,12 +410,6 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z-1 {
 			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-			//overworld::draw_unit(
-			//	&gamestate.graphics.animations,
-			//	&gamestate.graphics.models["unit"],
-			//	&mut gamestate.player.unit,
-			//	gamestate.camera.rotation,
-			//);
 		}
 
 		for _ in minX..maxX {
@@ -437,15 +439,9 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-						//overworld::draw_unit(
-						//	&gamestate.graphics.animations,
-						//	&gamestate.graphics.models["unit"],
-						//	unit,
-						//	gamestate.camera.rotation,
-						//);
+					//if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
+					if unit.position.round() == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
+							unit.draw(&gamestate.graphics, gamestate.camera.rotation);
 					}
 				}
 			}
@@ -462,7 +458,6 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a east-facing persepective.
 fn draw_rot_090( gamestate : &mut Gamestate ){
-	//let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + (DEPTH + (DEPTH / 2.0))) as i32;
 	let minX = (playerPosition.x - (DEPTH / 2.0)) as i32;
@@ -478,12 +473,6 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x+1 {
 			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-			//overworld::draw_unit(
-			//	&gamestate.graphics.animations,
-			//	&gamestate.graphics.models["unit"],
-			//	&mut gamestate.player.unit,
-			//	gamestate.camera.rotation,
-			//);
 		}
 
 		for _ in minZ..maxZ {
@@ -503,15 +492,8 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
 						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-						//overworld::draw_unit(
-						//	&gamestate.graphics.animations,
-						//	&gamestate.graphics.models["unit"],
-						//	unit,
-						//	gamestate.camera.rotation,
-						//);
 					}
 				}
 			}
@@ -528,7 +510,6 @@ fn draw_rot_090( gamestate : &mut Gamestate ){
 
 /// Draws tiles and units from a south-facing persepective.
 fn draw_rot_180( gamestate : &mut Gamestate ) {
-	//let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + WIDTH) as i32;
 	let minX = (playerPosition.x - WIDTH) as i32;
@@ -544,12 +525,6 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.z.round() as i32 == z+1 {
 			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-			//overworld::draw_unit(
-			//	&gamestate.graphics.animations,
-			//	&gamestate.graphics.models["unit"],
-			//	&mut gamestate.player.unit,
-			//	gamestate.camera.rotation,
-			//);
 		}
 
 		for _ in minX..maxX {
@@ -569,15 +544,8 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
 						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-						//overworld::draw_unit(
-						//	&gamestate.graphics.animations,
-						//	&gamestate.graphics.models["unit"],
-						//	unit,
-						//	gamestate.camera.rotation,
-						//);
 					}
 				}
 			}
@@ -594,7 +562,6 @@ fn draw_rot_180( gamestate : &mut Gamestate ) {
 
 /// Draws tiles and units from a west-facing persepective.
 fn draw_rot_270( gamestate : &mut Gamestate ) {
-	//let playerPosition = math::round_v3(gamestate.player.unit.position);
 	let playerPosition = gamestate.player.unit.position.round();
 	let maxX = (playerPosition.x + (DEPTH / 2.0)) as i32;
 	let minX = (playerPosition.x - (DEPTH + (DEPTH / 2.0))) as i32;
@@ -610,12 +577,6 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 		//* Draw player unit */
 		if playerPosition.x.round() as i32 == x-1 {
 			gamestate.player.unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-			//overworld::draw_unit(
-			//	&gamestate.graphics.animations,
-			//	&gamestate.graphics.models["unit"],
-			//	&mut gamestate.player.unit,
-			//	gamestate.camera.rotation,
-			//);
 		}
 
 		for _ in minZ..maxZ {
@@ -635,15 +596,8 @@ fn draw_rot_270( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					//if math::equal_v3(unit.position, raylib_ffi::Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
-					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && overworld::exists(&gamestate.eventHandler, unit) {
+					if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
 						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
-						//overworld::draw_unit(
-						//	&gamestate.graphics.animations,
-						//	&gamestate.graphics.models["unit"],
-						//	unit,
-						//	gamestate.camera.rotation,
-						//);
 					}
 				}
 			}

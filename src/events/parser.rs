@@ -87,6 +87,7 @@ pub fn parse_value( world: &mut world::World, value: &Value ) -> EventChain {
 				entityID:	value.as_array().unwrap()[1].as_str().unwrap().to_string(),
 				direction:	overworld::Direction::from_str(value.as_array().unwrap()[2].as_str().unwrap()).unwrap(),
 				times:		value.as_array().unwrap()[3].as_i64().unwrap() as i32,
+				wait:		value.as_array().unwrap()[4].as_bool().unwrap(),
 			}
 		}
 		

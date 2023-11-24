@@ -8,8 +8,8 @@
 				["animation","flash",23,8,[0,1,2],true],
 				["warp","player",[ 6,0,3 ],false,"south"],
 				["animation","flash",23,8,[2,1,0],false],
-				["move","TEST","south",1],
-				["move","player","south",1]
+				["move","player","south",1,false],
+				["move","TEST","south",1,true]
 			]},
 		{
 			"id":"newbarktown_mom_talk1_1",

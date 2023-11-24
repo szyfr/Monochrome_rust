@@ -48,6 +48,7 @@ pub enum EventChain{
 		entityID: String,
 		direction: Direction,
 		times: i32,
+		wait: bool,
 	},
 	/// Turn unit
 	Turn{
@@ -183,12 +184,13 @@ impl Event {
 						doMove,
 					);
 				}
-				EventChain::Move { entityID, direction, times } => {
+				EventChain::Move { entityID, direction, times, wait } => {
 					str += &format!(
-						"MOVE-{}->[{},{}]\n",
+						"MOVE-{}->[{},{}]-{}\n",
 						entityID,
 						direction,
 						times,
+						wait
 					);
 				}
 				EventChain::Turn { entityID, direction } => {
@@ -268,7 +270,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 
 	//* Parse the the current chain event */
 	let chPos = gamestate.eventHandler.currentChain as usize;
-	let chain = &event.chain[chPos];
+	let chain = &gamestate.worldData.eventList[&gamestate.eventHandler.currentEvent].chain[chPos].clone();
 	match chain {
 		EventChain::Test{ text } => {
 				print!("TEST: {}\n",text);
@@ -304,38 +306,26 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 
 		//= Movement events
 		EventChain::Warp { entityID, position, direction, doMove } => {
-				let unit: &mut overworld::Unit;
-				let unitMap = gamestate.worldData.unitMap.clone();
-				//* Check if target is player */
-				if entityID == "player" { unit = &mut gamestate.player.unit; }
-				else if !gamestate.worldData.unitMap.contains_key(entityID) { gamestate.eventHandler.currentChain += 1; return false; }
-				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
-
 				//* Move unit */
-				unit.position  = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
-				unit.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32};
-				unit.direction = *direction;
+				overworld::Unit::warp(gamestate, entityID, Vector3::from_i32_array(position));
 
 				//* If doMove is true, move */
-				if *doMove { overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.eventHandler, unit, *direction); }
-				else { unit.posTarget = Vector3{x: position[0] as f32, y: position[1] as f32, z: position[2] as f32}; }
+				if *doMove { overworld::Unit::walk(gamestate, entityID, *direction); }
 				
 				gamestate.eventHandler.currentChain += 1;
 			}
-		EventChain::Move { entityID, direction, times } => {
-				let unit: &mut overworld::Unit;
-				let unitMap = gamestate.worldData.unitMap.clone();
+		EventChain::Move { entityID, direction, times, .. } => {
 				//* Check if target is player */
-				if entityID == "player" { unit = &mut gamestate.player.unit; }
-				else if !gamestate.worldData.unitMap.contains_key(entityID) { gamestate.eventHandler.currentChain += 1; return false; }
-				else { unit = gamestate.worldData.unitMap.get_mut(entityID).unwrap(); }
-
-				overworld::move_unit(&gamestate.worldData.currentMap, &unitMap, &gamestate.eventHandler, unit, *direction);
+				let result = overworld::Unit::walk(gamestate, entityID, *direction);
 				
-				gamestate.eventHandler.internal += 1;
-				if gamestate.eventHandler.internal >= *times {
-					gamestate.eventHandler.internal = 0;
-					gamestate.eventHandler.currentChain += 1;
+				//* Only increment movement if not moving */
+				// TODO Make the wait bool work
+				if result != overworld::MovementResult::Moving {
+					gamestate.eventHandler.internal += 1;
+					if gamestate.eventHandler.internal >= *times {
+						gamestate.eventHandler.internal = 0;
+						gamestate.eventHandler.currentChain += 1;
+					}
 				}
 			}
 		EventChain::Turn { entityID, direction } => {

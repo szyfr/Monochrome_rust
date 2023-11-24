@@ -39,10 +39,16 @@ fn main() {
 			gamestate.eventHandler.currentEvent == "".to_string(),
 		);
 		player::controls(&mut gamestate);
-		gamestate.worldData.time_tick();
+		gamestate.worldData.update();
 		//gamestate.worldData.get_time();
 		gamestate.audio.update();
 		if gamestate.battleData.started { gamestate.battleData.update(); }
+
+		if data::key_pressed("confirm") {
+			for (str, _) in gamestate.worldData.unitMap.iter() {
+				print!("{}\n",str);
+			}
+		}
 
 		raylib::begin_drawing();
 		{

@@ -296,6 +296,15 @@ impl Vector3 {
 		return raylib_ffi::Vector3 { x: self.x, y: self.y, z: self.z };
 	}
 
+	/// Converting from array
+	pub fn from_i32_array(array: &[i32;3]) -> Self {
+		Self {
+			x: array[0] as f32,
+			y: array[1] as f32,
+			z: array[2] as f32,
+		}
+	}
+
 }
 
 impl Rectangle {
