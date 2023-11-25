@@ -64,7 +64,48 @@ impl Display for Vector3 {
 		return write!(f, "[{},{},{}]",self.x, self.y, self.z);
 	}
 }
-
+impl From<raylib_ffi::Vector3> for Vector3 {
+	fn from(value: raylib_ffi::Vector3) -> Self {
+		Self {
+			x: value.x,
+			y: value.y,
+			z: value.z,
+		}
+	}
+}
+impl From<[i32;3]> for Vector3 {
+	fn from(value: [i32;3]) -> Self {
+		Self {
+			x: value[0] as f32,
+			y: value[1] as f32,
+			z: value[2] as f32,
+		}
+	}
+}
+impl From<[f32;3]> for Vector3 {
+	fn from(value: [f32;3]) -> Self {
+		Self {
+			x: value[0],
+			y: value[1],
+			z: value[2],
+		}
+	}
+}
+impl Into<raylib_ffi::Vector3> for Vector3 {
+	fn into(self) -> raylib_ffi::Vector3 {
+		return raylib_ffi::Vector3 { x: self.x, y: self.y, z: self.z };
+	}
+}
+impl Into<[i32;3]> for Vector3 {
+	fn into(self) -> [i32;3] {
+		return [self.x as i32, self.y as i32, self.z as i32];
+	}
+}
+impl Into<[f32;3]> for Vector3 {
+	fn into(self) -> [f32;3] {
+		return [self.x, self.y, self.z];
+	}
+}
 
 /// Vector4 type
 #[derive(Copy, Clone)]
@@ -272,7 +313,6 @@ impl Vector3 {
 
 	/// Creates a binary direction for the difference between two points.
 	pub fn direction_to(&self, v2: Self) -> Self {
-		//let difference = sub_v3(v2, v1);
 		let difference = v2 - *self;
 		let mut output = Vector3{x:0.0,y:0.0,z:0.0};
 
@@ -289,20 +329,6 @@ impl Vector3 {
 		if difference.z  < 0.0 { output.z = -1.0 }
 		
 		return output;
-	}
-
-	/// Converting to raylib_ffi version
-	pub fn to_ffi(&self) -> raylib_ffi::Vector3 {
-		return raylib_ffi::Vector3 { x: self.x, y: self.y, z: self.z };
-	}
-
-	/// Converting from array
-	pub fn from_i32_array(array: &[i32;3]) -> Self {
-		Self {
-			x: array[0] as f32,
-			y: array[1] as f32,
-			z: array[2] as f32,
-		}
 	}
 
 }
@@ -653,7 +679,7 @@ impl Model {
 		unsafe {
 			raylib_ffi::DrawModel(
 				self.to_ffi(),
-				position.to_ffi(),
+				position.into(),
 				scale,
 				tint,
 			);
@@ -666,10 +692,10 @@ impl Model {
 		unsafe {
 			raylib_ffi::DrawModelEx(
 				self.to_ffi(),
-				position.to_ffi(),
-				rotationAxis.to_ffi(),
+				position.into(),
+				rotationAxis.into(),
 				rotationAngle,
-				scale.to_ffi(),
+				scale.into(),
 				tint,
 			);
 			return self;

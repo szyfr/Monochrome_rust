@@ -37,24 +37,28 @@ pub struct EventHandler{
 
 //= Procedures
 
-/// Create new eventHandler
-pub fn create() -> EventHandler {
-	return EventHandler{
-		currentEvent:	"".to_string(),
-		currentChain:	0,
+impl EventHandler {
 
-		internal:		0,
-
-		textbox: 		textbox::init(),
-
-		eventVariables: HashMap::new(),
-
-		animation:		None,
-		emotes:			Vec::new(),
-
-		playerName:		"Mono".to_string(),
-		playerPronouns: ["they".to_string(), "them".to_string(), "theirs".to_string()],
-		rivalName:		"Chrome".to_string(),
-
+	/// Create new eventHandler
+	pub fn init() -> Self {
+		Self {
+			currentEvent:	"".to_string(),
+			currentChain:	0,
+	
+			internal:		0,
+	
+			textbox: 		textbox::init(),
+	
+			eventVariables: HashMap::new(),
+	
+			animation:		None,
+			emotes:			Vec::new(),
+	
+			playerName:		"Mono".to_string(),
+			playerPronouns: ["they".to_string(), "them".to_string(), "theirs".to_string()],
+			rivalName:		"Chrome".to_string(),
+	
+		}
 	}
+
 }

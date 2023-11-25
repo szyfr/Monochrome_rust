@@ -398,6 +398,7 @@ impl Monster {
 	pub fn check_for_level(&self) -> bool {
 		return self.experience >= experience_from_level(self.level + 1, self.growthRate);
 	}
+	
 }
 
 /// Calculates health or stamina.

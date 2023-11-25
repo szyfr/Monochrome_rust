@@ -26,6 +26,21 @@ pub struct Graphics {
 //= Procedures
 
 impl Graphics {
+
+	/// Initialize
+	pub fn init() -> Self {
+		Self {
+			fonts:		HashMap::new(),
+			textures:	HashMap::new(),
+			models:		HashMap::new(),
+			animations:	HashMap::new(),
+	
+			shader:		None,
+			timeLoc:	0,
+			sizeLoc:	0,
+		}
+	}
+
 	/// Load all
 	pub fn load(&mut self) {
 		self.shader = Some(raylib::load_shader("", "data/shaders/lighting.fs"));
@@ -147,18 +162,6 @@ impl Graphics {
 			self.animations.insert(i.0.to_string(), ani);
 		}
 	}
+	
 }
 
-/// Initialize
-pub fn init() -> Graphics {
-	return Graphics {
-		fonts:		HashMap::new(),
-		textures:	HashMap::new(),
-		models:		HashMap::new(),
-		animations:	HashMap::new(),
-
-		shader:		None,
-		timeLoc:	0,
-		sizeLoc:	0,
-	};
-}

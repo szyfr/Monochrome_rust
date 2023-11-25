@@ -349,16 +349,8 @@ impl Unit {
 
 }
 
-//
-pub fn check_unit_collision( unitMap: &HashMap<String, Unit>, eventHandler : &events::event_handler::EventHandler, newPos: Vector3 ) -> bool {
-	for (_,  unit) in unitMap.iter() {
-		//if math::equal_v3(newPos ,unit.position) && exists(&eventHandler, unit) { return false; }
-		if newPos == unit.position && unit.exists(&eventHandler) { return false; }
-	}
-	return true;
-}
-
-pub fn check_conditions( handler : &events::event_handler::EventHandler, conditions : &HashMap<String, events::conditionals::Condition> ) -> bool {
+/// Check if the conditions are true
+pub fn check_conditions(handler: &events::event_handler::EventHandler, conditions: &HashMap<String, events::conditionals::Condition>) -> bool {
 	let mut result = true;
 	
 	for (str, cond) in conditions {
@@ -370,30 +362,19 @@ pub fn check_conditions( handler : &events::event_handler::EventHandler, conditi
 }
 
 /// Checks if there is a Unit in that position.
-pub fn check_for_unit( unitMap : &HashMap<String, Unit>, position : &[i32;3] ) -> (bool, String) {
+pub fn check_for_unit(unitMap: &HashMap<String, Unit>, position: Vector3) -> (bool, String) {
 	for (str, unit) in unitMap {
-		if [unit.position.x as i32, unit.position.y as i32, unit.position.z as i32] == *position { return (true, str.to_string()); }
+		if unit.position == position { return (true, str.to_string()); }
 	}
 	return (false, "".to_string());
 }
 
 /// Calculates collision.
-fn check_collision( direction : Direction, collisionInfo : [bool; 4] ) -> bool {
+fn check_collision(direction: Direction, collisionInfo: [bool; 4]) -> bool {
 	match direction {
 		Direction::North => return collisionInfo[0],
 		Direction::South => return collisionInfo[2],
 		Direction::East  => return collisionInfo[3],
 		Direction::West  => return collisionInfo[1],
-	}
-}
-
-/// Checks if current animation is walking
-fn check_walking_animation( unit : &Unit ) -> bool {
-	match unit.animator.currentAnimation.as_str() {
-		"walk_north" => return true,
-		"walk_south" => return true,
-		"walk_east"  => return true,
-		"walk_west"  => return true,
-		_ => return false,
 	}
 }

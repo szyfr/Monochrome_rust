@@ -307,7 +307,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 		//= Movement events
 		EventChain::Warp { entityID, position, direction, doMove } => {
 				//* Move unit */
-				overworld::Unit::warp(gamestate, entityID, Vector3::from_i32_array(position));
+				overworld::Unit::warp(gamestate, entityID, Vector3::from(*position));
 
 				//* If doMove is true, move */
 				if *doMove { overworld::Unit::walk(gamestate, entityID, *direction); }
@@ -443,7 +443,7 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 					animation::EmoteAnimation {
 						emote: emote.to_string(),
 						unitID: unit.to_string(),
-						duration: 200,
+						duration: 100,
 						ticks: 0,
 					}
 				);

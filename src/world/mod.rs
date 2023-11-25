@@ -48,6 +48,24 @@ pub struct Tile{
 //= Procedures
 
 impl World {
+
+	//= Init
+	/// Creates an empty worlddata structure.
+	pub fn empty() -> Self {
+		Self {
+			currentMap:	HashMap::new(),
+	
+			unitMap:	HashMap::new(),
+	
+			triggerMap:	HashMap::new(),
+			eventList:	HashMap::new(),
+			battleList:	HashMap::new(),
+	
+			day:		0,
+			time:		0.8,
+		}
+	}
+
 	//= Loading
 	/// Load all
 	pub fn load_all(&mut self, mapName : &str) {
@@ -342,22 +360,6 @@ impl World {
 
 }
 
-/// Creates an empty worlddata structure.
-pub fn init_empty() -> World {
-	return World{
-		currentMap:	HashMap::new(),
-
-		unitMap:	HashMap::new(),
-
-		triggerMap:	HashMap::new(),
-		eventList:	HashMap::new(),
-		battleList:	HashMap::new(),
-
-		day:		0,
-		time:		0.8,
-	}
-}
-
 /// Converts input JSON value into an array of 4 bools representing a collision box.
 pub fn solid_tag_to_bool( array : &Vec<serde_json::Value> ) -> [bool; 4] {
 	let mut output = [false, false, false, false];
@@ -439,7 +441,6 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				}
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
-					//if unit.position == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
 					if unit.position.round() == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
 							unit.draw(&gamestate.graphics, gamestate.camera.rotation);
 					}

@@ -71,9 +71,83 @@ pub struct Menu {
 
 impl Player {
 	
+	/// Initialization
+	pub fn init() -> Self {
+		let mut player = Player{
+			unit:		overworld::Unit::new(),
+			monsters:	monsters::MonsterTeam([None, None, None, None]),
+			canMove:	true,
+			menu:		Menu::init(),
+		};
+		
+		player.unit.position = Vector3{x: 1.0,y: 0.0,z: 2.0};
+		player.unit.posTarget = Vector3{x: 1.0,y: 0.0,z: 2.0};
+		player.unit.animator.texture = "player_1".to_string();
+	
+		return player;
+	}
+
 }
 
 impl Menu {
+
+	/// Initial value of menu
+	pub fn init() -> Self {
+		Self {
+			open: MenuOptions::None,
+			options: [
+				false,
+				false,
+				false,
+				true,
+				false,
+				false,
+				true,
+				true,
+			],
+			selection: 0,
+	
+			gearOpen: GearOptions::None,
+			gearOptions: [
+				true,
+				false,
+				false,
+				false,
+			],
+			gearSelection: 0,
+	
+			optionSelection: 0,
+		}
+	}
+
+	/// Update the menu
+	pub fn poll(gamestate : &data::Gamestate) -> Self {
+		Self {
+			open: gamestate.player.menu.open,
+			options: [
+				gamestate.eventHandler.eventVariables.contains_key("dex") && gamestate.eventHandler.eventVariables.get("dex").unwrap().as_bool() == true,
+				gamestate.player.monsters.number_of_monsters() >= 1,
+				gamestate.eventHandler.eventVariables.contains_key("bag") && gamestate.eventHandler.eventVariables.get("bag").unwrap().as_bool() == true,
+				true,
+				gamestate.eventHandler.eventVariables.contains_key("gear") && gamestate.eventHandler.eventVariables.get("gear").unwrap().as_bool() == true,
+				false, // TODO saving
+				true,
+				true,
+			],
+			selection: gamestate.player.menu.selection,
+	
+			gearOpen: gamestate.player.menu.gearOpen,
+			gearOptions: [
+				true,
+				gamestate.eventHandler.eventVariables.contains_key("gear_map") && gamestate.eventHandler.eventVariables.get("gear_map").unwrap().as_bool() == true,
+				gamestate.eventHandler.eventVariables.contains_key("gear_phone") && gamestate.eventHandler.eventVariables.get("gear_phone").unwrap().as_bool() == true,
+				gamestate.eventHandler.eventVariables.contains_key("gear_radio") && gamestate.eventHandler.eventVariables.get("gear_radio").unwrap().as_bool() == true,
+			],
+			gearSelection: gamestate.player.menu.gearSelection,
+	
+			optionSelection: gamestate.player.menu.optionSelection,
+		}
+	}
 
 	/// Get the current number of available option
 	pub fn get_number_of_options(&self) -> i32 {
@@ -101,89 +175,18 @@ impl Menu {
 
 }
 
-/// Initialize player data
-pub fn init() -> Player {
-	let mut player = Player{
-		//unit:		overworld::create_unit("player_1"),
-		unit:		overworld::Unit::new(),
-		monsters:	monsters::MonsterTeam([None, None, None, None]),
-		canMove:	true,
-		menu:		init_menu(),
-	};
-	
-	player.unit.position = Vector3{x: 1.0,y: 0.0,z: 2.0};
-	player.unit.posTarget = Vector3{x: 1.0,y: 0.0,z: 2.0};
-
-	return player;
-}
-
-/// Initial value of menu
-pub fn init_menu() -> Menu {
-	return Menu {
-		open: MenuOptions::None,
-		options: [
-			false,
-			false,
-			false,
-			true,
-			false,
-			false,
-			true,
-			true,
-		],
-		selection: 0,
-
-		gearOpen: GearOptions::None,
-		gearOptions: [
-			true,
-			false,
-			false,
-			false,
-		],
-		gearSelection: 0,
-
-		optionSelection: 0,
-	};
-}
-
-/// Update the menu
-pub fn poll_menu( gamestate : &data::Gamestate) -> Menu {
-	return Menu {
-		open: gamestate.player.menu.open,
-		options: [
-			gamestate.eventHandler.eventVariables.contains_key("dex") && gamestate.eventHandler.eventVariables.get("dex").unwrap().as_bool() == true,
-			gamestate.player.monsters.number_of_monsters() >= 1,
-			gamestate.eventHandler.eventVariables.contains_key("bag") && gamestate.eventHandler.eventVariables.get("bag").unwrap().as_bool() == true,
-			true,
-			gamestate.eventHandler.eventVariables.contains_key("gear") && gamestate.eventHandler.eventVariables.get("gear").unwrap().as_bool() == true,
-			false, // TODO saving
-			true,
-			true,
-		],
-		selection: gamestate.player.menu.selection,
-
-		gearOpen: gamestate.player.menu.gearOpen,
-		gearOptions: [
-			true,
-			gamestate.eventHandler.eventVariables.contains_key("gear_map") && gamestate.eventHandler.eventVariables.get("gear_map").unwrap().as_bool() == true,
-			gamestate.eventHandler.eventVariables.contains_key("gear_phone") && gamestate.eventHandler.eventVariables.get("gear_phone").unwrap().as_bool() == true,
-			gamestate.eventHandler.eventVariables.contains_key("gear_radio") && gamestate.eventHandler.eventVariables.get("gear_radio").unwrap().as_bool() == true,
-		],
-		gearSelection: gamestate.player.menu.gearSelection,
-
-		optionSelection: gamestate.player.menu.optionSelection,
-	};
-}
-
 /// Poll controls and move player or open menus if necessary.
 pub fn controls( gamestate : &mut data::Gamestate ) {
-	//* Movement */
+	//* Get deltatime */
 	let ft = raylib::get_frame_time();
 
+	//* Check if player is moving */
 	if !gamestate.player.unit.position.close(gamestate.player.unit.posTarget, 0.05) {
+		//* Move towards target */
 		let dir = gamestate.player.unit.position.direction_to(gamestate.player.unit.posTarget);
 		gamestate.player.unit.position = gamestate.player.unit.position + (dir * (MVSPEED * ft));
 	} else {
+		//* Set position perfectly */
 		gamestate.player.unit.position = gamestate.player.unit.posTarget;
 
 		//* Event handling */
@@ -191,34 +194,32 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 
 		if gamestate.player.canMove && gamestate.player.menu.open == MenuOptions::None && !gamestate.battleData.started {
 
-			//gamestate.player.unit.position = gamestate.player.unit.posTarget;
 			let mut newpos = gamestate.player.unit.position;
 
 			//* Check for trigger */
-			let pos = [
-				gamestate.player.unit.posTarget.x as i32,
-				gamestate.player.unit.posTarget.y as i32,
-				gamestate.player.unit.posTarget.z as i32,
-			];
-			if gamestate.worldData.triggerMap.contains_key(&pos) { gamestate.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string(); return; }
+			let pos: [i32;3] = gamestate.player.unit.posTarget.into();
+			if gamestate.worldData.triggerMap.contains_key(&pos) {
+				gamestate.eventHandler.currentEvent = gamestate.worldData.triggerMap[&pos].to_string();
+				return;
+			}
 
 			//* Check for interaction */
-			let mut position = [gamestate.player.unit.position.x as i32,gamestate.player.unit.position.y as i32,gamestate.player.unit.position.z as i32];
+			let mut position = gamestate.player.unit.position;
 			if data::key_pressed("confirm") {
 				match gamestate.player.unit.direction {
-					Direction::North => position[2] = position[2] - 1,
-					Direction::South => position[2] = position[2] + 1,
-					Direction::East  => position[0] = position[0] - 1,
-					Direction::West  => position[0] = position[0] + 1,
+					Direction::North => { position.z -= 1.0; }
+					Direction::South => { position.z += 1.0; }
+					Direction::East  => { position.x -= 1.0; }
+					Direction::West  => { position.x += 1.0; }
 				}
 
 				//* The last event in the loop that the conditions are met for is done. */
-				let unitCheck = overworld::check_for_unit(&gamestate.worldData.unitMap, &position);
-				if unitCheck.0 && gamestate.worldData.unitMap[&unitCheck.1].exists(&gamestate.eventHandler) {
-					let unit = gamestate.worldData.unitMap.get_mut(&unitCheck.1).unwrap();
+				let (result, unitId) = overworld::check_for_unit(&gamestate.worldData.unitMap, position);
+				if result && gamestate.worldData.unitMap[&unitId].exists(&gamestate.eventHandler) {
+					let unit = gamestate.worldData.unitMap.get_mut(&unitId).unwrap();
 					unit.direction = gamestate.player.unit.direction.reverse();
-					if gamestate.worldData.unitMap.contains_key(&unitCheck.1) {
-						for (str, event) in &gamestate.worldData.unitMap[&unitCheck.1].events {
+					if gamestate.worldData.unitMap.contains_key(&unitId) {
+						for (str, event) in &gamestate.worldData.unitMap[&unitId].events {
 							if overworld::check_conditions(&gamestate.eventHandler, &event) {
 								gamestate.eventHandler.currentEvent = str.to_string();
 							}
@@ -341,7 +342,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 			//* Openning menu */
 			if data::key_pressed("enter") {
 				gamestate.audio.play_sound("menu".to_string());
-				gamestate.player.menu = poll_menu(gamestate);
+				gamestate.player.menu = Menu::poll(gamestate);
 				if gamestate.player.menu.open == MenuOptions::None { gamestate.player.menu.open = MenuOptions::Base; return; }
 				if gamestate.player.menu.open != MenuOptions::None { gamestate.player.menu.open = MenuOptions::None; return; }
 			}

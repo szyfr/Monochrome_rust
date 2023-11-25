@@ -37,6 +37,23 @@ pub struct Camera {
 //= Procedures
 
 impl Camera {
+
+	/// Initializes a new Camera structure.
+	pub fn init() -> Self {
+		Self {
+			position:		Vector3 {x:0.5,y:0.0,z:0.5},
+			posTarget:		Vector3 {x:0.5,y:0.0,z:0.5},
+
+			rotation:		0.0,
+			rotTarget:		0.0,
+
+			camPosition:	Vector3 {x:0.5,y:7.0,z:5.5},
+			fovy:			70.0,
+
+			onPlayer:		true,
+		}
+	}
+
 	/// Update camera
 	pub fn update(&mut self, playerPos: Vector3, control: bool) {
 		let ft = raylib::get_frame_time();
@@ -82,20 +99,5 @@ impl Camera {
 		//* Calculate rotation */
 		self.camPosition = self.position.rotate(Vector3{x: 0.0, y: 6.0, z: 5.0}, self.rotation);
 	}
-}
 
-/// Initializes a new Camera structure.
-pub fn init() -> Camera {
-	return Camera{
-		position:		Vector3 {x:0.5,y:0.0,z:0.5},
-		posTarget:		Vector3 {x:0.5,y:0.0,z:0.5},
-		
-		rotation:		0.0,
-		rotTarget:		0.0,
-
-		camPosition:	Vector3 {x:0.5,y:7.0,z:5.5},
-		fovy:			70.0,
-
-		onPlayer:		true,
-	};
 }

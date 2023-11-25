@@ -26,6 +26,17 @@ pub struct Audio{
 //= Procedures
 
 impl Audio {
+
+	/// Default init
+	pub fn init() -> Self {
+		Self {
+			currentMusicName: "".to_string(),
+			currentMusic: None,
+			currentSoundName: "".to_string(),
+			currentSound: None,
+		}
+	}
+
 	/// Play sound
 	pub fn play_sound( &mut self, sound: String ) {
 		if sound == self.currentSoundName { return }
@@ -39,6 +50,7 @@ impl Audio {
 		raylib::set_sound_volume(self.currentSound.unwrap(), data::get_master_volume() * data::get_sfx_volume());
 		raylib::play_sound(self.currentSound.unwrap());
 	}
+
 	/// Play music
 	pub fn play_music( &mut self, music: String ) {
 		if music == self.currentMusicName { return }
@@ -69,14 +81,5 @@ impl Audio {
 			self.currentSound = None;
 		}
 	}
-}
 
-/// Default init
-pub fn init() -> Audio {
-	return Audio {
-		currentMusicName: "".to_string(),
-		currentMusic: None,
-		currentSoundName: "".to_string(),
-		currentSound: None,
-	}
 }
