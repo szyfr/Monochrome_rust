@@ -7,7 +7,7 @@
 
 //= Imports
 use std::fmt::Display;
-use crate::{data, raylib::{self, structures::Vector2}};
+use crate::{data, raylib::{self, vectors::Vector2, rectangles::Rectangle}};
 use super::EventChain;
 
 
@@ -258,7 +258,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 
 	if gamestate.eventHandler.textbox.state != TextboxState::Inactive {
 		gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-			raylib::structures::Rectangle {
+			Rectangle {
 				x:		boxOffsetX,
 				y:		boxOffsetY,
 				width:	boxWidth,
@@ -293,7 +293,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			let choiceOffsetY = boxOffsetY - (24.0 * ratio);
 
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-				raylib::structures::Rectangle {
+				Rectangle {
 					x:		choiceOffsetX,
 					y:		choiceOffsetY,
 					width:	choiceWidth,
@@ -326,8 +326,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 				_ => {},
 			}
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
-				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
-				raylib::structures::Rectangle {
+				Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
+				Rectangle {
 					x:		choiceOffsetX + (fontSize * 2.0),
 					y:		height,
 					width:	32.0 * ratio,
@@ -342,7 +342,7 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			let inputWidthOffset = 320.0 * data::get_screenratio();
 			let inputHeightOffset = boxOffsetY - (fontSize * 2.0);
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-				raylib::structures::Rectangle {
+				Rectangle {
 					x:		inputWidthOffset,
 					y:		inputHeightOffset,
 					width:	data::get_screenwidth() as f32 - (inputWidthOffset * 2.0),
@@ -364,8 +364,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 			);
 
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
-				raylib::structures::Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
-				raylib::structures::Rectangle {
+				Rectangle { x:0.0,y:0.0, width:8.0,height:8.0 },
+				Rectangle {
 					x:		inputWidthOffset + (fontSize * 1.75) + (gamestate.eventHandler.textbox.input.len() as f32 * (fontSize + 5.0)),
 					y:		inputHeightOffset + (fontSize * 1.5),
 					width:	32.0 * ratio,

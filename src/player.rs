@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{overworld::{self, Direction}, data, raylib::{self, structures::{Vector2, Rectangle, Vector3}}, events, monsters};
+use crate::{overworld::{self, Direction}, data, raylib::{self, vectors::{Vector2, Vector3}, rectangles::Rectangle}, events, monsters};
 
 
 //= Constants
@@ -523,7 +523,7 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 
 			//* Draw BG */
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-				raylib::structures::Rectangle {
+				Rectangle {
 						x: widthOffset,
 						y: heightOffset,
 						width,
@@ -560,8 +560,8 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 		
 			//* Draw Pointer */
 			gamestate.graphics.textures["ui_pointer_general"].draw_pro(
-				raylib::structures::Rectangle { x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
-				raylib::structures::Rectangle{
+				Rectangle { x: 0.0, y: 0.0, width: 8.0, height: 8.0 },
+				Rectangle{
 					x: widthOffset + (fontSize * 1.5),
 					y: heightOffset + (fontSize * 2.0) + (gamestate.player.menu.selection as f32 * (fontSize * 2.0)),
 					width: 32.0 * ratio,
@@ -582,7 +582,7 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 
 			//* Draw BG */
 			gamestate.graphics.textures["ui_blackbox_general"].draw_npatch(
-				raylib::structures::Rectangle {
+				Rectangle {
 						x: widthOffset,
 						y: heightOffset,
 						width,
@@ -600,7 +600,7 @@ pub fn draw_menu( gamestate : &data::Gamestate ) {
 
 			//* Draw BG */
 			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-				raylib::structures::Rectangle {
+				Rectangle {
 						x: widthOffset,
 						y: heightOffset,
 						width,

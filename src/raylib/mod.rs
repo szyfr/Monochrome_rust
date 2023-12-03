@@ -4,16 +4,26 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 
+use crate::{data, camera::Camera};
+
+use self::vectors::Vector3;
+
 
 //= Imports
-use crate::{data, camera::Camera};
-use raylib_ffi::Vector3;
-
 pub mod enums;
-pub mod structures;
+pub mod vectors;
+pub mod matrixes;
+pub mod rectangles;
+pub mod images;
+pub mod textures;
+pub mod fonts;
+pub mod shaders;
+pub mod materials;
+pub mod models;
 
 
 //= Procedures
+
 pub fn begin_drawing() {
 	unsafe { raylib_ffi::BeginDrawing(); }
 }
@@ -83,7 +93,7 @@ pub fn begin_3d_mode( camera : &Camera ) {
 		let rlCamera = raylib_ffi::Camera3D{
 			position:	camera.camPosition.into(),
 			target:		camera.position.into(),
-			up:			Vector3{x:0.0,y:1.0,z:0.0},
+			up:			Vector3{x:0.0,y:1.0,z:0.0}.into(),
 			fovy:		camera.fovy,
 			projection:	raylib_ffi::enums::CameraProjection::Perspective as i32,
 		};
@@ -329,9 +339,6 @@ pub fn set_shader_value(shader: raylib_ffi::Shader, locIndex: i32, value: *const
 	unsafe { raylib_ffi::SetShaderValue(shader, locIndex, value, uniformType as i32) }
 }
 
-pub fn begin_texture_mode(target: raylib_ffi::RenderTexture) {
-	unsafe { raylib_ffi::BeginTextureMode(target) }
-}
 pub fn end_texture_mode() {
 	unsafe { raylib_ffi::EndTextureMode() }
 }

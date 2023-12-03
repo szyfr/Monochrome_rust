@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{raylib::{self, structures::Vector3}, utilities::math, data};
+use crate::{raylib::{self, vectors::Vector3}, utilities::math, data};
 
 
 //= Constants

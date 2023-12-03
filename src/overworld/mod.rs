@@ -7,7 +7,7 @@
 
 //= Imports
 use std::{collections::HashMap, str::FromStr, fmt::Display};
-use crate::{raylib::{structures::Vector3, self}, utilities::{debug, math}, events::{self, conditionals::Condition}, data, graphics};
+use crate::{raylib::{self, vectors::Vector3}, utilities::{debug, math}, events::{self, conditionals::Condition}, data, graphics};
 
 
 //= Enumerations
@@ -251,7 +251,6 @@ impl Unit {
 		let ft = raylib::get_frame_time();
 		
 		if !self.position.close(self.posTarget, 0.05) {
-			print!("{}->{}\n",self.position,self.posTarget);
 			let dir = self.position.direction_to(self.posTarget);
 			self.position = self.position + (dir * (3.0 * ft));
 		} else {

@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{data, raylib::{self, structures::Vector3}, overworld};
+use crate::{data, raylib::{self, vectors::Vector3, rectangles::Rectangle}, overworld};
 
 
 //= Enumerations
@@ -89,8 +89,8 @@ pub fn draw( gamestate : &mut data::Gamestate ) {
 	let texture = *gamestate.graphics.textures.get(&animName).unwrap();
 	
 	texture.draw_pro(
-		raylib::structures::Rectangle { x: 0.0, y: 0.0, width: texture.width as f32, height: texture.height as f32 },
-		raylib::structures::Rectangle { x: 0.0, y: 0.0, width: data::get_screenwidth() as f32, height: data::get_screenheight() as f32 },
+		Rectangle { x: 0.0, y: 0.0, width: texture.width as f32, height: texture.height as f32 },
+		Rectangle { x: 0.0, y: 0.0, width: data::get_screenwidth() as f32, height: data::get_screenheight() as f32 },
 		0.0,
 	);
 }
@@ -104,11 +104,10 @@ pub fn draw_emotes( gamestate : &mut data::Gamestate ) {
 		if gamestate.eventHandler.emotes[i].ticks >= gamestate.eventHandler.emotes[i].duration {
 			remove.push(i);
 		} else {
-			print!("{}\n",gamestate.eventHandler.emotes[i].ticks);
 			//* Get model and skin it */
 			let model = &gamestate.graphics.models["unit"];
 			let textureName = &("emote_".to_string() + &gamestate.eventHandler.emotes[i].emote);
-			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName].to_ffi());
+			raylib::set_material_texture(model.materials, raylib_ffi::enums::MaterialMapIndex::Albedo, gamestate.graphics.textures[textureName].into());
 
 			//* Get unit */
 			let unit: Option<overworld::Unit>;

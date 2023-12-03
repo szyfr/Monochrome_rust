@@ -12,7 +12,7 @@ pub mod textbox;
 pub mod animation;
 pub mod parser;
 
-use crate::{overworld::{Direction, self}, data, monsters, battle, raylib::structures::Vector3};
+use crate::{overworld::{Direction, self}, data, monsters, battle, raylib::vectors::Vector3};
 
 
 //= Enumerations

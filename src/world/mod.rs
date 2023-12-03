@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::debug, data::Gamestate, overworld, raylib::{self, structures::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
+use crate::{utilities::debug, data::Gamestate, overworld, raylib::{self, vectors::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
 
 
 //= Constants

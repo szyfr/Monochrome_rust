@@ -7,7 +7,7 @@
 //= Imports
 use std::{collections::HashMap, fs::{read_dir, read_to_string}};
 
-use crate::{raylib::{self, structures::{Texture, Image, Rectangle, Font, Model}}, overworld::Animation, utilities::debug};
+use crate::{raylib::{self, textures::Texture, images::Image, rectangles::Rectangle, fonts::Font, models::Model}, overworld::Animation, utilities::debug};
 
 
 //= Structures
