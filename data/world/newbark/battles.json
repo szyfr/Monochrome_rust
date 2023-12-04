@@ -4,7 +4,7 @@
 			"id":"rival_battle_starter_grass",
 			"type":"single",
 			"trainer":"rival_unnamed",
-			"arena":"grass",
+			"arena":"field",
 			"mon_easy":[
 				["mon152",3,"hardy","tackle","growl","leafage","empty"]
 			],
@@ -18,7 +18,7 @@
 			"id":"rival_battle_starter_fire",
 			"type":"single",
 			"trainer":"rival_unnamed",
-			"arena":"grass",
+			"arena":"field",
 			"mon_easy":[
 				["mon155",3,"hardy","tackle","leer","ember","empty"]
 			],
@@ -32,7 +32,7 @@
 			"id":"rival_battle_starter_water",
 			"type":"single",
 			"trainer":"rival_unnamed",
-			"arena":"grass",
+			"arena":"field",
 			"mon_easy":[
 				["mon158",3,"hardy","scratch","growl","watergun","empty"]
 			],

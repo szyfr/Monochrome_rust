@@ -19,6 +19,8 @@
 				["input","newbarktown_mom_event1_2","test_value"],
 				["choice","newbarktown_mom_event1_3",[["yes","",-1],["no","test_2",0]]],
 				["set_variable","test",true],
+				["give_monster",[0,"mon152",5]],
+				["music","rival_battle"],
 				["start_battle","rival_battle_starter_grass"]
 			]},
 		{

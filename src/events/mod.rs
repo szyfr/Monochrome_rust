@@ -12,7 +12,7 @@ pub mod textbox;
 pub mod animation;
 pub mod parser;
 
-use crate::{overworld::{Direction, self}, data, monsters, battle, raylib::vectors::Vector3};
+use crate::{overworld::{Direction, self}, data, monsters, battle::{self, BattleType}, raylib::vectors::Vector3};
 
 
 //= Enumerations
@@ -366,12 +366,12 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 		//= Battle events
 		EventChain::StartBattle { battle } => {
 			gamestate.player.canMove = false;
-			gamestate.battleData.start_trainer_battle(battle.clone());
+			gamestate.battleData.start_battle(battle.clone());
 			gamestate.eventHandler.currentChain += 1;
 		}
 		EventChain::EndBattle => {
 			gamestate.player.canMove = true;
-			gamestate.battleData.clear();
+			gamestate.battleData.start_battle(BattleType::Empty);
 			gamestate.eventHandler.currentChain += 1;
 		}
 

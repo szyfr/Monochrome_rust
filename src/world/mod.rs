@@ -8,7 +8,7 @@
 //= Imports
 use std::{collections::HashMap, fs::read_to_string, str::FromStr};
 
-use crate::{utilities::debug, data::Gamestate, overworld, raylib::{self, vectors::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType}, monsters};
+use crate::{utilities::debug, data::Gamestate, overworld, raylib::{self, vectors::Vector3}, events::{self, conditionals::Condition}, battle::{self, BattleType, ArenaType}, monsters};
 
 
 //= Constants
@@ -36,7 +36,8 @@ pub struct World{
 }
 
 /// Tile storage structure
-pub struct Tile{
+#[derive(Clone)]
+pub struct Tile {
 	pub model : String,
 
 	pub solid : [bool;4],
@@ -46,6 +47,20 @@ pub struct Tile{
 
 
 //= Procedures
+
+impl Tile {
+
+	//
+	pub fn create(model: &str, solid: bool, water: bool) -> Tile {
+		return Tile {
+			model: model.to_string(),
+			solid: [solid,solid,solid,solid],
+			water,
+			trnsp: false,
+		}
+	}
+
+}
 
 impl World {
 
@@ -244,6 +259,7 @@ impl World {
 						easyTeam,
 						mediumTeam,
 						hardTeam,
+						arena: ArenaType::from(i.as_object().unwrap()["arena"].as_str().unwrap()),
 					};
 				}
 				"double" => {
@@ -308,6 +324,7 @@ impl World {
 						easyTeam,
 						mediumTeam,
 						hardTeam,
+						arena: ArenaType::from(i.as_object().unwrap()["arena"].as_str().unwrap()),
 					};
 				}
 				"wild"	 => {
@@ -316,6 +333,8 @@ impl World {
 							monsters::MonsterSpecies::from_str(i.as_object().unwrap()["mon"].as_array().unwrap()[0].as_str().unwrap()).unwrap(),
 							i.as_object().unwrap()["mon"].as_array().unwrap()[1].as_i64().unwrap() as i32,
 						),
+
+						arena: ArenaType::from(i.as_object().unwrap()["arena"].as_str().unwrap()),
     				};
 				}
 				_ => {

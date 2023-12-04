@@ -6,7 +6,7 @@
 
 
 //= Imports
-use monorust::{raylib, data, player, world, events};
+use monorust::{raylib, data, player, world, events, battle};
 
 
 //= Main
@@ -49,8 +49,13 @@ fn main() {
 
 			raylib::begin_3d_mode(&gamestate.camera);
 
-			world::draw_world(&mut gamestate);
-			events::animation::draw_emotes(&mut gamestate);
+			if !gamestate.battleData.started {
+				world::draw_world(&mut gamestate);
+				events::animation::draw_emotes(&mut gamestate);
+			} else {
+				//gamestate.battleData.draw(&mut gamestate);
+				battle::draw(&mut gamestate);
+			}
 
 			raylib::end_3d_mode();
 
