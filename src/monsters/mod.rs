@@ -23,9 +23,9 @@ pub enum MonsterSpecies {
 impl Display for MonsterSpecies {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     	match self {
-			MonsterSpecies::Mon152 => return write!(f, "mon152"),
-			MonsterSpecies::Mon155 => return write!(f, "mon155"),
-			MonsterSpecies::Mon158 => return write!(f, "mon158"),
+			MonsterSpecies::Mon152 => return write!(f, "mon_152"),
+			MonsterSpecies::Mon155 => return write!(f, "mon_155"),
+			MonsterSpecies::Mon158 => return write!(f, "mon_158"),
 		}
     }
 }
@@ -33,9 +33,9 @@ impl FromStr for MonsterSpecies {
     type Err = ();
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-			"mon152" => Ok(MonsterSpecies::Mon152),
-			"mon155" => Ok(MonsterSpecies::Mon155),
-			"mon158" => Ok(MonsterSpecies::Mon158),
+			"mon_152" => Ok(MonsterSpecies::Mon152),
+			"mon_155" => Ok(MonsterSpecies::Mon155),
+			"mon_158" => Ok(MonsterSpecies::Mon158),
 			_ => Err(()),
 		}
     }

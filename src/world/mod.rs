@@ -461,7 +461,7 @@ fn draw_rot_000( gamestate : &mut Gamestate ) {
 				//* Check if unit exists */
 				for (_, unit) in &mut gamestate.worldData.unitMap {
 					if unit.position.round() == (Vector3{x: x as f32, y: y as f32 / 2.0, z: z as f32}) && unit.exists(&gamestate.eventHandler) {
-							unit.draw(&gamestate.graphics, gamestate.camera.rotation);
+						unit.draw(&gamestate.graphics, gamestate.camera.rotation);
 					}
 				}
 			}

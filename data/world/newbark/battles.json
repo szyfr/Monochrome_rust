@@ -6,13 +6,13 @@
 			"trainer":"rival_unnamed",
 			"arena":"field",
 			"mon_easy":[
-				["mon152",3,"hardy","tackle","growl","leafage","empty"]
+				["mon_152",3,"hardy","tackle","growl","leafage","empty"]
 			],
 			"mon_medium":[
-				["mon152",5,"hardy","tackle","growl","leafage","empty"]
+				["mon_152",5,"hardy","tackle","growl","leafage","empty"]
 			],
 			"mon_hard":[
-				["mon152",8,"relaxed","tackle","growl","leafage","empty"]
+				["mon_152",8,"relaxed","tackle","growl","leafage","empty"]
 			]
 		}, {
 			"id":"rival_battle_starter_fire",
@@ -20,13 +20,13 @@
 			"trainer":"rival_unnamed",
 			"arena":"field",
 			"mon_easy":[
-				["mon155",3,"hardy","tackle","leer","ember","empty"]
+				["mon_155",3,"hardy","tackle","leer","ember","empty"]
 			],
 			"mon_medium":[
-				["mon155",5,"hardy","tackle","leer","ember","empty"]
+				["mon_155",5,"hardy","tackle","leer","ember","empty"]
 			],
 			"mon_hard":[
-				["mon155",8,"modest","tackle","leer","ember","empty"]
+				["mon_155",8,"modest","tackle","leer","ember","empty"]
 			]
 		}, {
 			"id":"rival_battle_starter_water",
@@ -34,13 +34,13 @@
 			"trainer":"rival_unnamed",
 			"arena":"field",
 			"mon_easy":[
-				["mon158",3,"hardy","scratch","growl","watergun","empty"]
+				["mon_158",3,"hardy","scratch","growl","watergun","empty"]
 			],
 			"mon_medium":[
-				["mon158",5,"hardy","scratch","growl","watergun","empty"]
+				["mon_158",5,"hardy","scratch","growl","watergun","empty"]
 			],
 			"mon_hard":[
-				["mon158",8,"adamant","scratch","growl","watergun","empty"]
+				["mon_158",8,"adamant","scratch","growl","watergun","empty"]
 			]
 		}
 	]

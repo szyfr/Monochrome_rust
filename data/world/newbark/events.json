@@ -19,7 +19,7 @@
 				["input","newbarktown_mom_event1_2","test_value"],
 				["choice","newbarktown_mom_event1_3",[["yes","",-1],["no","test_2",0]]],
 				["set_variable","test",true],
-				["give_monster",[0,"mon152",5]],
+				["give_monster",[0,"mon_152",5]],
 				["music","rival_battle"],
 				["start_battle","rival_battle_starter_grass"]
 			]},
@@ -27,7 +27,7 @@
 			"id": "test_2",
 			"chain": [
 				["choice","newbarktown_TEST_1",[["yes","",-1],["no","",3]]],
-				["give_monster",[0,"mon152",5]],
+				["give_monster",[0,"mon_152",5]],
 				["text","newbarktown_TEST_2"],
 				["emote","sad","player",true]
 			]},

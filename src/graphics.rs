@@ -64,10 +64,36 @@ impl Graphics {
 		//* World */
 		self.textures.insert("terrain_texture".to_string(), Texture::load("data/tiles/texture_0.png"));
 
+		//* Sprites */
+		//* Player */
 		let mut img = Image::load("data/sprites/overworld/player_1.png");
 		for i in 0..img.width/img.height {
 			let subimg = img.from_image(Rectangle { x: (16 * i) as f32, y: 0.0, width: 16.0, height: 16.0 });
 			self.textures.insert("player_1_".to_string() + &i.to_string(), subimg.load_texture());
+		}
+		//* MonsterBall / placeholder */
+		img = Image::load("data/sprites/overworld/ball.png");
+		for i in 0..img.width/img.height {
+			let subimg = img.from_image(Rectangle { x: (16 * i) as f32, y: 0.0, width: 16.0, height: 16.0 });
+			self.textures.insert("ball_".to_string() + &i.to_string(), subimg.load_texture());
+		}
+		//* mon_152 */
+		img = Image::load("data/sprites/battle/mon_152.png");
+		for i in 0..img.width/img.height {
+			let subimg = img.from_image(Rectangle { x: (32 * i) as f32, y: 0.0, width: 32.0, height: 32.0 });
+			self.textures.insert("mon_152_".to_string() + &i.to_string(), subimg.load_texture());
+		}
+		//* mon_155 */
+		img = Image::load("data/sprites/battle/mon_155.png");
+		for i in 0..img.width/img.height {
+			let subimg = img.from_image(Rectangle { x: (32 * i) as f32, y: 0.0, width: 32.0, height: 32.0 });
+			self.textures.insert("mon_155_".to_string() + &i.to_string(), subimg.load_texture());
+		}
+		//* mon_158 */
+		img = Image::load("data/sprites/battle/mon_158.png");
+		for i in 0..img.width/img.height {
+			let subimg = img.from_image(Rectangle { x: (32 * i) as f32, y: 0.0, width: 32.0, height: 32.0 });
+			self.textures.insert("mon_158_".to_string() + &i.to_string(), subimg.load_texture());
 		}
 
 		//* UI */

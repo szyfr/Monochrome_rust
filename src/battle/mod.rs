@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 //= Imports
-use crate::{monsters, world::Tile, raylib::vectors::Vector3, data};
+use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture}, data};
 
 
 //= Enumerations
@@ -68,8 +68,8 @@ impl From<&str> for ArenaType {
 #[derive(Clone)]
 pub enum BattleObjectType {
 	Delete,
-	PlayerMonster{num: i32},
-	EnemyMonster{num: i32},
+	PlayerMonster{num: i32, species: MonsterSpecies},
+	EnemyMonster{num: i32, species: MonsterSpecies},
 }
 
 
@@ -102,6 +102,18 @@ impl BattleType {
 
 }
 
+impl BattleObject {
+	
+	//
+	pub fn new(objType: BattleObjectType, position: Vector3) -> Self {
+		Self {
+			objType,
+			position,
+		}
+	}
+
+}
+
 impl BattleData {
 	
 	/// Create new battle structure
@@ -122,6 +134,22 @@ impl BattleData {
 			BattleType::Single { arena, .. } => {
 				self.started = true;
 				self.battleType = battle;
+
+				self.objects = HashMap::new();
+				self.objects.insert(
+					"player".to_string(), 
+					BattleObject::new(
+						BattleObjectType::PlayerMonster{num: 0, species: MonsterSpecies::Mon152},
+						Vector3{x:4.0,y:0.0,z:4.0},
+					),
+				);
+				self.objects.insert(
+					"enemy".to_string(), 
+					BattleObject::new(
+						BattleObjectType::EnemyMonster{num: 0, species: MonsterSpecies::Mon158},
+						Vector3{x:8.0,y:0.0,z:4.0},
+					),
+				);
 
 				self.tiles = BattleData::create_arena(arena);
 			}
@@ -152,8 +180,10 @@ impl BattleData {
 				let grass = Tile::create("grass_1", false, false);
 
 				// TEMP
-				for z in -13..10 {
-					for x in -16..32 {
+				//for z in -13..10 {
+				//	for x in -16..32 {
+				for z in 0..8 {
+					for x in 0..16 {
 						result.insert([x,0,z], grass.clone());
 					}
 				}
@@ -211,12 +241,37 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 			}
 
 			//* Objects */
-			let mut obj: BattleObject;
+			let mut obj: Option<BattleObject> = None;
 			for (_, object) in gamestate.battleData.objects.iter() {
 				let objPos: [i32;3] = object.position.into();
-				if [x,0,z] == objPos { obj = object.clone(); }
+				if [x,0,z] == objPos { obj = Some(object.clone()); }
 			}
 			// DRAW
+			if obj.is_some() {
+				//* Update material */
+				let texture: Texture;
+				match &obj.as_ref().unwrap().objType {
+					BattleObjectType::EnemyMonster { species, .. } => {
+						texture = gamestate.graphics.textures[&(species.to_string() + "_6")];
+					}
+					BattleObjectType::PlayerMonster { species, .. } => {
+						texture = gamestate.graphics.textures[&(species.to_string() + "_8")];
+					}
+					_ => { return }
+				}
+				let mut model = gamestate.graphics.models["unit"].clone();
+				model.set_material_texture(texture);
+
+				//* Draw */
+				let position = obj.as_ref().unwrap().position + gamestate.camera.position - Vector3{x:7.5,y:-1.0,z:4.5};
+				model.draw_ex(
+					position,
+					Vector3{x:0.0,y:1.0,z:0.0},
+					0.0,
+					Vector3{x:1.5,y:1.5,z:1.5},
+					raylib_ffi::colors::WHITE,
+				);
+			}
 		}
 	}
 	//for (pos, tile) in gamestate.battleData.tiles.iter() {
