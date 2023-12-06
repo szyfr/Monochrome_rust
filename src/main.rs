@@ -36,6 +36,7 @@ fn main() {
 		gamestate.camera.update(
 			gamestate.player.unit.position,
 			gamestate.eventHandler.currentEvent == "".to_string(),
+			gamestate.battleData.started,
 		);
 		player::controls(&mut gamestate);
 		gamestate.worldData.update();

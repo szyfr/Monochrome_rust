@@ -147,7 +147,7 @@ impl BattleData {
 					"enemy".to_string(), 
 					BattleObject::new(
 						BattleObjectType::EnemyMonster{num: 0, species: MonsterSpecies::Mon158},
-						Vector3{x:8.0,y:0.0,z:4.0},
+						Vector3{x:12.0,y:0.0,z:4.0},
 					),
 				);
 
@@ -177,14 +177,19 @@ impl BattleData {
 
 		match arena {
 			ArenaType::Field => {
-				let grass = Tile::create("grass_1", false, false);
+				//let grass = Tile::create("grass_1", false, false);
+				let battle1 = Tile::create("battle_1", false, false);
+				let battle2 = Tile::create("battle_2", false, false);
+				let battle3 = Tile::create("battle_3", false, false);
 
 				// TEMP
 				//for z in -13..10 {
 				//	for x in -16..32 {
 				for z in 0..8 {
 					for x in 0..16 {
-						result.insert([x,0,z], grass.clone());
+						if x == 7 { result.insert([x,0,z], battle2.clone()); }
+						else if x == 8 { result.insert([x,0,z], battle3.clone()); }
+						else { result.insert([x,0,z], battle1.clone()); }
 					}
 				}
 
@@ -218,8 +223,17 @@ impl BattleData {
 	}
 
 	/// Updates battle state
-	pub fn update(&self) {
-		
+	pub fn update(&mut self) {
+		let obj = self.objects.get_mut("player").unwrap();
+		if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
+		if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
+		if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
+		if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
+
+		if obj.position.x < 0.0 { obj.position.x = 0.0; }
+		if obj.position.x > 7.0 { obj.position.x = 7.0; }
+		if obj.position.z < 0.0 { obj.position.z = 0.0; }
+		if obj.position.z > 7.0 { obj.position.z = 7.0; }
 	}
 
 }
@@ -244,7 +258,7 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 			let mut obj: Option<BattleObject> = None;
 			for (_, object) in gamestate.battleData.objects.iter() {
 				let objPos: [i32;3] = object.position.into();
-				if [x,0,z] == objPos { obj = Some(object.clone()); }
+				if [x-1,0,z] == objPos { obj = Some(object.clone()); }
 			}
 			// DRAW
 			if obj.is_some() {
@@ -263,24 +277,15 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 				model.set_material_texture(texture);
 
 				//* Draw */
-				let position = obj.as_ref().unwrap().position + gamestate.camera.position - Vector3{x:7.5,y:-1.0,z:4.5};
+				let position = obj.as_ref().unwrap().position + gamestate.camera.position - Vector3{x:7.5,y:0.0,z:4.0};
 				model.draw_ex(
 					position,
-					Vector3{x:0.0,y:1.0,z:0.0},
-					0.0,
+					Vector3{x:1.0,y:0.0,z:0.0},
+					-45.0,
 					Vector3{x:1.5,y:1.5,z:1.5},
 					raylib_ffi::colors::WHITE,
 				);
 			}
 		}
 	}
-	//for (pos, tile) in gamestate.battleData.tiles.iter() {
-	//	gamestate.graphics.models[&tile.model].draw_ex(
-	//		Vector3::from(*pos) + gamestate.camera.position - Vector3{x:7.5,y:0.0,z:4.5},
-	//		Vector3{x:0.0,y:1.0,z:0.0},
-	//		0.0,
-	//		Vector3{x:1.0,y:1.0,z:1.0},
-	//		raylib_ffi::colors::WHITE,
-	//	);
-	//}
 }

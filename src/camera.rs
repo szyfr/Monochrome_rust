@@ -55,7 +55,7 @@ impl Camera {
 	}
 
 	/// Update camera
-	pub fn update(&mut self, playerPos: Vector3, control: bool) {
+	pub fn update(&mut self, playerPos: Vector3, control: bool, isBattle: bool) {
 		let ft = raylib::get_frame_time();
 
 		//* Check if targetting a unit, and update position accordingly */
@@ -90,14 +90,15 @@ impl Camera {
 			}
 	
 			//* Controls */
-			if control {
+			if control && !isBattle {
 				if data::key_down("rotate_right") { self.rotTarget -= 90.0; }
 				if data::key_down("rotate_left")  { self.rotTarget += 90.0; }
 			}
 		}
 	
 		//* Calculate rotation */
-		self.camPosition = self.position.rotate(Vector3{x: 0.0, y: 6.0, z: 5.0}, self.rotation);
+		if !isBattle { self.camPosition = self.position.rotate(Vector3{x: 0.0, y: 6.0, z: 5.0}, self.rotation); }
+		else { self.camPosition = self.position.rotate(Vector3{x: 0.0, y: 7.0, z: 3.0}, self.rotation); }
 	}
 
 }
