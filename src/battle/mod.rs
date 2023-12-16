@@ -80,8 +80,11 @@ pub struct BattleData {
 	//* Battle variables */
 	pub started: bool,
 
+	pub turnOrder: [i8;4],
+
 	//* Data */
 	pub battleType: BattleType,
+	pub playerTeam: monsters::MonsterTeam,
 
 	pub tiles: HashMap<[i32;3], Tile>,
 	pub objects: HashMap<String, BattleObject>,
@@ -120,8 +123,10 @@ impl BattleData {
 	pub fn init() -> Self {
 		return BattleData{
 			started:	false,
-    		battleType:	BattleType::Empty,
+			turnOrder:	[-1,-1,-1,-1],
 
+    		battleType:	BattleType::Empty,
+			playerTeam: monsters::MonsterTeam::new(),
 			tiles: HashMap::new(),
 			objects: HashMap::new(),
 		}
@@ -129,11 +134,21 @@ impl BattleData {
 
 	/// Start battle
 	/// <br>If ``BattleType::Empty input``, it clears the structure.
-	pub fn start_battle(&mut self, battle: BattleType) {
+	pub fn start_battle(&mut self, battle: BattleType, playerTeam: &monsters::MonsterTeam) {
 		match battle {
-			BattleType::Single { arena, .. } => {
+			BattleType::Single { arena, trainerName, easyTeam, mediumTeam, hardTeam } => {
 				self.started = true;
-				self.battleType = battle;
+				self.battleType = BattleType::Single{
+					trainerName: trainerName.clone(),
+					easyTeam: easyTeam.clone(),
+					mediumTeam: mediumTeam.clone(),
+					hardTeam: hardTeam.clone(),
+					arena: arena.clone(),
+				};
+				self.playerTeam = playerTeam.clone();
+
+				self.turnOrder = calc_turn_order([playerTeam.0[0].clone(), mediumTeam.0[0].clone(), None, None]);
+				print!("[{},{},{},{}]\n",self.turnOrder[0],self.turnOrder[1],self.turnOrder[2],self.turnOrder[3]);
 
 				self.objects = HashMap::new();
 				self.objects.insert(
@@ -288,4 +303,50 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 			}
 		}
 	}
+}
+
+pub fn calc_turn_order(monsters: [Option<monsters::Monster>;4]) -> [i8;4] {
+	//* This is the stupid way of doing it, but i am that... so */
+	let mut result: [i8;4] = [-1,-1,-1,-1];
+
+	let mut largest = 0;
+	let mut member: i32 = -1;
+	for x in 0..4 {
+		if monsters[x as usize].is_none() { continue; }
+		if monsters[x as usize].clone().unwrap().speed > largest { member = x; }
+	}
+	if member == -1 { return result; }
+	result[0] = member as i8;
+	largest = 0;
+	member = -1;
+
+	for x in 0..4 {
+		if monsters[x as usize].is_none() { continue; }
+		if x == result[0] { continue; }
+		if monsters[x as usize].clone().unwrap().speed > largest { member = x as i32; }
+	}
+	if member == -1 { return result; }
+	result[1] = member as i8;
+	largest = 0;
+	member = -1;
+
+	for x in 0..4 {
+		if monsters[x as usize].is_none() { continue; }
+		if x == result[0] || x == result[1] { continue; }
+		if monsters[x as usize].clone().unwrap().speed > largest { member = x as i32; }
+	}
+	if member == -1 { return result; }
+	result[2] = member as i8;
+	largest = 0;
+	member = -1;
+	
+	for x in 0..4 {
+		if monsters[x as usize].is_none() { continue; }
+		if x == result[0] || x == result[1] || x == result[2] { continue; }
+		if monsters[x as usize].clone().unwrap().speed > largest { member = x as i32; }
+	}
+	if member == -1 { return result; }
+	result[3] = member as i8;
+
+	return result;
 }

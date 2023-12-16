@@ -366,12 +366,12 @@ pub fn parse_event( gamestate : &mut data::Gamestate ) -> bool {
 		//= Battle events
 		EventChain::StartBattle { battle } => {
 			gamestate.player.canMove = false;
-			gamestate.battleData.start_battle(battle.clone());
+			gamestate.battleData.start_battle(battle.clone(), &gamestate.player.monsters);
 			gamestate.eventHandler.currentChain += 1;
 		}
 		EventChain::EndBattle => {
 			gamestate.player.canMove = true;
-			gamestate.battleData.start_battle(BattleType::Empty);
+			gamestate.battleData.start_battle(BattleType::Empty, &gamestate.player.monsters);
 			gamestate.eventHandler.currentChain += 1;
 		}
 

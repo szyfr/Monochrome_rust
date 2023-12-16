@@ -141,28 +141,28 @@ impl Display for MonsterTeam {
 /// The structure of a monster.
 #[derive(Clone)]
 pub struct Monster {
-	species: MonsterSpecies,
-	types: [MonsterTypes; 2],
+	pub species: MonsterSpecies,
+	pub types: [MonsterTypes; 2],
 
-	nickname: String,
+	pub nickname: String,
 
-	health: [i32;2],
-	stamina: [i32;2],
+	pub health: [i32;2],
+	pub stamina: [i32;2],
 
-	physicalAttack: i32,
-	physicalDefense: i32,
-	specialAttack: i32,
-	specialDefense: i32,
-	speed: i32,
+	pub physicalAttack: i32,
+	pub physicalDefense: i32,
+	pub specialAttack: i32,
+	pub specialDefense: i32,
+	pub speed: i32,
 
-	statChanges: [u8;5],
-	flinch: bool, //???
+	pub statChanges: [u8;5],
+	pub flinch: bool, //???
 
-	experience: i32,
-	level: i32,
-	growthRate: MonsterGrowthRate,
+	pub experience: i32,
+	pub level: i32,
+	pub growthRate: MonsterGrowthRate,
 
-	attacks: [MonsterAttacks;4],
+	pub attacks: [MonsterAttacks;4],
 }
 impl Display for Monster {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
