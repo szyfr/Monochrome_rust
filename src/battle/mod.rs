@@ -80,6 +80,8 @@ pub struct BattleData {
 	//* Battle variables */
 	pub started: bool,
 
+	pub turnCur: i8,
+	pub roundTotal: i32,
 	pub turnOrder: [i8;4],
 
 	//* Data */
@@ -123,6 +125,9 @@ impl BattleData {
 	pub fn init() -> Self {
 		return BattleData{
 			started:	false,
+
+			turnCur: 0,
+			roundTotal: 0,
 			turnOrder:	[-1,-1,-1,-1],
 
     		battleType:	BattleType::Empty,
@@ -147,19 +152,19 @@ impl BattleData {
 				};
 				self.playerTeam = playerTeam.clone();
 
-				self.turnOrder = calc_turn_order([playerTeam.0[0].clone(), mediumTeam.0[0].clone(), None, None]);
+				self.turnOrder = calc_turn_order([playerTeam.0[0].clone(), None, mediumTeam.0[0].clone(), None]);
 				print!("[{},{},{},{}]\n",self.turnOrder[0],self.turnOrder[1],self.turnOrder[2],self.turnOrder[3]);
 
 				self.objects = HashMap::new();
 				self.objects.insert(
-					"player".to_string(), 
+					"player_1".to_string(), 
 					BattleObject::new(
 						BattleObjectType::PlayerMonster{num: 0, species: MonsterSpecies::Mon152},
 						Vector3{x:4.0,y:0.0,z:4.0},
 					),
 				);
 				self.objects.insert(
-					"enemy".to_string(), 
+					"enemy_1".to_string(), 
 					BattleObject::new(
 						BattleObjectType::EnemyMonster{num: 0, species: MonsterSpecies::Mon158},
 						Vector3{x:12.0,y:0.0,z:4.0},
@@ -239,16 +244,32 @@ impl BattleData {
 
 	/// Updates battle state
 	pub fn update(&mut self) {
-		let obj = self.objects.get_mut("player").unwrap();
-		if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
-		if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
-		if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
-		if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
+		//* If turn is invalid, reset round */
+		if self.turnCur >= 4 || self.turnOrder[self.turnCur as usize] == -1 {
+			self.roundTotal += 1;
+			self.turnCur = 0;
+		}
 
-		if obj.position.x < 0.0 { obj.position.x = 0.0; }
-		if obj.position.x > 7.0 { obj.position.x = 7.0; }
-		if obj.position.z < 0.0 { obj.position.z = 0.0; }
-		if obj.position.z > 7.0 { obj.position.z = 7.0; }
+		match self.turnOrder[self.turnCur as usize] {
+			0 => { // Player mon 1
+				let obj = self.objects.get_mut("player_1").unwrap();
+				if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
+				if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
+				if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
+				if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
+
+				if obj.position.x < 0.0 { obj.position.x = 0.0; }
+				if obj.position.x > 7.0 { obj.position.x = 7.0; }
+				if obj.position.z < 0.0 { obj.position.z = 0.0; }
+				if obj.position.z > 7.0 { obj.position.z = 7.0; }
+			}
+			1 => {} // Player mon 2
+			2 => {} // Enemy mon 1
+			3 => {} // Enemy mon 2
+			_ => {} // Null
+		}
+
+		
 	}
 
 }
