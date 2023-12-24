@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 
 //= Imports
-use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture}, data};
+use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self}, data, utilities::math::is_within_range};
 
 
 //= Enumerations
@@ -84,6 +84,8 @@ pub struct BattleData {
 	pub roundTotal: i32,
 	pub turnOrder: [i8;4],
 
+	pub cursor: Vector3,
+
 	//* Data */
 	pub battleType: BattleType,
 	pub playerTeam: monsters::MonsterTeam,
@@ -129,6 +131,8 @@ impl BattleData {
 			turnCur: 0,
 			roundTotal: 0,
 			turnOrder:	[-1,-1,-1,-1],
+
+			cursor: Vector3{x:4.0,y:0.0,z:4.0},
 
     		battleType:	BattleType::Empty,
 			playerTeam: monsters::MonsterTeam::new(),
@@ -244,32 +248,55 @@ impl BattleData {
 
 	/// Updates battle state
 	pub fn update(&mut self) {
-		//* If turn is invalid, reset round */
-		if self.turnCur >= 4 || self.turnOrder[self.turnCur as usize] == -1 {
-			self.roundTotal += 1;
-			self.turnCur = 0;
-		}
-
 		match self.turnOrder[self.turnCur as usize] {
 			0 => { // Player mon 1
-				let obj = self.objects.get_mut("player_1").unwrap();
-				if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
-				if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
-				if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
-				if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
+				//let obj = self.objects.get_mut("player_1").unwrap();
+				//if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
+				//if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
+				//if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
+				//if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
 
-				if obj.position.x < 0.0 { obj.position.x = 0.0; }
-				if obj.position.x > 7.0 { obj.position.x = 7.0; }
-				if obj.position.z < 0.0 { obj.position.z = 0.0; }
-				if obj.position.z > 7.0 { obj.position.z = 7.0; }
+				//if obj.position.x < 0.0 { obj.position.x = 0.0; }
+				//if obj.position.x > 7.0 { obj.position.x = 7.0; }
+				//if obj.position.z < 0.0 { obj.position.z = 0.0; }
+				//if obj.position.z > 7.0 { obj.position.z = 7.0; }
+
+				if data::key_pressed("up")		{ self.cursor = self.cursor - Vector3{x:0.0,y:0.0,z:1.0}; }
+				if data::key_pressed("down")	{ self.cursor = self.cursor + Vector3{x:0.0,y:0.0,z:1.0}; }
+				if data::key_pressed("left")	{ self.cursor = self.cursor - Vector3{x:1.0,y:0.0,z:0.0}; }
+				if data::key_pressed("right")	{ self.cursor = self.cursor + Vector3{x:1.0,y:0.0,z:0.0}; }
+
+				if self.cursor.x < 0.0 { self.cursor.x = 0.0; }
+				if self.cursor.x > 7.0 { self.cursor.x = 7.0; }
+				if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
+				if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
+
+				if data::key_pressed("confirm")	{
+					print!("Player turn ends.\n");
+					self.next_turn();
+				}
 			}
 			1 => {} // Player mon 2
-			2 => {} // Enemy mon 1
+			2 => { // Enemy mon 1
+				print!("Enemy turn ends.\n");
+				self.next_turn();
+			}
 			3 => {} // Enemy mon 2
 			_ => {} // Null
 		}
 
 		
+	}
+
+	pub fn next_turn(&mut self) {
+		self.turnCur += 1;
+
+		//* If turn is invalid, reset round */
+		if self.turnCur >= 4 || self.turnOrder[self.turnCur as usize] == -1 {
+			print!("Round ends.\n");
+			self.roundTotal += 1;
+			self.turnCur = 0;
+		}
 	}
 
 }
@@ -281,12 +308,32 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 			//* Tiles */
 			if gamestate.battleData.tiles.contains_key(&[x,0,z]) {
 				let tile = gamestate.battleData.tiles[&[x,0,z]].clone();
-				gamestate.graphics.models[&tile.model].draw_ex(
+				let mut color: raylib_ffi::Color = raylib_ffi::colors::WHITE;
+				
+				if gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize] == 0 && x < 8 && z < 8 {
+					if gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize] == 0 {
+						let objPosition = gamestate.battleData.objects["player_1"].position;
+						if is_within_range(objPosition, Vector3::from([x,0,z]), gamestate.battleData.playerTeam.0[0].clone().unwrap().get_move_distance()) {
+							color = raylib_ffi::colors::ORANGE;
+						}
+					}
+					if Vector3::from([x,0,z]) == gamestate.battleData.cursor { color = raylib_ffi::colors::GREEN; }
+				}
+
+				let model = gamestate.graphics.models[&tile.model].clone();
+				raylib::set_shader_value(
+					gamestate.graphics.tileShader.unwrap(),
+					gamestate.graphics.colorLoc,
+					[(color.r as f32 / 255.0), (color.g as f32 / 255.0), (color.b as f32 / 255.0), (color.a as f32 / 255.0)].as_ptr().cast(),
+					raylib::enums::ShaderUniformDataType::ShaderUniformVec4,
+				);
+
+				model.draw_ex(
 					Vector3::from([x,0,z]) + gamestate.camera.position - Vector3{x:7.5,y:0.0,z:4.5},
 					Vector3{x:0.0,y:1.0,z:0.0},
 					0.0,
 					Vector3{x:1.0,y:1.0,z:1.0},
-					raylib_ffi::colors::WHITE,
+					raylib_ffi::colors::BLACK,
 				);
 			}
 
@@ -322,6 +369,9 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 					raylib_ffi::colors::WHITE,
 				);
 			}
+
+			//* Cursor */
+			//TODO
 		}
 	}
 }

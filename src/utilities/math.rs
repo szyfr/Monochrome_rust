@@ -1,13 +1,21 @@
 
 
 //= Allows
+#![allow(non_snake_case)]
+#![allow(dead_code)]
 
 
 //= Imports
-use crate::overworld::Direction;
+use crate::{overworld::Direction, raylib::vectors::Vector3};
 
 
 //= Constants
+const LOOKUP: [Vector3;4] = [
+	Vector3{x: 1.0, y:0.0, z: 0.0},
+	Vector3{x: 0.0, y:0.0, z: 1.0},
+	Vector3{x:-1.0, y:0.0, z: 0.0},
+	Vector3{x: 0.0, y:0.0, z:-1.0},
+];
 
 
 //= Procedures
@@ -65,4 +73,33 @@ pub fn get_relative_direction_dir( rotation : f32, direction : Direction ) -> Di
 	}
 
 	return Direction::South;
+}
+
+/// Check whether position is range of another
+pub fn is_within_range(p1: Vector3, p2: Vector3, range: i32) -> bool {
+	//let distance = distance(p1, p2) as i32;
+
+	let oldDistance = distance(p1, p2);
+	let mut newDistance = oldDistance as f32;
+	let mut alteredPosition = p1;
+	let mut position = 0;
+	let mut steps = 0;
+
+	while alteredPosition != p2 {
+		for i in 0..4 {
+			let tempDist = distance(alteredPosition + Vector3::from(LOOKUP[i]),p2);
+			if newDistance > tempDist {
+				newDistance = tempDist;
+				position = i;
+			}
+		}
+		alteredPosition = alteredPosition + Vector3::from(LOOKUP[position]);
+		steps += 1;
+	}
+
+	return steps <= range;
+}
+
+pub fn distance(p1: Vector3, p2: Vector3) -> f32 {
+	return ((p2.x - p1.x).powi(2) + (p2.y - p1.y).powi(2) + (p2.z - p1.z).powi(2)).sqrt();
 }

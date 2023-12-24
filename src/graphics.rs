@@ -20,6 +20,8 @@ pub struct Graphics {
 	pub shader:		Option<raylib_ffi::Shader>,
 	pub timeLoc:	i32,
 	pub sizeLoc:	i32,
+	pub tileShader:	Option<raylib_ffi::Shader>,
+	pub colorLoc:	i32,
 }
 
 
@@ -38,6 +40,8 @@ impl Graphics {
 			shader:		None,
 			timeLoc:	0,
 			sizeLoc:	0,
+			tileShader:	None,
+			colorLoc:	0,
 		}
 	}
 
@@ -46,6 +50,8 @@ impl Graphics {
 		self.shader = Some(raylib::load_shader("", "data/shaders/lighting.fs"));
 		self.timeLoc = raylib::get_shader_location(self.shader.unwrap(), "time");
 		self.sizeLoc = raylib::get_shader_location(self.shader.unwrap(), "textureSize");
+		self.tileShader = Some(raylib::load_shader("", "data/shaders/tile.fs"));
+		self.colorLoc = raylib::get_shader_location(self.tileShader.unwrap(), "color");
 		
 		self.load_fonts();
 		self.load_textures();
@@ -159,7 +165,11 @@ impl Graphics {
 
 				let mut model = Model::load(str);
 				model.set_material_texture(texture);
-				unsafe { (*model.materials.wrapping_add(0)).shader = self.shader.unwrap(); }
+				if name == "battle_1".to_string() || name == "battle_2".to_string() || name == "battle_3".to_string() {
+					unsafe { (*model.materials.wrapping_add(0)).shader = self.tileShader.unwrap(); }
+				} else {
+					unsafe { (*model.materials.wrapping_add(0)).shader = self.shader.unwrap(); }
+				}
 				
 				self.models.insert(name.to_string(), model);
 			}

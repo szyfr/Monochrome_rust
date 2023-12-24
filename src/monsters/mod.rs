@@ -399,6 +399,10 @@ impl Monster {
 		return self.experience >= experience_from_level(self.level + 1, self.growthRate);
 	}
 	
+	pub fn get_move_distance(&self) -> i32 {
+		return 7 + ((self.speed as f32 - 100.0) / 100.0).floor() as i32;
+	}
+
 }
 
 /// Calculates health or stamina.
