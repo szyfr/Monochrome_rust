@@ -61,8 +61,9 @@ fn main() {
 			raylib::end_3d_mode();
 
 			events::textbox::draw(&mut gamestate);
-			events::animation::draw(&mut gamestate);
+			if gamestate.battleData.started { battle::draw_ui(&mut gamestate); }
 			if gamestate.player.menu.open != player::MenuOptions::None { player::draw_menu(&gamestate); }
+			events::animation::draw(&mut gamestate);
 
 			raylib::draw_fps(0,0);
 		}

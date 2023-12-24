@@ -5,10 +5,9 @@
 #![allow(dead_code)]
 
 
-use std::collections::HashMap;
-
 //= Imports
-use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self}, data, utilities::math::is_within_range};
+use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self, rectangles::Rectangle}, data, utilities::math::is_within_range};
+use std::collections::HashMap;
 
 
 //= Enumerations
@@ -72,6 +71,12 @@ pub enum BattleObjectType {
 	EnemyMonster{num: i32, species: MonsterSpecies},
 }
 
+/// Player Battle State
+#[derive(Clone, PartialEq)]
+pub enum PlayerBattleState {
+	Movement,
+	Attack,
+}
 
 //= Structures
 
@@ -84,7 +89,10 @@ pub struct BattleData {
 	pub roundTotal: i32,
 	pub turnOrder: [i8;4],
 
+	pub playerState: PlayerBattleState,
 	pub cursor: Vector3,
+
+	pub attackChoice: i32,
 
 	//* Data */
 	pub battleType: BattleType,
@@ -132,7 +140,10 @@ impl BattleData {
 			roundTotal: 0,
 			turnOrder:	[-1,-1,-1,-1],
 
+			playerState: PlayerBattleState::Movement,
 			cursor: Vector3{x:4.0,y:0.0,z:4.0},
+
+			attackChoice: 0,
 
     		battleType:	BattleType::Empty,
 			playerTeam: monsters::MonsterTeam::new(),
@@ -248,29 +259,32 @@ impl BattleData {
 
 	/// Updates battle state
 	pub fn update(&mut self) {
+		if data::key_pressed("swap_modes") {
+			if self.playerState == PlayerBattleState::Movement { self.playerState = PlayerBattleState::Attack }
+			else if self.playerState == PlayerBattleState::Attack { self.playerState = PlayerBattleState::Movement }
+		}
 		match self.turnOrder[self.turnCur as usize] {
 			0 => { // Player mon 1
-				//let obj = self.objects.get_mut("player_1").unwrap();
-				//if data::key_pressed("up")		{ obj.position = obj.position - Vector3{x:0.0,y:0.0,z:1.0}; }
-				//if data::key_pressed("down")	{ obj.position = obj.position + Vector3{x:0.0,y:0.0,z:1.0}; }
-				//if data::key_pressed("left")	{ obj.position = obj.position - Vector3{x:1.0,y:0.0,z:0.0}; }
-				//if data::key_pressed("right")	{ obj.position = obj.position + Vector3{x:1.0,y:0.0,z:0.0}; }
+				match self.playerState {
+					PlayerBattleState::Movement => {
+						if data::key_pressed("up")		{ self.cursor = self.cursor - Vector3{x:0.0,y:0.0,z:1.0}; }
+						if data::key_pressed("down")	{ self.cursor = self.cursor + Vector3{x:0.0,y:0.0,z:1.0}; }
+						if data::key_pressed("left")	{ self.cursor = self.cursor - Vector3{x:1.0,y:0.0,z:0.0}; }
+						if data::key_pressed("right")	{ self.cursor = self.cursor + Vector3{x:1.0,y:0.0,z:0.0}; }
 
-				//if obj.position.x < 0.0 { obj.position.x = 0.0; }
-				//if obj.position.x > 7.0 { obj.position.x = 7.0; }
-				//if obj.position.z < 0.0 { obj.position.z = 0.0; }
-				//if obj.position.z > 7.0 { obj.position.z = 7.0; }
+						if self.cursor.x < 0.0 { self.cursor.x = 0.0; }
+						if self.cursor.x > 7.0 { self.cursor.x = 7.0; }
+						if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
+						if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
+					}
+					PlayerBattleState::Attack => {
+						if data::key_pressed("left")	{ self.attackChoice = self.attackChoice - 1; }
+						if data::key_pressed("right")	{ self.attackChoice = self.attackChoice + 1; }
 
-				if data::key_pressed("up")		{ self.cursor = self.cursor - Vector3{x:0.0,y:0.0,z:1.0}; }
-				if data::key_pressed("down")	{ self.cursor = self.cursor + Vector3{x:0.0,y:0.0,z:1.0}; }
-				if data::key_pressed("left")	{ self.cursor = self.cursor - Vector3{x:1.0,y:0.0,z:0.0}; }
-				if data::key_pressed("right")	{ self.cursor = self.cursor + Vector3{x:1.0,y:0.0,z:0.0}; }
-
-				if self.cursor.x < 0.0 { self.cursor.x = 0.0; }
-				if self.cursor.x > 7.0 { self.cursor.x = 7.0; }
-				if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
-				if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
-
+						if self.attackChoice < 0 { self.attackChoice = 0; }
+						if self.attackChoice > 3 { self.attackChoice = 3; }
+					}
+				}
 				if data::key_pressed("confirm")	{
 					print!("Player turn ends.\n");
 					self.next_turn();
@@ -281,7 +295,10 @@ impl BattleData {
 				print!("Enemy turn ends.\n");
 				self.next_turn();
 			}
-			3 => {} // Enemy mon 2
+			3 => { // Enemy mon 2
+				print!("Enemy turn ends.\n");
+				self.next_turn();
+			}
 			_ => {} // Null
 		}
 
@@ -310,7 +327,7 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 				let tile = gamestate.battleData.tiles[&[x,0,z]].clone();
 				let mut color: raylib_ffi::Color = raylib_ffi::colors::WHITE;
 				
-				if gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize] == 0 && x < 8 && z < 8 {
+				if x < 8 && z < 8 {
 					if gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize] == 0 {
 						let objPosition = gamestate.battleData.objects["player_1"].position;
 						if is_within_range(objPosition, Vector3::from([x,0,z]), gamestate.battleData.playerTeam.0[0].clone().unwrap().get_move_distance()) {
@@ -372,6 +389,35 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 
 			//* Cursor */
 			//TODO
+		}
+	}
+}
+
+pub fn draw_ui(gamestate: &mut data::Gamestate) {
+	if gamestate.battleData.playerState == PlayerBattleState::Attack {
+		for i in 0..4 {
+			let yOffset: i32;
+			if gamestate.battleData.attackChoice == i { yOffset = (50.0 * data::get_screenratio()) as i32; }
+			else { yOffset = 0; }
+
+			let attacks = gamestate.battleData.playerTeam.0[0].clone().unwrap().attacks;
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				Rectangle{
+					x: (25.0 * data::get_screenratio()) + ((200.0 * data::get_screenratio()) * i as f32),
+					y: data::get_screenheight() as f32 - (60.0 * data::get_screenratio()) - yOffset as f32,
+					width: (200.0 * data::get_screenratio()),
+					height: (200.0 * data::get_screenratio()),
+				},
+				0.0,
+			);
+	
+			gamestate.graphics.fonts["default"].draw(
+				&attacks[i as usize].to_string(),
+				(50.0 * data::get_screenratio()) as i32 + ((200.0 * data::get_screenratio()) as i32 * i as i32),
+				data::get_screenheight() - (25.0 * data::get_screenratio()) as i32 - yOffset,
+				(20.0 * data::get_screenratio()) as i32,
+				raylib_ffi::colors::BLACK,
+			);
 		}
 	}
 }

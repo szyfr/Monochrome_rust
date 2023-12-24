@@ -176,6 +176,11 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("confirm".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 32 });
 		self.keybindings.as_mut().unwrap().insert("cancel".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 341 });
 		self.keybindings.as_mut().unwrap().insert("enter".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 257 });
+		self.keybindings.as_mut().unwrap().insert("attack_1".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 49 });
+		self.keybindings.as_mut().unwrap().insert("attack_2".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 50 });
+		self.keybindings.as_mut().unwrap().insert("attack_3".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 51 });
+		self.keybindings.as_mut().unwrap().insert("attack_4".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 52 });
+		self.keybindings.as_mut().unwrap().insert("swap_modes".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
 
 		self.masterVolume = 0.5;
 		self.musicVolume = 0.2;

@@ -400,7 +400,7 @@ impl Monster {
 	}
 	
 	pub fn get_move_distance(&self) -> i32 {
-		return 7 + ((self.speed as f32 - 100.0) / 100.0).floor() as i32;
+		return 3 + ((self.speed as f32 - 100.0) / 100.0).floor() as i32;
 	}
 
 }
