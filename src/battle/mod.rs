@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{monsters::{self, MonsterSpecies}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self, rectangles::Rectangle}, data, utilities::math::is_within_range};
+use crate::{monsters::{self, MonsterSpecies, MonsterAttacks}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self, rectangles::Rectangle}, data, utilities::math::is_within_range};
 use std::collections::HashMap;
 
 
@@ -182,7 +182,7 @@ impl BattleData {
 					"enemy_1".to_string(), 
 					BattleObject::new(
 						BattleObjectType::EnemyMonster{num: 0, species: MonsterSpecies::Mon158},
-						Vector3{x:12.0,y:0.0,z:4.0},
+						Vector3{x:11.0,y:0.0,z:4.0},
 					),
 				);
 
@@ -278,8 +278,24 @@ impl BattleData {
 						if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
 					}
 					PlayerBattleState::Attack => {
-						if data::key_pressed("left")	{ self.attackChoice = self.attackChoice - 1; }
-						if data::key_pressed("right")	{ self.attackChoice = self.attackChoice + 1; }
+						if data::key_pressed("attack_1") && self.playerTeam.0[0].as_ref().unwrap().attacks[0] != MonsterAttacks::None { self.attackChoice = 0; }
+						if data::key_pressed("attack_2") && self.playerTeam.0[0].as_ref().unwrap().attacks[1] != MonsterAttacks::None { self.attackChoice = 1; }
+						if data::key_pressed("attack_3") && self.playerTeam.0[0].as_ref().unwrap().attacks[2] != MonsterAttacks::None { self.attackChoice = 2; }
+						if data::key_pressed("attack_4") && self.playerTeam.0[0].as_ref().unwrap().attacks[3] != MonsterAttacks::None { self.attackChoice = 3; }
+						
+						if data::key_pressed("up")		{ self.cursor = self.cursor - Vector3{x:0.0,y:0.0,z:1.0}; }
+						if data::key_pressed("down")	{ self.cursor = self.cursor + Vector3{x:0.0,y:0.0,z:1.0}; }
+						if data::key_pressed("left")	{ self.cursor = self.cursor - Vector3{x:1.0,y:0.0,z:0.0}; }
+						if data::key_pressed("right")	{ self.cursor = self.cursor + Vector3{x:1.0,y:0.0,z:0.0}; }
+
+						if self.cursor.x < 8.0 { self.cursor.x = 8.0; }
+						if self.cursor.x > 16.0 { self.cursor.x = 16.0; }
+						if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
+						if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
+
+						// TODO This doesn't work for some reason...
+						if data::key_pressed("shift") && data::key_pressed("left")	{ self.attackChoice = self.attackChoice - 1; }
+						if data::key_pressed("shift") && data::key_pressed("right")	{ self.attackChoice = self.attackChoice + 1; }
 
 						if self.attackChoice < 0 { self.attackChoice = 0; }
 						if self.attackChoice > 3 { self.attackChoice = 3; }
@@ -326,16 +342,86 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 			if gamestate.battleData.tiles.contains_key(&[x,0,z]) {
 				let tile = gamestate.battleData.tiles[&[x,0,z]].clone();
 				let mut color: raylib_ffi::Color = raylib_ffi::colors::WHITE;
+
+				let chosenMon = gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize];
 				
-				if x < 8 && z < 8 {
-					if gamestate.battleData.turnOrder[gamestate.battleData.turnCur as usize] == 0 {
-						let objPosition = gamestate.battleData.objects["player_1"].position;
-						if is_within_range(objPosition, Vector3::from([x,0,z]), gamestate.battleData.playerTeam.0[0].clone().unwrap().get_move_distance()) {
-							color = raylib_ffi::colors::ORANGE;
+				match gamestate.battleData.playerState {
+					PlayerBattleState::Movement => {
+						if x < 8 && z < 8 {
+							// TODO Double battle
+							if chosenMon == 0 {
+								let objPosition = gamestate.battleData.objects["player_1"].position;
+								if is_within_range(objPosition, Vector3::from([x,0,z]), gamestate.battleData.playerTeam.0[0].as_ref().unwrap().get_move_distance()) {
+									color = raylib_ffi::colors::ORANGE;
+								}
+							}
+							if Vector3::from([x,0,z]) == gamestate.battleData.cursor { color = raylib_ffi::colors::GREEN; }
 						}
 					}
-					if Vector3::from([x,0,z]) == gamestate.battleData.cursor { color = raylib_ffi::colors::GREEN; }
+					PlayerBattleState::Attack => {
+						if chosenMon == 0 {
+							let monster = gamestate.battleData.playerTeam.0[0].as_ref().unwrap();
+							let monPosi = gamestate.battleData.objects["player_1"].position;
+							match monster.attacks[gamestate.battleData.attackChoice as usize] {
+								MonsterAttacks::Tackle => {
+									//* Player side */
+									if x > 3 && x < 8 {
+										if monPosi.x > 3.0 { color = raylib_ffi::colors::GREEN; }
+										else { color = raylib_ffi::colors::RED; }
+									}
+									//* Enemy side */
+									if x > 7 && x < 12 && z > (monPosi.z - 2.0) as i32 && z < (monPosi.z + 2.0) as i32 { color = raylib_ffi::colors::BLUE; }
+								}
+								MonsterAttacks::Scratch => {
+									//* Player side */
+									if x > 3 && x < 8 {
+										if monPosi.x > 3.0 && monPosi.x < 8.0 { color = raylib_ffi::colors::GREEN; }
+										else { color = raylib_ffi::colors::RED; }
+									}
+									//* Enemy side */
+									if x > 7 && x < 11 && z > (monPosi.z - 3.0) as i32 && z < (monPosi.z + 3.0) as i32 { color = raylib_ffi::colors::BLUE; }
+								}
+								MonsterAttacks::Growl => {
+									if x > 7 { color = raylib_ffi::colors::BLUE; }
+								}
+								MonsterAttacks::Leer => {
+									if x > 7 { color = raylib_ffi::colors::BLUE; }
+								}
+								MonsterAttacks::Leafage => {
+									let mut isFront = false;
+									if monPosi.x > 3.0 {
+										isFront = true;
+										if x > 11 && x < 16 { color = raylib_ffi::colors::ORANGE; }
+									}
+									if monPosi.x < 4.0 {
+										isFront = false;
+										if x > 7 && x < 12 { color = raylib_ffi::colors::ORANGE; }
+									}
+									if x > (gamestate.battleData.cursor.x - 2.0) as i32 && x < (gamestate.battleData.cursor.x + 2.0) as i32 && z > (gamestate.battleData.cursor.z - 2.0) as i32 && z < (gamestate.battleData.cursor.z + 2.0) as i32 {
+										if isFront  && 11 < gamestate.battleData.cursor.x as i32 { color = raylib_ffi::colors::BLUE; }
+										if isFront  && 12 > gamestate.battleData.cursor.x as i32 { color = raylib_ffi::colors::RED; }
+										if !isFront && 11 < gamestate.battleData.cursor.x as i32 { color = raylib_ffi::colors::RED; }
+										if !isFront && 12 > gamestate.battleData.cursor.x as i32 { color = raylib_ffi::colors::BLUE; }
+									}
+								}
+								MonsterAttacks::Ember => {
+									if monPosi.z as i32 == z && x > monPosi.x as i32 { color = raylib_ffi::colors::BLUE; }
+								}
+								MonsterAttacks::Aquajet => {
+									if monPosi.x as i32 > 3 {
+										if x > 3 && x < 8 { color = raylib_ffi::colors::GREEN; }
+										if x > 11 && z > (monPosi.z - 2.0) as i32 && z < (monPosi.z + 2.0) as i32 { color = raylib_ffi::colors::BLUE; }
+									} else {
+										if x < 4 { color = raylib_ffi::colors::GREEN; }
+										if x > 7 && x < 12 && z > (monPosi.z - 2.0) as i32 && z < (monPosi.z + 2.0) as i32 { color = raylib_ffi::colors::BLUE; }
+									}
+								}
+								_ => {}
+							}
+						}
+					}
 				}
+				
 
 				let model = gamestate.graphics.models[&tile.model].clone();
 				raylib::set_shader_value(
@@ -394,10 +480,69 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 }
 
 pub fn draw_ui(gamestate: &mut data::Gamestate) {
-	if gamestate.battleData.playerState == PlayerBattleState::Attack {
+	//* Current combat state */
+	match gamestate.battleData.playerState {
+		PlayerBattleState::Movement => {
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				Rectangle{
+					x: data::get_screenwidth() as f32 - 200.0,
+					y: 100.0 * data::get_screenratio(),
+					width: 300.0 * data::get_screenratio(),
+					height: 100.0 * data::get_screenratio(),
+				},
+				0.0,
+			);
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				Rectangle{
+					x: data::get_screenwidth() as f32 - 50.0,
+					y: 200.0 * data::get_screenratio(),
+					width: 300.0 * data::get_screenratio(),
+					height: 100.0 * data::get_screenratio(),
+				},
+				0.0,
+			);
+			gamestate.graphics.fonts["default"].draw(
+				&gamestate.localization["battle_text_movement"],
+				data::get_screenwidth() - 150,
+				(145.0 * data::get_screenratio()) as i32,
+				(20.0 * data::get_screenratio()) as i32,
+				raylib_ffi::colors::BLACK,
+			);
+		}
+		PlayerBattleState::Attack => {
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				Rectangle{
+					x: data::get_screenwidth() as f32 - 50.0,
+					y: 100.0 * data::get_screenratio(),
+					width: 300.0 * data::get_screenratio(),
+					height: 100.0 * data::get_screenratio(),
+				},
+				0.0,
+			);
+			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+				Rectangle{
+					x: data::get_screenwidth() as f32 - 200.0,
+					y: 200.0 * data::get_screenratio(),
+					width: 300.0 * data::get_screenratio(),
+					height: 100.0 * data::get_screenratio(),
+				},
+				0.0,
+			);
+			gamestate.graphics.fonts["default"].draw(
+				&gamestate.localization["battle_text_attack"],
+				data::get_screenwidth() - 150,
+				(245.0 * data::get_screenratio()) as i32,
+				(20.0 * data::get_screenratio()) as i32,
+				raylib_ffi::colors::BLACK,
+			);
+		}
+	}
+
+	//* Attack UI */
+	//if gamestate.battleData.playerState == PlayerBattleState::Attack {
 		for i in 0..4 {
 			let yOffset: i32;
-			if gamestate.battleData.attackChoice == i { yOffset = (50.0 * data::get_screenratio()) as i32; }
+			if gamestate.battleData.attackChoice == i && gamestate.battleData.playerState == PlayerBattleState::Attack { yOffset = (50.0 * data::get_screenratio()) as i32; }
 			else { yOffset = 0; }
 
 			let attacks = gamestate.battleData.playerTeam.0[0].clone().unwrap().attacks;
@@ -405,21 +550,22 @@ pub fn draw_ui(gamestate: &mut data::Gamestate) {
 				Rectangle{
 					x: (25.0 * data::get_screenratio()) + ((200.0 * data::get_screenratio()) * i as f32),
 					y: data::get_screenheight() as f32 - (60.0 * data::get_screenratio()) - yOffset as f32,
-					width: (200.0 * data::get_screenratio()),
-					height: (200.0 * data::get_screenratio()),
+					width: 200.0 * data::get_screenratio(),
+					height: 200.0 * data::get_screenratio(),
 				},
 				0.0,
 			);
-	
-			gamestate.graphics.fonts["default"].draw(
-				&attacks[i as usize].to_string(),
-				(50.0 * data::get_screenratio()) as i32 + ((200.0 * data::get_screenratio()) as i32 * i as i32),
-				data::get_screenheight() - (25.0 * data::get_screenratio()) as i32 - yOffset,
-				(20.0 * data::get_screenratio()) as i32,
-				raylib_ffi::colors::BLACK,
-			);
+			if attacks[i as usize] != MonsterAttacks::None {
+				gamestate.graphics.fonts["default"].draw(
+					&gamestate.localization[&attacks[i as usize].to_string()],
+					(50.0 * data::get_screenratio()) as i32 + ((200.0 * data::get_screenratio()) as i32 * i as i32),
+					data::get_screenheight() - (25.0 * data::get_screenratio()) as i32 - yOffset,
+					(20.0 * data::get_screenratio()) as i32,
+					raylib_ffi::colors::BLACK,
+				);
+			}
 		}
-	}
+	//}
 }
 
 pub fn calc_turn_order(monsters: [Option<monsters::Monster>;4]) -> [i8;4] {

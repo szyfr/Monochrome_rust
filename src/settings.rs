@@ -181,8 +181,9 @@ impl Settings {
 		self.keybindings.as_mut().unwrap().insert("attack_3".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 51 });
 		self.keybindings.as_mut().unwrap().insert("attack_4".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 52 });
 		self.keybindings.as_mut().unwrap().insert("swap_modes".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 69 });
+		self.keybindings.as_mut().unwrap().insert("shift".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 340 });
 
-		self.masterVolume = 0.5;
+		self.masterVolume = 0.1;
 		self.musicVolume = 0.2;
 		self.sfxVolume = 0.2;
 

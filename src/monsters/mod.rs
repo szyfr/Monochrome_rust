@@ -63,7 +63,7 @@ impl Display for MonsterTypes {
 }
 
 /// The attacks a monster can use in battle.
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum MonsterAttacks {
 	None,
 
@@ -404,6 +404,7 @@ impl Monster {
 	}
 
 }
+
 
 /// Calculates health or stamina.
 //TODO IVs, EVs, and natures

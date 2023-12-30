@@ -119,21 +119,24 @@
 	"mon159":"Croconaw",
 	"mon160":"Feraligatr",
 
-	"tackle_name":"Tackle",
+	"tackle":"Tackle",
 	"tackle_desc":"The user throws their body into the enemy.",
-	"scratch_name":"Scratch",
+	"scratch":"Scratch",
 	"scratch_desc":"The user swipes in front of themselves with sharp claws.",
-	"growl_name":"Growl",
+	"growl":"Growl",
 	"growl_desc":"The user lets out a intimidating growl that lowers the enemies Attack.",
-	"leer_name":"Leer",
+	"leer":"Leer",
 	"leer_desc":"The user glares menacingly lowering the enemies Defense.",
-	"leafage_name":"Leafage",
+	"leafage":"Leafage",
 	"leafage_desc":"The user sends out a gust of leaves, dealing damage to enemies hit and leaving a pile of leaves that deals damage when stepped on.",
-	"ember_name":"Ember",
-	"ember_desc":"The user spits a hot flame that deals damage and can burn.",
-	"watergun_name":"Water Gun",
-	"watergun_desc":"The user lets out a gush of water dealing damage with high knockback.",
+	"ember":"Ember",
+	"ember_desc":"The user spits a hot flame that travels across the field, deals damage, and can burn.",
+	"aquajet":"Aqua Jet",
+	"aquajety_desc":"The user dashes forward with incredible speed to the opposite side of the arena.",
 
 	"rival_unnamed":"???",
-	"rival_named":"Rival {RIVAL_NAME}"
+	"rival_named":"Rival {RIVAL_NAME}",
+
+	"battle_text_movement":"Movement",
+	"battle_text_attack":"Attack"
 }
