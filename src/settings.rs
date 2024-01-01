@@ -75,6 +75,17 @@ pub enum Difficulty {
 	Medium,
 	Hard,
 }
+impl FromStr for Difficulty {
+	type Err = ();
+	fn from_str( input : &str ) -> Result<Difficulty, Self::Err> {
+		match input {
+			"easy"		=> Ok(Difficulty::Easy),
+			"medium"	=> Ok(Difficulty::Medium),
+			"hard"		=> Ok(Difficulty::Hard),
+			_			=> Err(()),
+		}
+	}
+}
 
 
 //= Structures
@@ -143,6 +154,8 @@ impl Settings {
 		self.musicVolume	= jsonFile["music"].as_f64().unwrap() as f32;
 		self.sfxVolume		= jsonFile["sound"].as_f64().unwrap() as f32;
 
+		self.difficulty		= Difficulty::from_str(jsonFile["difficulty"].as_str().unwrap()).unwrap();
+
 		self.keybindings = Some(HashMap::new());
 		for val in jsonFile["keybindings"].as_array().unwrap() {
 			let name = val.as_array().unwrap()[0].as_str().unwrap();
@@ -166,6 +179,7 @@ impl Settings {
 		self.language 		= Language::English;
 
 		self.keybindings 	= Some(HashMap::new());
+		self.difficulty		= Difficulty::Medium;
 
 		self.keybindings.as_mut().unwrap().insert("up".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 87 });
 		self.keybindings.as_mut().unwrap().insert("down".to_string(), Keybinding { origin: Origin::Keyboard, controller: 0, code: 83 });

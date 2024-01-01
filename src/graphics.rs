@@ -111,6 +111,10 @@ impl Graphics {
 		img = Image::load("data/sprites/ui/blackbox.png").resize_nn(4);
 		self.textures.insert("ui_blackbox_general".to_string(), img.load_texture());
 		img.unload();
+		//* Battle Status */
+		img = Image::load("data/sprites/ui/battleStatus.png").resize_nn(3);
+		self.textures.insert("ui_battlestatus_general".to_string(), img.load_texture());
+		img.unload();
 
 		self.textures.insert("ui_pointer_general".to_string(), Texture::load("data/sprites/ui/pointer.png"));
 		self.textures.insert("ui_input_general".to_string(), Texture::load("data/sprites/ui/input.png"));

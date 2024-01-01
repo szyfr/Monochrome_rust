@@ -146,8 +146,8 @@ pub struct Monster {
 
 	pub nickname: String,
 
-	pub health: [i32;2],
-	pub stamina: [i32;2],
+	pub hpMax: i32,
+	pub hpCur: i32,
 
 	pub physicalAttack: i32,
 	pub physicalDefense: i32,
@@ -251,8 +251,8 @@ impl Monster {
 
 			nickname: "".to_string(),
 
-			health: [0,0],
-			stamina: [0,0],
+			hpMax: 0,
+			hpCur: 0,
 
 			physicalAttack: 0,
 			physicalDefense: 0,
@@ -335,14 +335,9 @@ impl Monster {
 		match self.species {
 			MonsterSpecies::Mon152 => {
 				let health: i32 = stat_calculation_a(50, self.level);
-				let hpdiff = health - self.health[1];
-				self.health[0] += hpdiff;
-				self.health[1] = health;
-
-				let stamina: i32 = stat_calculation_a(35, self.level);
-				let stdiff = stamina - self.stamina[1];
-				self.stamina[0] += stdiff;
-				self.stamina[1] = stamina;
+				let hpdiff = health - self.hpMax;
+				self.hpCur += hpdiff;
+				self.hpMax = health;
 
 				self.physicalAttack		= stat_calculation_b(45, self.level);
 				self.physicalDefense	= stat_calculation_b(65, self.level);
@@ -352,14 +347,9 @@ impl Monster {
 			}
 			MonsterSpecies::Mon155 => {
 				let health: i32 = stat_calculation_a(35, self.level);
-				let hpdiff = health - self.health[1];
-				self.health[0] += hpdiff;
-				self.health[1] = health;
-
-				let stamina: i32 = stat_calculation_a(55, self.level);
-				let stdiff = stamina - self.stamina[1];
-				self.stamina[0] += stdiff;
-				self.stamina[1] = stamina;
+				let hpdiff = health - self.hpMax;
+				self.hpCur += hpdiff;
+				self.hpMax = health;
 
 				self.physicalAttack		= stat_calculation_b(55, self.level);
 				self.physicalDefense	= stat_calculation_b(40, self.level);
@@ -369,14 +359,9 @@ impl Monster {
 			}
 			MonsterSpecies::Mon158 => {
 				let health: i32 = stat_calculation_a(35, self.level);
-				let hpdiff = health - self.health[1];
-				self.health[0] += hpdiff;
-				self.health[1] = health;
-
-				let stamina: i32 = stat_calculation_a(55, self.level);
-				let stdiff = stamina - self.stamina[1];
-				self.stamina[0] += stdiff;
-				self.stamina[1] = stamina;
+				let hpdiff = health - self.hpMax;
+				self.hpCur += hpdiff;
+				self.hpMax = health;
 
 				self.physicalAttack		= stat_calculation_b(55, self.level);
 				self.physicalDefense	= stat_calculation_b(40, self.level);
@@ -401,6 +386,11 @@ impl Monster {
 	
 	pub fn get_move_distance(&self) -> i32 {
 		return 3 + ((self.speed as f32 - 100.0) / 100.0).floor() as i32;
+	}
+
+	pub fn get_name(&self) -> (String, bool) {
+		if self.nickname != "" { return (self.nickname.to_string(), true); }
+		else { return (self.species.to_string(), false); }
 	}
 
 }

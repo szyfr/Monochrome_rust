@@ -6,7 +6,7 @@
 
 
 //= Imports
-use crate::{monsters::{self, MonsterSpecies, MonsterAttacks}, world::Tile, raylib::{vectors::Vector3, textures::Texture, self, rectangles::Rectangle}, data, utilities::math::is_within_range};
+use crate::{monsters::{self, MonsterSpecies, MonsterAttacks}, world::Tile, raylib::{vectors::{Vector3, Vector2}, textures::Texture, self, rectangles::Rectangle}, data, utilities::math::is_within_range, settings::Difficulty};
 use std::collections::HashMap;
 
 
@@ -97,6 +97,7 @@ pub struct BattleData {
 	//* Data */
 	pub battleType: BattleType,
 	pub playerTeam: monsters::MonsterTeam,
+	pub enemyTeam:  monsters::MonsterTeam,
 
 	pub tiles: HashMap<[i32;3], Tile>,
 	pub objects: HashMap<String, BattleObject>,
@@ -147,6 +148,8 @@ impl BattleData {
 
     		battleType:	BattleType::Empty,
 			playerTeam: monsters::MonsterTeam::new(),
+			enemyTeam: monsters::MonsterTeam::new(),
+
 			tiles: HashMap::new(),
 			objects: HashMap::new(),
 		}
@@ -166,22 +169,27 @@ impl BattleData {
 					arena: arena.clone(),
 				};
 				self.playerTeam = playerTeam.clone();
+				match data::get_difficulty() {
+					Difficulty::Easy	=> { self.enemyTeam = easyTeam; }
+					Difficulty::Medium	=> { self.enemyTeam = mediumTeam; }
+					Difficulty::Hard	=> { self.enemyTeam = hardTeam; }
+				}
 
-				self.turnOrder = calc_turn_order([playerTeam.0[0].clone(), None, mediumTeam.0[0].clone(), None]);
+				self.turnOrder = calc_turn_order([playerTeam.0[0].clone(), None, self.enemyTeam.0[0].clone(), None]);
 				print!("[{},{},{},{}]\n",self.turnOrder[0],self.turnOrder[1],self.turnOrder[2],self.turnOrder[3]);
 
 				self.objects = HashMap::new();
 				self.objects.insert(
 					"player_1".to_string(), 
 					BattleObject::new(
-						BattleObjectType::PlayerMonster{num: 0, species: MonsterSpecies::Mon152},
+						BattleObjectType::PlayerMonster{num: 0, species: self.playerTeam.0[0].as_ref().unwrap().species.clone()},
 						Vector3{x:4.0,y:0.0,z:4.0},
 					),
 				);
 				self.objects.insert(
 					"enemy_1".to_string(), 
 					BattleObject::new(
-						BattleObjectType::EnemyMonster{num: 0, species: MonsterSpecies::Mon158},
+						BattleObjectType::EnemyMonster{num: 0, species: self.enemyTeam.0[0].as_ref().unwrap().species.clone()},
 						Vector3{x:11.0,y:0.0,z:4.0},
 					),
 				);
@@ -538,34 +546,105 @@ pub fn draw_ui(gamestate: &mut data::Gamestate) {
 		}
 	}
 
-	//* Attack UI */
-	//if gamestate.battleData.playerState == PlayerBattleState::Attack {
-		for i in 0..4 {
-			let yOffset: i32;
-			if gamestate.battleData.attackChoice == i && gamestate.battleData.playerState == PlayerBattleState::Attack { yOffset = (50.0 * data::get_screenratio()) as i32; }
-			else { yOffset = 0; }
+	//* Battle status */
+	//TODO Double battle
+	// Player side
+	gamestate.graphics.textures["ui_battlestatus_general"].draw_ex(
+		Vector2{
+			x:384.0 * data::get_screenratio() as f32,
+			y: 96.0 * data::get_screenratio() as f32,
+		},
+		180.0,
+		1.0,
+	);
 
-			let attacks = gamestate.battleData.playerTeam.0[0].clone().unwrap().attacks;
-			gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
-				Rectangle{
-					x: (25.0 * data::get_screenratio()) + ((200.0 * data::get_screenratio()) * i as f32),
-					y: data::get_screenheight() as f32 - (60.0 * data::get_screenratio()) - yOffset as f32,
-					width: 200.0 * data::get_screenratio(),
-					height: 200.0 * data::get_screenratio(),
+	//TODO Have a look to see if i can do this better
+	let playermon = gamestate.battleData.playerTeam.0[0].as_ref().unwrap();
+	let name = playermon.get_name();
+	let str: String;
+	if name.1 { str = name.0; }
+	else { str = gamestate.localization[&name.0].to_string(); }
+
+	gamestate.graphics.fonts["default"].draw_pro(
+		&str,
+		Vector2 {
+			x: 26.0 * data::get_screenratio() as f32,
+			y: 26.0 * data::get_screenratio() as f32,
+		},
+		0.0,
+		16.0 * data::get_screenratio() as f32,
+		0.0,
+		raylib_ffi::colors::BLACK,
+	);
+
+	let hpStr = playermon.hpCur.to_string() + " / " + &playermon.hpMax.to_string();
+	gamestate.graphics.fonts["default"].draw_pro(
+		&hpStr,
+		Vector2 {
+			x: 26.0 * data::get_screenratio() as f32,
+			y: 58.0 * data::get_screenratio() as f32,
+		},
+		0.0,
+		16.0 * data::get_screenratio() as f32,
+		0.0,
+		raylib_ffi::colors::BLACK,
+	);
+
+	// Enemy side
+	gamestate.graphics.textures["ui_battlestatus_general"].draw_ex(
+		Vector2{
+			x: data::get_screenwidth() as f32 - (384.0 * data::get_screenratio() as f32),
+			y: 0.0,
+		},
+		0.0,
+		1.0,
+	);
+	let enemyStr = gamestate.localization[&gamestate.battleData.enemyTeam.0[0].as_ref().unwrap().species.to_string()].to_string();
+	let offset = enemyStr.len() as f32 * 16.0;
+	gamestate.graphics.fonts["default"].draw_pro(
+		&enemyStr,
+		Vector2 {
+			//x: data::get_screenwidth() as f32 - (384.0 * data::get_screenratio() as f32) + (106.0 * data::get_screenratio() as f32),
+			x: data::get_screenwidth() as f32 - (26.0 + offset),
+			y: 26.0 * data::get_screenratio() as f32,
+		},
+		0.0,
+		16.0 * data::get_screenratio() as f32,
+		0.0,
+		raylib_ffi::colors::BLACK,
+	);
+
+	//* Attack UI */
+	//TODO Edit this
+	for i in 0..4 {
+		let yOffset: i32;
+		if gamestate.battleData.attackChoice == i && gamestate.battleData.playerState == PlayerBattleState::Attack { yOffset = (50.0 * data::get_screenratio()) as i32; }
+		else { yOffset = 0; }
+
+		let attacks = gamestate.battleData.playerTeam.0[0].clone().unwrap().attacks;
+		gamestate.graphics.textures["ui_textbox_general"].draw_npatch(
+			Rectangle{
+				x: (25.0 * data::get_screenratio()) + ((200.0 * data::get_screenratio()) * i as f32),
+				y: data::get_screenheight() as f32 - (60.0 * data::get_screenratio()) - yOffset as f32,
+				width: 200.0 * data::get_screenratio(),
+				height: 200.0 * data::get_screenratio(),
+			},
+			0.0,
+		);
+		if attacks[i as usize] != MonsterAttacks::None {
+			gamestate.graphics.fonts["default"].draw_pro(
+				&gamestate.localization[&attacks[i as usize].to_string()],
+				Vector2{
+					x: (50.0 * data::get_screenratio()) + ((200.0 * data::get_screenratio()) * i as f32),
+					y: data::get_screenheight() as f32 - (25.0 * data::get_screenratio()) - yOffset as f32,
 				},
 				0.0,
+				16.0 * data::get_screenratio(),
+				0.0,
+				raylib_ffi::colors::BLACK,
 			);
-			if attacks[i as usize] != MonsterAttacks::None {
-				gamestate.graphics.fonts["default"].draw(
-					&gamestate.localization[&attacks[i as usize].to_string()],
-					(50.0 * data::get_screenratio()) as i32 + ((200.0 * data::get_screenratio()) as i32 * i as i32),
-					data::get_screenheight() - (25.0 * data::get_screenratio()) as i32 - yOffset,
-					(20.0 * data::get_screenratio()) as i32,
-					raylib_ffi::colors::BLACK,
-				);
-			}
 		}
-	//}
+	}
 }
 
 pub fn calc_turn_order(monsters: [Option<monsters::Monster>;4]) -> [i8;4] {
