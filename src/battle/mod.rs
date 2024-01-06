@@ -91,6 +91,7 @@ pub struct BattleData {
 
 	pub playerState: PlayerBattleState,
 	pub cursor: Vector3,
+	pub movementCursor: Vector3,
 
 	pub attackChoice: i32,
 
@@ -143,6 +144,7 @@ impl BattleData {
 
 			playerState: PlayerBattleState::Movement,
 			cursor: Vector3{x:4.0,y:0.0,z:4.0},
+			movementCursor: Vector3 {x:-1.0,y:-1.0,z:-1.0},
 
 			attackChoice: 0,
 
@@ -267,10 +269,10 @@ impl BattleData {
 
 	/// Updates battle state
 	pub fn update(&mut self) {
-		if data::key_pressed("swap_modes") {
-			if self.playerState == PlayerBattleState::Movement { self.playerState = PlayerBattleState::Attack }
-			else if self.playerState == PlayerBattleState::Attack { self.playerState = PlayerBattleState::Movement }
-		}
+		//if data::key_pressed("swap_modes") {
+		//	if self.playerState == PlayerBattleState::Movement { self.playerState = PlayerBattleState::Attack }
+		//	else if self.playerState == PlayerBattleState::Attack { self.playerState = PlayerBattleState::Movement }
+		//}
 		match self.turnOrder[self.turnCur as usize] {
 			0 => { // Player mon 1
 				match self.playerState {
@@ -284,8 +286,17 @@ impl BattleData {
 						if self.cursor.x > 7.0 { self.cursor.x = 7.0; }
 						if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
 						if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
+
+						if data::key_pressed("confirm")	{
+							//* Check if cursor is within movement range */
+							if is_within_range(self.objects["player_1"].position, self.cursor, self.playerTeam.0[0].as_ref().unwrap().get_move_distance()) {
+								self.movementCursor = self.cursor;
+								self.playerState = PlayerBattleState::Attack;
+							}
+						}
 					}
 					PlayerBattleState::Attack => {
+						// TODO Check for empty attack slots? or i can just have it not do anything if used on them.
 						if data::key_pressed("attack_1") && self.playerTeam.0[0].as_ref().unwrap().attacks[0] != MonsterAttacks::None { self.attackChoice = 0; }
 						if data::key_pressed("attack_2") && self.playerTeam.0[0].as_ref().unwrap().attacks[1] != MonsterAttacks::None { self.attackChoice = 1; }
 						if data::key_pressed("attack_3") && self.playerTeam.0[0].as_ref().unwrap().attacks[2] != MonsterAttacks::None { self.attackChoice = 2; }
@@ -301,17 +312,43 @@ impl BattleData {
 						if self.cursor.z < 0.0 { self.cursor.z = 0.0; }
 						if self.cursor.z > 7.0 { self.cursor.z = 7.0; }
 
-						// TODO This doesn't work for some reason...
-						if data::key_pressed("shift") && data::key_pressed("left")	{ self.attackChoice = self.attackChoice - 1; }
-						if data::key_pressed("shift") && data::key_pressed("right")	{ self.attackChoice = self.attackChoice + 1; }
+						if data::key_pressed("rotate_left")		{ self.attackChoice = self.attackChoice - 1; }
+						if data::key_pressed("rotate_right")	{ self.attackChoice = self.attackChoice + 1; }
 
 						if self.attackChoice < 0 { self.attackChoice = 0; }
 						if self.attackChoice > 3 { self.attackChoice = 3; }
+
+						if data::key_pressed("confirm") {
+							//* Do attack */
+							// TODO Check if the attack is actually usable. If not don't go to next turn. Maybe play sound?
+							let currentAttack = self.playerTeam.0[0].clone().unwrap().attacks[self.attackChoice as usize].clone();
+							match currentAttack {
+								MonsterAttacks::Tackle => {
+									if self.objects["player_1"].position.x > 3.0 {
+										//TODO Attacks
+										print!("Player turn ends.\n");
+										self.next_turn();
+									}
+								}
+								MonsterAttacks::Scratch => {}
+								MonsterAttacks::Growl => {}
+								MonsterAttacks::Leer => {}
+								MonsterAttacks::Leafage => {}
+								MonsterAttacks::Ember => {}
+								MonsterAttacks::Aquajet => {}
+								_ => {}
+							}
+						}
+
+						if data::key_pressed("cancel")	{
+							self.movementCursor = Vector3{x:-1.0,y:-1.0,z:-1.0};
+							self.playerState = PlayerBattleState::Movement;
+						}
 					}
 				}
 				if data::key_pressed("confirm")	{
-					print!("Player turn ends.\n");
-					self.next_turn();
+					//print!("Player turn ends.\n");
+					//self.next_turn();
 				}
 			}
 			1 => {} // Player mon 2
@@ -325,19 +362,35 @@ impl BattleData {
 			}
 			_ => {} // Null
 		}
-
-		
 	}
 
 	pub fn next_turn(&mut self) {
-		self.turnCur += 1;
+		self.playerState = PlayerBattleState::Movement;
+		let (str, _) = self.get_current_monster();
+		if str == "player_1" || str == "player_2" {
+			self.objects.get_mut(&str).unwrap().position = self.movementCursor;
+			self.movementCursor = Vector3{x:-1.0,y:-1.0,z:-1.0};
+		}
 
+		self.turnCur += 1;
 		//* If turn is invalid, reset round */
 		if self.turnCur >= 4 || self.turnOrder[self.turnCur as usize] == -1 {
 			print!("Round ends.\n");
 			self.roundTotal += 1;
 			self.turnCur = 0;
 		}
+	}
+
+	pub fn get_current_monster(&self) -> (String, i8) {
+		print!("{}\n",self.turnOrder[self.turnCur as usize]);
+		let mut current = self.turnOrder[self.turnCur as usize] + 1;
+		let mon: String;
+		if current > 2 {
+			mon = "enemy_".to_string();
+			current -= 2;
+		} else { mon = "player_".to_string(); }
+
+		return (mon + &current.to_string(), current);
 	}
 
 }
@@ -369,7 +422,8 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 					PlayerBattleState::Attack => {
 						if chosenMon == 0 {
 							let monster = gamestate.battleData.playerTeam.0[0].as_ref().unwrap();
-							let monPosi = gamestate.battleData.objects["player_1"].position;
+							//let monPosi = gamestate.battleData.objects["player_1"].position;
+							let monPosi = gamestate.battleData.movementCursor;
 							match monster.attacks[gamestate.battleData.attackChoice as usize] {
 								MonsterAttacks::Tackle => {
 									//* Player side */
@@ -425,6 +479,9 @@ pub fn draw(gamestate: &mut data::Gamestate) {
 									}
 								}
 								_ => {}
+							}
+							if gamestate.battleData.movementCursor != (Vector3{x:-1.0,y:-1.0,z:-1.0}) && gamestate.battleData.movementCursor == [x,0,z].into() {
+								color = raylib_ffi::colors::PURPLE;
 							}
 						}
 					}
@@ -560,6 +617,7 @@ pub fn draw_ui(gamestate: &mut data::Gamestate) {
 
 	//TODO Have a look to see if i can do this better
 	let playermon = gamestate.battleData.playerTeam.0[0].as_ref().unwrap();
+	let enemymon = gamestate.battleData.enemyTeam.0[0].as_ref().unwrap();
 	let name = playermon.get_name();
 	let str: String;
 	if name.1 { str = name.0; }
@@ -607,6 +665,19 @@ pub fn draw_ui(gamestate: &mut data::Gamestate) {
 			//x: data::get_screenwidth() as f32 - (384.0 * data::get_screenratio() as f32) + (106.0 * data::get_screenratio() as f32),
 			x: data::get_screenwidth() as f32 - (26.0 + offset),
 			y: 26.0 * data::get_screenratio() as f32,
+		},
+		0.0,
+		16.0 * data::get_screenratio() as f32,
+		0.0,
+		raylib_ffi::colors::BLACK,
+	);
+
+	let enemymonhpStr = enemymon.hpCur.to_string() + " / " + &enemymon.hpMax.to_string();
+	gamestate.graphics.fonts["default"].draw_pro(
+		&enemymonhpStr,
+		Vector2 {
+			x: data::get_screenwidth() as f32 - (26.0 + offset),
+			y: 58.0 * data::get_screenratio() as f32,
 		},
 		0.0,
 		16.0 * data::get_screenratio() as f32,

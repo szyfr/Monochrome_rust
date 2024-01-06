@@ -86,6 +86,15 @@ impl FromStr for Difficulty {
 		}
 	}
 }
+impl Display for Difficulty {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match *self {
+			Difficulty::Easy => write!(f, "easy"),
+			Difficulty::Medium => write!(f, "medium"),
+			Difficulty::Hard => write!(f, "hard"),
+		}
+	}
+}
 
 
 //= Structures
@@ -218,6 +227,7 @@ impl Settings {
 		newSettingsFile.push_str(format!("\t\"master\": {},\n", self.masterVolume).as_str());
 		newSettingsFile.push_str(format!("\t\"music\": {},\n", self.musicVolume).as_str());
 		newSettingsFile.push_str(format!("\t\"sound\": {},\n", self.sfxVolume).as_str());
+		newSettingsFile.push_str(format!("\t\"difficulty\": \"{}\",\n", self.difficulty).as_str());
 		newSettingsFile.push_str("\t\"keybindings\": [\n");
 		for (str, key) in self.keybindings.as_ref().unwrap() {
 			if counter == self.keybindings.as_ref().unwrap().len()-1 {

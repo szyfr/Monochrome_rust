@@ -493,6 +493,7 @@ pub fn controls( gamestate : &mut data::Gamestate ) {
 						gamestate.player.menu.open = MenuOptions::Base;
 					}
 				}
+				MenuOptions::None => {}
 				_ => {
 					//* Canceling */
 					if data::key_pressed("cancel") {
